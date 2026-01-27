@@ -19,15 +19,12 @@
 
       --mRow: rgba(167,139,250,.24);
       --tRow: rgba(56,189,248,.20);
-      --mLeft: rgba(167,139,250,.46);
-      --tLeft: rgba(56,189,248,.40);
 
       --wClient: 220px;
       --wShift: 110px;
-      --leftClient: 0px;
-      --leftShift: var(--wClient);
 
-      --hdrH: 0px;   /* vai ser calculado via JS */
+      --hdrH: 0px; /* calculado via JS */
+      --rowH: 42px;
     }
 
     *{box-sizing:border-box}
@@ -36,10 +33,10 @@
       background:radial-gradient(900px 500px at 20% 0%, #14264a 0%, var(--bg) 60%);
       color:var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      overflow:hidden; /* page sem scroll; scrolls controlados */
+      overflow:hidden; /* o scroll é dentro dos containers */
     }
 
-    /* ====== HEADER + COLLAPSE ====== */
+    /* ================= HEADER (com colapsar/expandir filtros) ================= */
     header{
       padding:16px 18px 12px;
       border-bottom:1px solid var(--line);
@@ -53,31 +50,18 @@
     header.collapsed .cards{
       display:none !important;
     }
-    header.collapsed{
-      padding-bottom:10px;
-    }
 
     .wrap{max-width:1500px; margin:0 auto; padding:0 18px;}
-
     .title{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:14px;
     }
-    .titleLeft{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
+    .titleLeft{display:flex; flex-direction:column; gap:6px;}
     h1{margin:0; font-size:16px; font-weight:800; letter-spacing:.2px;}
     .sub{margin:0; color:var(--muted); font-size:12px; line-height:1.25;}
-
-    .titleRight{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
+    .titleRight{display:flex; align-items:center; gap:10px;}
 
     .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
@@ -94,7 +78,7 @@
     .btn:active{transform:translateY(1px)}
     .btn.secondary{ background:rgba(15,26,48,.70); }
 
-    /* Botão de colapsar filtros (ícone estilo funil) */
+    /* Botão maximizar/minimizar filtros */
     .iconBtn{
       width:46px;
       height:42px;
@@ -113,12 +97,7 @@
       box-shadow: 0 10px 20px rgba(0,0,0,.25);
     }
     .iconBtn:active{ transform: translateY(1px); }
-
-    .funnel{
-      width:18px;
-      height:18px;
-      position:relative;
-    }
+    .funnel{width:18px; height:18px; position:relative;}
     .funnel:before, .funnel:after{
       content:"";
       position:absolute;
@@ -129,13 +108,10 @@
     }
     .funnel:before{
       width:18px; height:3px; top:1px;
-      box-shadow:
-        0 5px 0 rgba(232,239,255,.92),
-        0 10px 0 rgba(232,239,255,.92);
+      box-shadow: 0 5px 0 rgba(232,239,255,.92),
+                  0 10px 0 rgba(232,239,255,.92);
     }
-    .funnel:after{
-      width:10px; height:3px; top:14px;
-    }
+    .funnel:after{ width:10px; height:3px; top:14px; }
 
     .iconBtn[data-tip]:hover::after{
       content: attr(data-tip);
@@ -171,7 +147,6 @@
       outline:none;
     }
 
-    /* ====== CHIPS ====== */
     .legendWrap{
       display:flex;
       align-items:center;
@@ -220,17 +195,6 @@
       z-index:999;
       pointer-events:none;
     }
-    .chipBtn[data-tip]:hover::before{
-      content:"";
-      position:absolute;
-      left:50%;
-      transform:translateX(-50%);
-      top:calc(100% + 2px);
-      border:6px solid transparent;
-      border-bottom-color: rgba(0,0,0,.82);
-      z-index:999;
-      pointer-events:none;
-    }
 
     .hintline{
       color:var(--muted);
@@ -238,7 +202,6 @@
       opacity:.9;
     }
 
-    /* ====== CARDS ====== */
     .cards{
       padding:12px 0 6px;
       display:grid;
@@ -256,12 +219,13 @@
     .kpi{font-size:12px; color:var(--muted)}
     .val{margin-top:6px; font-size:18px; font-weight:800}
 
-    /* ====== MAIN AREA (grid + fixed bottom scrollbar) ====== */
+    /* ================= MAIN ================= */
     main{
       height: calc(100vh - var(--hdrH));
       padding:0 18px 0;
       overflow:hidden;
     }
+
     .gridcard{
       max-width:1500px;
       height:100%;
@@ -282,19 +246,59 @@
     }
     .gridhead .hint{color:var(--muted); font-size:12px}
 
-    /* wrapper vertical (conteúdo) */
-    .tablewrap{
-      overflow:auto;            /* scroll vertical + horizontal escondido */
+    /* ================= GRID (colunas congeladas + scroll horizontal apenas no bloco de datas) ================= */
+    .gridBody{
+      display:flex;
       flex:1 1 auto;
+      min-height:0; /* necessário para flex scroll */
     }
-    /* esconder scrollbar horizontal dentro do tablewrap */
-    .tablewrap::-webkit-scrollbar:horizontal{ height:0px; }
-    .tablewrap{ scrollbar-width: thin; }
 
-    table{ border-collapse:separate; border-spacing:0; width:max-content; min-width:100%; }
+    /* Esquerda: CLIENTE + TURNO (congelado) */
+    .leftPane{
+      width: calc(var(--wClient) + var(--wShift));
+      border-right:1px solid rgba(255,255,255,.08);
+      background:rgba(11,18,32,.55);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .leftScroll{
+      overflow-y:auto;         /* scroll vertical */
+      overflow-x:hidden;
+      flex:1 1 auto;
+      min-height:0;
+    }
+    /* esconde scrollbar da esquerda (fica “congelado” visualmente) */
+    .leftScroll::-webkit-scrollbar{ width:0px; height:0px; }
+    .leftScroll{ scrollbar-width:none; }
 
-    thead th{
-      position:sticky; top:0; z-index:10;
+    /* Direita: DATAS + ALOCAÇÕES (scroll horizontal controlado por barra fixa) */
+    .rightPaneWrap{
+      flex:1 1 auto;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .rightScroll{
+      overflow-y:auto;      /* scroll vertical */
+      overflow-x:hidden;    /* horizontal via barra fixa */
+      flex:1 1 auto;
+      min-height:0;
+    }
+
+    /* Tabelas */
+    table{
+      border-collapse:separate;
+      border-spacing:0;
+      width:max-content;
+    }
+
+    /* Cabeçalhos */
+    .leftTable thead th,
+    .rightTable thead th{
+      position:sticky; top:0;
+      z-index:10;
       background:rgba(11,18,32,.95);
       border-bottom:1px solid var(--line);
       font-size:11px;
@@ -302,50 +306,32 @@
       padding:10px 8px;
       white-space:nowrap;
     }
-    thead th.col-client{
-      position:sticky; left:0;
-      z-index:40;
-      background:rgba(11,18,32,.98);
-      border-right:1px solid rgba(255,255,255,.06);
-      min-width:var(--wClient);
-      max-width:var(--wClient);
-    }
-    thead th.col-shift{
-      position:sticky; left:var(--leftShift);
-      z-index:40;
-      background:rgba(11,18,32,.98);
-      border-right:1px solid rgba(255,255,255,.06);
-      min-width:var(--wShift);
-      max-width:var(--wShift);
-      text-align:center;
+    .leftTable thead th{
+      z-index:15;
     }
 
-    tbody td{
+    /* Células */
+    .leftTable tbody td,
+    .rightTable tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
       padding:8px 8px;
       font-size:12px;
       white-space:nowrap;
-      height:42px;
+      height:var(--rowH);
     }
-    tbody td.col-client, tbody td.col-shift{
-      position:sticky;
-      z-index:25;
-      background:rgba(11,18,32,.92);
-      border-right:1px solid rgba(255,255,255,.06);
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-    tbody td.col-client{
-      left:0;
+
+    /* Linhas (faixas por turno) */
+    .row-m td{ background-color: var(--mRow); }
+    .row-t td{ background-color: var(--tRow); }
+
+    /* Lado esquerdo: colunas fixas */
+    .col-client{
       min-width:var(--wClient);
       max-width:var(--wClient);
       font-weight:950;
-      vertical-align:middle;
-      padding:0;
+      padding:0 !important;
     }
-    tbody td.col-shift{
-      left:var(--leftShift);
+    .col-shift{
       min-width:var(--wShift);
       max-width:var(--wShift);
       text-align:center;
@@ -353,38 +339,28 @@
       letter-spacing:.3px;
     }
 
-    tr.shift-m td{ background-color: var(--mRow); }
-    tr.shift-t td{ background-color: var(--tRow); }
-    tr.shift-m td.col-client, tr.shift-m td.col-shift{
-      background: linear-gradient(90deg, var(--mLeft), rgba(11,18,32,.92) 70%);
-    }
-    tr.shift-t td.col-client, tr.shift-t td.col-shift{
-      background: linear-gradient(90deg, var(--tLeft), rgba(11,18,32,.92) 70%);
-    }
-
-    td.col-client.grouped{ background:rgba(11,18,32,.92); }
     .clientBox{
       height:100%;
       width:100%;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:14px 10px;
+      padding:10px 10px;
     }
     .clientBadge{
       width:100%;
-      margin:10px;
       border-radius:14px;
       border:1px solid rgba(255,255,255,.12);
       background:linear-gradient(180deg, rgba(148,163,184,.18), rgba(21,38,74,.38));
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-      padding:18px 12px;
+      padding:14px 10px;
       text-align:center;
       font-weight:950;
       letter-spacing:.6px;
       text-transform:uppercase;
     }
 
+    /* Chips dentro da grade */
     .chip{
       display:inline-flex;
       align-items:center;
@@ -399,24 +375,12 @@
       color:var(--text);
     }
     .empty{opacity:.25}
-
     .today{
       outline:2px solid rgba(45,212,191,.85);
       box-shadow: inset 0 0 0 1px rgba(45,212,191,.28);
     }
 
-    .foot{
-      padding:10px 14px;
-      border-top:1px solid var(--line);
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      color:var(--muted);
-      font-size:12px;
-      flex:0 0 auto;
-    }
-
-    /* ====== BARRA DE SCROLL HORIZONTAL FIXA (sempre visível) ====== */
+    /* ===== Barra horizontal SEMPRE visível e SOMENTE do grid de datas ===== */
     .hscrollBar{
       height:14px;
       overflow-x:auto;
@@ -431,7 +395,18 @@
       border-radius:999px;
       border:3px solid rgba(11,18,32,.75);
     }
-    .hscrollInner{ height:1px; } /* só para dar largura */
+    .hscrollInner{ height:1px; }
+
+    .foot{
+      padding:10px 14px;
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      color:var(--muted);
+      font-size:12px;
+      flex:0 0 auto;
+    }
 
     @media (max-width:1100px){
       .toolbar{grid-template-columns: 1fr 1fr;}
@@ -448,19 +423,20 @@
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
         <div class="sub">
-          Clique em DO/GE/JC/AL para filtrar. Regra: clique normal = seleção exclusiva; Ctrl/⌘ + clique = multi-seleção.
+          Colunas congeladas: Cliente + Turno. Barra horizontal sempre visível e exclusiva do grid de datas/alocações.
+          Ícone (funil) maximiza/minimiza filtros para expandir a grade.
         </div>
       </div>
 
       <div class="titleRight">
-        <button class="iconBtn" id="btnToggleFilters" data-tip="Minimizar/Maximizar filtros">
+        <button class="iconBtn" id="btnToggleFilters" data-tip="Maximizar/Minimizar filtros">
           <span class="funnel"></span>
         </button>
         <button class="btn" id="btnReload">Recarregar dados</button>
       </div>
     </div>
 
-    <div class="toolbar" id="filtersBlock">
+    <div class="toolbar">
       <div class="field">
         <label>Busca (cliente)</label>
         <input id="q" placeholder="Ex.: HS MATEUS, ABBR, MEDILAR..." />
@@ -485,10 +461,10 @@
       </div>
     </div>
 
-    <div class="legendWrap" id="legendWrap">
+    <div class="legendWrap">
       <div class="legend" id="legend"></div>
       <button class="btn secondary" id="btnClear" style="padding:6px 10px; border-radius:999px;">Limpar seleção</button>
-      <span class="hintline">Hover mostra: DO=Dôra, GE=Geovana, JC=João Custódio, AL=Aline</span>
+      <span class="hintline">Hover chips: DO=Dôra, GE=Geovana, JC=João Custódio, AL=Aline</span>
     </div>
 
     <div class="cards" id="cardsBlock">
@@ -519,16 +495,39 @@
       <div class="hint" id="status">Status: aguardando carga…</div>
     </div>
 
-    <div class="tablewrap" id="tablewrap">
-      <table id="tbl">
-        <thead><tr id="theadRow"></tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
+    <!-- GRID SPLIT: esquerda (congelado) + direita (datas) -->
+    <div class="gridBody">
+      <!-- LEFT (Cliente + Turno) -->
+      <div class="leftPane">
+        <div class="leftScroll" id="leftScroll">
+          <table class="leftTable" id="leftTable">
+            <thead>
+              <tr>
+                <th style="min-width:var(--wClient);max-width:var(--wClient);">Cliente</th>
+                <th style="min-width:var(--wShift);max-width:var(--wShift);text-align:center;">Turno</th>
+              </tr>
+            </thead>
+            <tbody id="leftBody"></tbody>
+          </table>
+        </div>
+      </div>
 
-    <!-- Barra horizontal fixa (sempre visível) -->
-    <div class="hscrollBar" id="hscrollBar">
-      <div class="hscrollInner" id="hscrollInner"></div>
+      <!-- RIGHT (Datas + Alocações) -->
+      <div class="rightPaneWrap">
+        <div class="rightScroll" id="rightScroll">
+          <table class="rightTable" id="rightTable">
+            <thead>
+              <tr id="rightHead"></tr>
+            </thead>
+            <tbody id="rightBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Barra horizontal SEMPRE visível (somente datas/alocações) -->
+        <div class="hscrollBar" id="hscrollBar">
+          <div class="hscrollInner" id="hscrollInner"></div>
+        </div>
+      </div>
     </div>
 
     <div class="foot">
@@ -539,13 +538,12 @@
 </main>
 
 <script>
-/* ====== CONFIG ====== */
+/* ===== CONFIG ===== */
 const PUBLISHED_BASE =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub";
 const SHEET_GID = "0";
 const ENDPOINT_PUBLISHED_CSV = (gid) => `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}`;
 
-/* ====== NOMES ====== */
 const RESOURCE_NAMES = { "DO":"Dôra", "GE":"Geovana", "JC":"João Custódio", "AL":"Aline" };
 
 const state = { selected: new Set(), cache: null };
@@ -554,27 +552,22 @@ const $ = (id) => document.getElementById(id);
 function getCSS(varName){ return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
 const COLOR = { "DO":getCSS("--do"), "GE":getCSS("--ge"), "JC":getCSS("--jc"), "AL":getCSS("--al") };
 
-/* ====== HEADER HEIGHT => main calc ====== */
+/* ===== HEADER expand/collapse ===== */
 function syncHeaderHeight(){
-  const hdr = $("hdr");
-  const h = Math.ceil(hdr.getBoundingClientRect().height);
+  const h = Math.ceil($("hdr").getBoundingClientRect().height);
   document.documentElement.style.setProperty("--hdrH", h + "px");
 }
-window.addEventListener("resize", () => { syncHeaderHeight(); syncHScrollWidth(); });
-
-/* ====== TOGGLE FILTERS ====== */
 function toggleFilters(){
-  const hdr = $("hdr");
-  hdr.classList.toggle("collapsed");
+  $("hdr").classList.toggle("collapsed");
   syncHeaderHeight();
 }
 $("btnToggleFilters").addEventListener("click", toggleFilters);
+window.addEventListener("resize", () => { syncHeaderHeight(); syncHScrollWidth(); });
 
-/* ====== CHIPS ====== */
+/* ===== Chips ===== */
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
-
   ["DO","GE","JC","AL"].forEach(code => {
     const b = document.createElement("button");
     b.type = "button";
@@ -595,9 +588,7 @@ function buildLegend(){
     caret.className = "caret";
     caret.textContent = "✓";
 
-    b.appendChild(dot);
-    b.appendChild(codeEl);
-    b.appendChild(caret);
+    b.appendChild(dot); b.appendChild(codeEl); b.appendChild(caret);
 
     b.addEventListener("click", (ev) => {
       const multi = ev.ctrlKey || ev.metaKey;
@@ -616,10 +607,8 @@ function buildLegend(){
 
     lg.appendChild(b);
   });
-
   syncLegendUI();
 }
-
 function syncLegendUI(){
   const any = state.selected.size > 0;
   document.querySelectorAll(".chipBtn[data-code]").forEach(btn => {
@@ -629,23 +618,21 @@ function syncLegendUI(){
     btn.style.opacity = (!any || on) ? "1" : ".55";
   });
 }
-
-function clearSelection(){
+$("btnClear").addEventListener("click", () => {
   state.selected.clear();
   $("resource").value = "";
   syncLegendUI();
   rerender();
-}
-$("btnClear").addEventListener("click", clearSelection);
+});
 
-/* ====== FILTER ACTIVE ====== */
+/* ===== Active filter ===== */
 function getActiveCodes(){
   const dd = $("resource").value.trim();
   if (dd) return new Set([dd]);
   return new Set(state.selected);
 }
 
-/* ====== CSV ====== */
+/* ===== CSV ===== */
 function parseCSV(text){
   const rows = [];
   let row = [], cur = "", inQ = false;
@@ -662,9 +649,16 @@ function parseCSV(text){
     cur += ch;
   }
   if (cur.length || row.length){ row.push(cur); rows.push(row); }
-  return rows.map(r => r.map(c => (c ?? "").trim().toUpperCase()));
+  return rows.map(r => r.map(c => (c ?? "").trim()));
 }
-
+async function fetchCSV(){
+  const url = ENDPOINT_PUBLISHED_CSV(SHEET_GID);
+  const res = await fetch(url, { cache:"no-store" });
+  if (!res.ok) throw new Error(`Falha ao carregar CSV publicado. HTTP ${res.status}. URL: ${url}`);
+  const text = await res.text();
+  if (!text || text.length < 10) throw new Error(`CSV vazio. Verifique gid (${SHEET_GID}).`);
+  return text;
+}
 function normalizeDateLabel(s){
   if (!s) return "";
   const m = s.match(/^(\d{1,2})\/(\d{1,2})(?:\/\d{2,4})?$/);
@@ -687,21 +681,21 @@ function inWindow(label, start, end){
   const b = end ? idx(end) : Infinity;
   return (v >= a && v <= b);
 }
-
 function chip(value){
+  const v = (value || "").trim().toUpperCase();
   const sp = document.createElement("span");
-  sp.className = "chip" + (!value ? " empty" : "");
-  sp.textContent = value || "—";
-  if (value && RESOURCE_NAMES[value]) sp.title = `${value} = ${RESOURCE_NAMES[value]}`;
+  sp.className = "chip" + (!v ? " empty" : "");
+  sp.textContent = v || "—";
+  if (v && RESOURCE_NAMES[v]) sp.title = `${v} = ${RESOURCE_NAMES[v]}`;
+
   const colors = { DO:getCSS("--do"), GE:getCSS("--ge"), JC:getCSS("--jc"), AL:getCSS("--al") };
-  if (colors[value]){
+  if (colors[v]){
     sp.style.color = "#0b1220";
-    sp.style.background = colors[value];
+    sp.style.background = colors[v];
     sp.style.borderColor = "rgba(255,255,255,.14)";
   }
   return sp;
 }
-
 function normalizeShift(s){
   const v = (s || "").toUpperCase().trim();
   if (v === "M" || v === "MANHÃ" || v === "MANHA") return "M";
@@ -710,15 +704,7 @@ function normalizeShift(s){
 }
 function shiftLabel(s){ return s === "M" ? "MANHÃ" : "TARDE"; }
 
-async function fetchCSV(){
-  const url = ENDPOINT_PUBLISHED_CSV(SHEET_GID);
-  const res = await fetch(url, { cache:"no-store" });
-  if (!res.ok) throw new Error(`Falha ao carregar CSV publicado. HTTP ${res.status}. URL: ${url}`);
-  const text = await res.text();
-  if (!text || text.length < 10) throw new Error(`CSV vazio. Verifique gid (${SHEET_GID}).`);
-  return text;
-}
-
+/* ===== Data mapping (cliente/turno) ===== */
 function getClientAndShift(row, dateIdxStart, lastClient){
   const firstNonEmpty = row.findIndex(c => c && c !== "");
   if (firstNonEmpty === -1) return null;
@@ -754,46 +740,58 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   const alloc = row.slice(dateIdxStart).map(c => (c || "").trim().toUpperCase());
   return { client, shift, alloc };
 }
-
 function hasAnyActive(allocWin, activeCodes){
   if (activeCodes.size === 0) return true;
   return allocWin.some(v => activeCodes.has(v));
 }
 
-/* ====== FIXED H-SCROLL SYNCH ====== */
+/* ===== Scroll sync (vertical entre panes / horizontal via barra fixa) ===== */
+function bindScrollSync(){
+  const left = $("leftScroll");
+  const right = $("rightScroll");
+  const bar = $("hscrollBar");
+
+  let lockV = false;
+  left.addEventListener("scroll", () => {
+    if (lockV) return;
+    lockV = true;
+    right.scrollTop = left.scrollTop;
+    requestAnimationFrame(()=>lockV=false);
+  });
+  right.addEventListener("scroll", () => {
+    if (lockV) return;
+    lockV = true;
+    left.scrollTop = right.scrollTop;
+    requestAnimationFrame(()=>lockV=false);
+  });
+
+  let lockH = false;
+  bar.addEventListener("scroll", () => {
+    if (lockH) return;
+    lockH = true;
+    right.scrollLeft = bar.scrollLeft;
+    requestAnimationFrame(()=>lockH=false);
+  });
+  right.addEventListener("scroll", () => {
+    if (lockH) return;
+    lockH = true;
+    bar.scrollLeft = right.scrollLeft;
+    requestAnimationFrame(()=>lockH=false);
+  });
+}
 function syncHScrollWidth(){
-  const tbl = $("tbl");
+  const tbl = $("rightTable");
   const inner = $("hscrollInner");
   if (!tbl || !inner) return;
-  const w = tbl.scrollWidth;
-  inner.style.width = w + "px";
-}
-function bindHScroll(){
-  const wrap = $("tablewrap");
-  const bar = $("hscrollBar");
-  let lock = false;
-
-  bar.addEventListener("scroll", () => {
-    if (lock) return;
-    lock = true;
-    wrap.scrollLeft = bar.scrollLeft;
-    requestAnimationFrame(()=>lock=false);
-  });
-  wrap.addEventListener("scroll", () => {
-    if (lock) return;
-    lock = true;
-    bar.scrollLeft = wrap.scrollLeft;
-    requestAnimationFrame(()=>lock=false);
-  });
+  inner.style.width = tbl.scrollWidth + "px";
 }
 
-/* ====== RENDER ====== */
+/* ===== Render split tables ===== */
 function rerender(){
   if (!state.cache) return;
   render(state.cache);
   syncHScrollWidth();
 }
-
 function render(cache){
   const { rawRows, dateIdxStart, dates, dows } = cache;
 
@@ -806,28 +804,18 @@ function render(cache){
   const filteredDows  = dows.filter((_,i)=>dateMask[i]);
 
   const activeCodes = getActiveCodes();
+  const today = todayLabel();
 
-  // HEADER
-  const thead = $("theadRow");
-  thead.innerHTML = "";
-
-  const thClient = document.createElement("th");
-  thClient.textContent = "Cliente";
-  thClient.className = "col-client";
-  thead.appendChild(thClient);
-
-  const thShift = document.createElement("th");
-  thShift.textContent = "Turno";
-  thShift.className = "col-shift";
-  thead.appendChild(thShift);
-
+  /* RIGHT HEAD (datas) */
+  const rightHead = $("rightHead");
+  rightHead.innerHTML = "";
   filteredDates.forEach((d, i) => {
     const th = document.createElement("th");
     th.innerHTML = `${filteredDows[i] ? filteredDows[i] + "<br/>" : ""}${d}`;
-    thead.appendChild(th);
+    rightHead.appendChild(th);
   });
 
-  // Normaliza linhas
+  /* Normaliza linhas */
   let lastClient = "";
   const items = [];
   for (const r of rawRows){
@@ -837,7 +825,7 @@ function render(cache){
     items.push(parsed);
   }
 
-  // Agrupa por cliente (M/T)
+  /* Agrupa por cliente (M/T) */
   const groups = [];
   const map = new Map();
   for (const it of items){
@@ -852,42 +840,84 @@ function render(cache){
     if (it.shift === "T") g.T = it;
   }
 
-  const tbody = $("tbody");
-  tbody.innerHTML = "";
+  const leftBody = $("leftBody");
+  const rightBody = $("rightBody");
+  leftBody.innerHTML = "";
+  rightBody.innerHTML = "";
 
-  const today = todayLabel();
   let lines = 0, filled = 0;
 
-  function renderShiftRow(shiftKey, it, clientCell, isFirstRow){
-    const tr = document.createElement("tr");
-    tr.classList.add(shiftKey === "M" ? "shift-m" : "shift-t");
+  function appendRowsForClient(g){
+    // LEFT: cliente cell (rowspan visual com 2 rows)
+    const trL1 = document.createElement("tr");
+    const trL2 = document.createElement("tr");
+    trL1.className = "row-m";
+    trL2.className = "row-t";
 
-    if (isFirstRow) tr.appendChild(clientCell);
+    const tdClient = document.createElement("td");
+    tdClient.className = "col-client";
+    tdClient.rowSpan = 2;
 
-    const tdS = document.createElement("td");
-    tdS.className = "col-shift";
-    tdS.textContent = shiftLabel(shiftKey);
-    tr.appendChild(tdS);
+    const box = document.createElement("div");
+    box.className = "clientBox";
+    const badge = document.createElement("div");
+    badge.className = "clientBadge";
+    badge.textContent = g.client || "—";
+    box.appendChild(badge);
+    tdClient.appendChild(box);
 
-    const alloc = (it && it.alloc) ? it.alloc : [];
-    const allocWin = alloc.filter((_,i)=>dateMask[i]);
+    const tdShiftM = document.createElement("td");
+    tdShiftM.className = "col-shift";
+    tdShiftM.textContent = "MANHÃ";
+
+    const tdShiftT = document.createElement("td");
+    tdShiftT.className = "col-shift";
+    tdShiftT.textContent = "TARDE";
+
+    trL1.appendChild(tdClient);
+    trL1.appendChild(tdShiftM);
+    trL2.appendChild(tdShiftT);
+
+    leftBody.appendChild(trL1);
+    leftBody.appendChild(trL2);
+
+    // RIGHT: datas
+    const trR1 = document.createElement("tr");
+    const trR2 = document.createElement("tr");
+    trR1.className = "row-m";
+    trR2.className = "row-t";
+
+    const allocM = (g.M && g.M.alloc) ? g.M.alloc : [];
+    const allocT = (g.T && g.T.alloc) ? g.T.alloc : [];
+
+    const winM = allocM.filter((_,i)=>dateMask[i]);
+    const winT = allocT.filter((_,i)=>dateMask[i]);
 
     for (let i=0;i<filteredDates.length;i++){
-      const raw = allocWin[i] || "";
-      const shown = (activeCodes.size === 0 || activeCodes.has(raw)) ? raw : "";
+      const rawM = (winM[i] || "").toUpperCase();
+      const rawT = (winT[i] || "").toUpperCase();
 
-      const td = document.createElement("td");
-      td.appendChild(chip(shown));
+      const shownM = (activeCodes.size === 0 || activeCodes.has(rawM)) ? rawM : "";
+      const shownT = (activeCodes.size === 0 || activeCodes.has(rawT)) ? rawT : "";
 
-      const d = filteredDates[i];
-      if (d === today) td.classList.add("today");
+      const tdM = document.createElement("td");
+      tdM.appendChild(chip(shownM));
+      if (filteredDates[i] === today) tdM.classList.add("today");
+      if (shownM) filled++;
 
-      if (shown) filled++;
-      tr.appendChild(td);
+      const tdT = document.createElement("td");
+      tdT.appendChild(chip(shownT));
+      if (filteredDates[i] === today) tdT.classList.add("today");
+      if (shownT) filled++;
+
+      trR1.appendChild(tdM);
+      trR2.appendChild(tdT);
     }
 
-    tbody.appendChild(tr);
-    lines++;
+    rightBody.appendChild(trR1);
+    rightBody.appendChild(trR2);
+
+    lines += 2;
   }
 
   for (const g of groups){
@@ -895,28 +925,13 @@ function render(cache){
 
     const allocM = (g.M && g.M.alloc) ? g.M.alloc : [];
     const allocT = (g.T && g.T.alloc) ? g.T.alloc : [];
+    const winM = allocM.filter((_,i)=>dateMask[i]);
+    const winT = allocT.filter((_,i)=>dateMask[i]);
 
-    const allocWinM = allocM.filter((_,i)=>dateMask[i]);
-    const allocWinT = allocT.filter((_,i)=>dateMask[i]);
+    // entra somente se houver ocorrência do filtro ativo (governança do filtro)
+    if (!hasAnyActive(winM, activeCodes) && !hasAnyActive(winT, activeCodes)) continue;
 
-    if (!hasAnyActive(allocWinM, activeCodes) && !hasAnyActive(allocWinT, activeCodes)) continue;
-
-    const tdC = document.createElement("td");
-    tdC.className = "col-client grouped";
-    tdC.rowSpan = 2;
-
-    const box = document.createElement("div");
-    box.className = "clientBox";
-
-    const badge = document.createElement("div");
-    badge.className = "clientBadge";
-    badge.textContent = g.client || "—";
-
-    box.appendChild(badge);
-    tdC.appendChild(box);
-
-    renderShiftRow("M", g.M, tdC, true);
-    renderShiftRow("T", g.T, null, false);
+    appendRowsForClient(g);
   }
 
   $("kpiRows").textContent = lines.toLocaleString("pt-BR");
@@ -932,7 +947,7 @@ function render(cache){
   syncLegendUI();
 }
 
-/* ====== LOAD ====== */
+/* ===== Load ===== */
 async function load(){
   $("status").textContent = "Status: carregando…";
 
@@ -963,12 +978,12 @@ async function load(){
   syncHScrollWidth();
 }
 
-/* ====== EVENTS ====== */
+/* ===== Events ===== */
 function wire(){
   buildLegend();
-  bindHScroll();
+  bindScrollSync();
 
-  const rerun = () => { rerender(); };
+  const rerun = () => rerender();
 
   ["q","start","end"].forEach(id => {
     $(id).addEventListener("input", rerun);
@@ -996,6 +1011,7 @@ function wire(){
     $("footRight").textContent = err.message;
   });
 }
+
 wire();
 </script>
 </body>
