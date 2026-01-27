@@ -12,23 +12,19 @@
       --line:rgba(255,255,255,.10);
       --card: rgba(15,26,48,.70);
 
-      /* Chips (recursos) */
       --do:#60a5fa;
       --ge:#34d399;
       --jc:#fbbf24;
       --al:#fb7185;
 
-      /* Faixas de turno */
       --mRow: rgba(167,139,250,.24);
       --tRow: rgba(56,189,248,.20);
       --mLeft: rgba(167,139,250,.46);
       --tLeft: rgba(56,189,248,.40);
 
-      /* Larguras */
       --wClient: 220px;
       --wShift: 110px;
 
-      /* Offsets sticky */
       --leftClient: 0px;
       --leftShift: var(--wClient);
     }
@@ -84,7 +80,7 @@
     }
     .btn:active{transform:translateY(1px)}
 
-    /* ======= CHIPS (DO/GE/JC/AL) CLICÁVEIS COM TOOLTIP ======= */
+    /* Chips DO/GE/JC/AL clicáveis */
     .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
     .chipBtn{
       display:inline-flex; align-items:center; gap:8px;
@@ -110,7 +106,7 @@
     }
     .chipBtn[aria-pressed="true"] .caret{opacity:1}
 
-    /* Tooltip puro (sem lib) */
+    /* Tooltip */
     .chipBtn[data-tip]:hover::after{
       content: attr(data-tip);
       position:absolute;
@@ -191,7 +187,6 @@
       white-space:nowrap;
     }
 
-    /* Sticky headers: Cliente | Turno */
     thead th.col-client{
       position:sticky; left:var(--leftClient);
       z-index:40;
@@ -218,7 +213,6 @@
       height:42px;
     }
 
-    /* Sticky body cells */
     tbody td.col-client, tbody td.col-shift{
       position:sticky;
       z-index:25;
@@ -246,7 +240,6 @@
       letter-spacing:.3px;
     }
 
-    /* Faixa por turno */
     tr.shift-m td{ background-color: var(--mRow); }
     tr.shift-t td{ background-color: var(--tRow); }
 
@@ -257,10 +250,7 @@
       background: linear-gradient(90deg, var(--tLeft), rgba(11,18,32,.92) 70%);
     }
 
-    /* Cliente agrupado em bloco */
-    td.col-client.grouped{
-      background:rgba(11,18,32,.92);
-    }
+    td.col-client.grouped{ background:rgba(11,18,32,.92); }
     .clientBox{
       height:100%;
       width:100%;
@@ -330,7 +320,7 @@
     <div class="title">
       <div>
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Clique em DO/GE/JC/AL para filtrar o grid (multi-seleção). Passe o mouse para ver o nome do colaborador.</div>
+        <div class="sub">Filtro estrito por colaborador: ao selecionar DO, só permanece DO no grid (GE/JC/AL somem). Multi-seleção permitida.</div>
       </div>
       <button class="btn" id="btnReload">Recarregar dados</button>
     </div>
@@ -360,7 +350,6 @@
       </div>
     </div>
 
-    <!-- CHIPS CLICÁVEIS (DO/GE/JC/AL) -->
     <div class="legend" id="legend"></div>
 
     <div class="cards">
@@ -404,19 +393,18 @@
 </main>
 
 <script>
-/* ============================================================
-   CONFIG — PLANILHA PUBLICADA NA WEB
-============================================================ */
+/* =========================
+   CONFIG — SHEETS PUBLICADO
+========================= */
 const PUBLISHED_BASE =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub";
-
 const SHEET_GID = "0";
 const ENDPOINT_PUBLISHED_CSV = (gid) =>
   `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}`;
 
-/* ============================================================
-   MAPA DE COLABORADORES
-============================================================ */
+/* =========================
+   NOMES (HOVER)
+========================= */
 const RESOURCE_NAMES = {
   "DO": "Dôra",
   "GE": "Geovana",
@@ -424,12 +412,9 @@ const RESOURCE_NAMES = {
   "AL": "Aline"
 };
 
-/* ============================================================
-   STATE — multi-select via botões DO/GE/JC/AL
-============================================================ */
 const state = {
-  selected: new Set(),   // ex.: {"DO","JC"}
-  cache: null            // dados carregados
+  selected: new Set(), // multi-select pelos botões
+  cache: null
 };
 
 const $ = (id) => document.getElementById(id);
@@ -444,11 +429,13 @@ const COLOR = {
   "AL": getCSS("--al")
 };
 
+/* =========================
+   BOTÕES DO/GE/JC/AL (FILTRO)
+========================= */
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
 
-  // Botões DO/GE/JC/AL (clicáveis)
   ["DO","GE","JC","AL"].forEach(code => {
     const b = document.createElement("button");
     b.type = "button";
@@ -477,7 +464,7 @@ function buildLegend(){
       if (state.selected.has(code)) state.selected.delete(code);
       else state.selected.add(code);
 
-      // limpa dropdown para evitar conflito
+      // Dropdown não pode conflitar com multi-select: sempre limpa.
       $("resource").value = "";
       syncLegendUI();
       rerender();
@@ -485,6 +472,8 @@ function buildLegend(){
 
     lg.appendChild(b);
   });
+
+  syncLegendUI();
 }
 
 function syncLegendUI(){
@@ -493,11 +482,29 @@ function syncLegendUI(){
     const code = btn.getAttribute("data-code");
     const on = state.selected.has(code);
     btn.setAttribute("aria-pressed", on ? "true" : "false");
-    // feedback visual: se algum filtro ativo, reduz opacidade dos não selecionados
     btn.style.opacity = (!any || on) ? "1" : ".55";
   });
 }
 
+/* =========================
+   FILTRO ATIVO (ESTRITO)
+   - Se dropdown estiver selecionado -> filtro único
+   - Senão, usa multi-select dos botões
+========================= */
+function getActiveCodes(){
+  const dd = $("resource").value.trim();
+  if (dd) return new Set([dd]);
+  return new Set(state.selected);
+}
+
+function hasAnyActive(allocWin, activeCodes){
+  if (activeCodes.size === 0) return true; // sem filtro
+  return allocWin.some(v => activeCodes.has(v));
+}
+
+/* =========================
+   CSV / UTILS
+========================= */
 function parseCSV(text){
   const rows = [];
   let row = [], cur = "", inQ = false;
@@ -525,12 +532,10 @@ function normalizeDateLabel(s){
   const mm = String(m[2]).padStart(2,"0");
   return `${dd}/${mm}`;
 }
-
 function todayLabel(){
   const d = new Date();
   return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
 }
-
 function inWindow(label, start, end){
   if (!start && !end) return true;
   const idx = (x)=> {
@@ -548,10 +553,7 @@ function chip(value){
   const sp = document.createElement("span");
   sp.className = "chip" + (!value ? " empty" : "");
   sp.textContent = value || "—";
-
-  // Tooltip no chip
   if (value && RESOURCE_NAMES[value]) sp.title = `${value} = ${RESOURCE_NAMES[value]}`;
-
   if (COLOR[value]){
     sp.style.color = "#0b1220";
     sp.style.background = COLOR[value];
@@ -577,6 +579,7 @@ async function fetchCSV(){
   return text;
 }
 
+/* Normalização: cliente + turno + alocação */
 function getClientAndShift(row, dateIdxStart, lastClient){
   const firstNonEmpty = row.findIndex(c => c && c !== "");
   if (firstNonEmpty === -1) return null;
@@ -613,16 +616,9 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   return { client, shift, alloc };
 }
 
-function passesFilter(allocArr){
-  // Dropdown (single)
-  const dd = $("resource").value.trim();
-  if (dd) return allocArr.some(v => v === dd);
-
-  // Botões (multi)
-  if (state.selected.size === 0) return true;
-  return allocArr.some(v => state.selected.has(v));
-}
-
+/* =========================
+   RENDER
+========================= */
 function rerender(){
   if (!state.cache) return;
   render(state.cache);
@@ -639,7 +635,9 @@ function render(cache){
   const filteredDates = dates.filter((_,i)=>dateMask[i]);
   const filteredDows  = dows.filter((_,i)=>dateMask[i]);
 
-  // Header
+  const activeCodes = getActiveCodes(); // <-- filtro estrito aqui
+
+  // HEADER
   const thead = $("theadRow");
   thead.innerHTML = "";
   const thClient = document.createElement("th");
@@ -683,7 +681,7 @@ function render(cache){
     if (it.shift === "T") g.T = it;
   }
 
-  // Render body
+  // BODY
   const tbody = $("tbody");
   tbody.innerHTML = "";
 
@@ -705,14 +703,19 @@ function render(cache){
     const allocWin = alloc.filter((_,i)=>dateMask[i]);
 
     for (let i=0;i<filteredDates.length;i++){
-      const v = allocWin[i] || "";
+      const raw = allocWin[i] || "";
+
+      // ===== FILTRO ESTRITO POR CÉLULA =====
+      // Se tem filtro ativo, qualquer valor fora do filtro vira vazio (não aparece GE quando DO está selecionado)
+      const shown = (activeCodes.size === 0 || activeCodes.has(raw)) ? raw : "";
+
       const td = document.createElement("td");
-      td.appendChild(chip(v));
+      td.appendChild(chip(shown));
 
       const d = filteredDates[i];
       if (d === today) td.classList.add("today");
 
-      if (v) filled++;
+      if (shown) filled++;
       tr.appendChild(td);
     }
 
@@ -726,7 +729,12 @@ function render(cache){
     const allocM = (g.M && g.M.alloc) ? g.M.alloc : [];
     const allocT = (g.T && g.T.alloc) ? g.T.alloc : [];
 
-    if (!passesFilter(allocM) && !passesFilter(allocT)) continue;
+    const allocWinM = allocM.filter((_,i)=>dateMask[i]);
+    const allocWinT = allocT.filter((_,i)=>dateMask[i]);
+
+    // ===== FILTRO ESTRITO POR LINHA/CLIENTE =====
+    // Só entra se houver pelo menos 1 ocorrência do(s) código(s) selecionado(s) dentro da janela.
+    if (!hasAnyActive(allocWinM, activeCodes) && !hasAnyActive(allocWinT, activeCodes)) continue;
 
     const tdC = document.createElement("td");
     tdC.className = "col-client grouped";
@@ -751,7 +759,7 @@ function render(cache){
   $("kpiFilled").textContent = filled.toLocaleString("pt-BR");
   $("kpiToday").textContent = today;
 
-  const sel = Array.from(state.selected);
+  const sel = Array.from(activeCodes);
   const selTxt = sel.length ? ` • Filtro: ${sel.map(x=>`${x}=${RESOURCE_NAMES[x]}`).join(" | ")}` : "";
   $("status").textContent = `Status: carregado com sucesso (SSOT operacional).${selTxt}`;
   $("footRight").textContent = `Atualizado em ${new Date().toLocaleString("pt-BR")} • gid=${SHEET_GID}`;
@@ -789,7 +797,6 @@ async function load(){
 
 function wire(){
   buildLegend();
-  syncLegendUI();
 
   const rerun = () => rerender();
 
@@ -798,7 +805,7 @@ function wire(){
     $(id).addEventListener("change", rerun);
   });
 
-  // Dropdown: limpa botões e aplica single filter
+  // Dropdown: limpa botões e aplica filtro único
   $("resource").addEventListener("change", () => {
     state.selected.clear();
     syncLegendUI();
