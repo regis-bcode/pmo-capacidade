@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Painel PMO - Gestão de Capacidade (Folha)</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#0f1a30; --muted:#93a4c7; --text:#e8efff;
+      --line:rgba(255,255,255,.10);
+      --chip:#15264a;
+      --ok:#2dd4bf; --warn:#fbbf24; --risk:#fb7185;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:radial-gradient(900px 500px at 20% 0%, #14264a 0%, var(--bg) 60%);
+      color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    header{
+      padding:18px 18px 10px; border-bottom:1px solid var(--line);
+      position:sticky; top:0; backdrop-filter: blur(10px); background:rgba(11,18,32,.72); z-index:50;
+    }
+    .wrap{max-width:1400px; margin:0 auto; padding:0 18px;}
+    .title{display:flex; align-items:center; justify-content:space-between; gap:16px;}
+    h1{margin:0; font-size:16px; font-weight:700; letter-spacing:.2px;}
+    .sub{margin:6px 0 0; color:var(--muted); font-size:12px;}
+    .toolbar{
+      margin-top:12px; display:grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap:10px; align-items:end;
+    }
+    .field label{display:block; font-size:11px; color:var(--muted); margin:0 0 6px;}
+    .field input, .field select{
+      width:100%; padding:10px 10px; border-radius:12px;
+      border:1px solid var(--line); background:rgba(15,26,48,.70); color:var(--text);
+      outline:none;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 12px; border-radius:12px; border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(45,212,191,.22), rgba(15,26,48,.65));
+      color:var(--text); cursor:pointer; user-select:none; font-weight:650;
+    }
+    .btn:active{transform:translateY(1px)}
+    .cards{
+      padding:14px 0; display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;
+    }
+    .card{
+      background:rgba(15,26,48,.70); border:1px solid var(--line); border-radius:16px; padding:12px;
+      box-shadow: 0 12px 26px rgba(0,0,0,.28);
+      min-height:80px;
+    }
+    .kpi{font-size:12px; color:var(--muted)}
+    .val{margin-top:6px; font-size:18px; font-weight:800}
+    .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(21,38,74,.85); border:1px solid var(--line);
+      padding:6px 10px; border-radius:999px; font-size:12px; color:var(--text)
+    }
+    .dot{width:10px; height:10px; border-radius:50%}
+    main{padding:0 18px 22px}
+    .gridcard{
+      max-width:1400px; margin:0 auto;
+      background:rgba(15,26,48,.70); border:1px solid var(--line); border-radius:18px;
+      overflow:hidden; box-shadow: 0 16px 34px rgba(0,0,0,.30);
+    }
+    .gridhead{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:12px 14px; border-bottom:1px solid var(--line);
+    }
+    .gridhead .hint{color:var(--muted); font-size:12px}
+    .tablewrap{overflow:auto; max-height:70vh}
+    table{border-collapse:separate; border-spacing:0; width:max-content; min-width:100%;}
+    thead th{
+      position:sticky; top:0; z-index:10;
+      background:rgba(11,18,32,.95); border-bottom:1px solid var(--line);
+      font-size:11px; color:var(--muted); padding:10px 8px; white-space:nowrap;
+    }
+    thead th:first-child{
+      left:0; z-index:20; position:sticky; background:rgba(11,18,32,.98);
+    }
+    tbody td, tbody th{
+      border-bottom:1px solid rgba(255,255,255,.06);
+      padding:8px 8px; font-size:12px; white-space:nowrap;
+    }
+    tbody th{
+      position:sticky; left:0; z-index:5; background:rgba(11,18,32,.92);
+      border-right:1px solid rgba(255,255,255,.06);
+      text-align:left; font-weight:700;
+    }
+    .chip{
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:38px; height:26px; padding:0 8px;
+      border-radius:10px; border:1px solid rgba(255,255,255,.10);
+      background:rgba(21,38,74,.75); font-weight:800;
+    }
+    .empty{opacity:.25}
+    .today{
+      outline:2px solid rgba(45,212,191,.75);
+      box-shadow: inset 0 0 0 1px rgba(45,212,191,.25);
+    }
+    .foot{
+      padding:10px 14px; border-top:1px solid var(--line);
+      display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:12px;
+    }
+    @media (max-width:980px){
+      .toolbar{grid-template-columns: 1fr 1fr; }
+      .cards{grid-template-columns: 1fr 1fr;}
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="wrap">
+    <div class="title">
+      <div>
+        <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
+        <div class="sub">Fonte: Google Sheets publicado na Web (CSV). Visão executiva para alocação por dia e por cliente/projeto.</div>
+      </div>
+      <button class="btn" id="btnReload">Recarregar dados</button>
+    </div>
+
+    <div class="toolbar">
+      <div class="field">
+        <label>Busca (cliente/projeto)</label>
+        <input id="q" placeholder="Ex.: HS MATEUS, ABBR, MEDILAR..." />
+      </div>
+      <div class="field">
+        <label>Filtro por recurso</label>
+        <select id="resource">
+          <option value="">Todos</option>
+          <option value="DO">DO</option>
+          <option value="GE">GE</option>
+          <option value="JC">JC</option>
+          <option value="AL">AL</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Data início (dd/mm)</label>
+        <input id="start" placeholder="Ex.: 24/01" />
+      </div>
+      <div class="field">
+        <label>Data fim (dd/mm)</label>
+        <input id="end" placeholder="Ex.: 29/04" />
+      </div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="kpi">Linhas (clientes/projetos)</div>
+        <div class="val" id="kpiRows">—</div>
+      </div>
+      <div class="card">
+        <div class="kpi">Janela de datas (colunas)</div>
+        <div class="val" id="kpiCols">—</div>
+      </div>
+      <div class="card">
+        <div class="kpi">Células preenchidas</div>
+        <div class="val" id="kpiFilled">—</div>
+      </div>
+      <div class="card">
+        <div class="kpi">Sinalização “Hoje”</div>
+        <div class="val" id="kpiToday">—</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="gridcard">
+    <div class="gridhead">
+      <div style="font-weight:800">Grade de Alocação</div>
+      <div class="hint" id="status">Status: aguardando carga…</div>
+    </div>
+    <div class="tablewrap">
+      <table id="tbl">
+        <thead><tr id="theadRow"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="foot">
+      <div>Governança: esta visão é um “single source of truth” operacional; ajuste de critérios deve ser feito na planilha (baseline).</div>
+      <div id="footRight">—</div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ============================================================
+   CONFIG — PLANILHA PUBLICADA NA WEB (SEU LINK pubhtml)
+   Troque SOMENTE o SHEET_GID caso a aba publicada não seja gid 0.
+============================================================ */
+const PUBLISHED_BASE =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub";
+
+const SHEET_GID = "0"; // <-- ajuste conforme a aba desejada
+
+const ENDPOINT_PUBLISHED_CSV = (gid) =>
+  `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}`;
+
+/* ============================================================
+   UI + PARSERS
+============================================================ */
+const COLOR = {
+  "DO": "#60a5fa",
+  "GE": "#34d399",
+  "JC": "#fbbf24",
+  "AL": "#fb7185",
+  "M":  "#a78bfa",
+  "T":  "#94a3b8"
+};
+
+const $ = (id) => document.getElementById(id);
+
+function pill(label, key){
+  const el = document.createElement("div");
+  el.className = "pill";
+  const dot = document.createElement("span");
+  dot.className = "dot";
+  dot.style.background = COLOR[key] || "#cbd5e1";
+  const txt = document.createElement("span");
+  txt.textContent = label;
+  el.appendChild(dot); el.appendChild(txt);
+  return el;
+}
+
+function buildLegend(){
+  const lg = $("legend");
+  lg.innerHTML = "";
+  lg.appendChild(pill("DO", "DO"));
+  lg.appendChild(pill("GE", "GE"));
+  lg.appendChild(pill("JC", "JC"));
+  lg.appendChild(pill("AL", "AL"));
+  lg.appendChild(pill("M (Manhã)", "M"));
+  lg.appendChild(pill("T (Tarde)", "T"));
+}
+
+function parseCSV(text){
+  const rows = [];
+  let row = [], cur = "", inQ = false;
+  for (let i=0;i<text.length;i++){
+    const ch = text[i], nx = text[i+1];
+    if (ch === '"' && nx === '"'){ cur += '"'; i++; continue; }
+    if (ch === '"'){ inQ = !inQ; continue; }
+    if (ch === ',' && !inQ){ row.push(cur); cur=""; continue; }
+    if ((ch === '\n' || ch === '\r') && !inQ){
+      if (cur.length || row.length){ row.push(cur); rows.push(row); }
+      row=[]; cur="";
+      continue;
+    }
+    cur += ch;
+  }
+  if (cur.length || row.length){ row.push(cur); rows.push(row); }
+  return rows.map(r => r.map(c => (c ?? "").trim()));
+}
+
+function normalizeDateLabel(s){
+  if (!s) return "";
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})(?:\/\d{2,4})?$/);
+  if (!m) return s;
+  const dd = String(m[1]).padStart(2,"0");
+  const mm = String(m[2]).padStart(2,"0");
+  return `${dd}/${mm}`;
+}
+
+function todayLabel(){
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  return `${dd}/${mm}`;
+}
+
+function inWindow(label, start, end){
+  if (!start && !end) return true;
+  const idx = (x)=> {
+    const m = x.match(/^(\d{2})\/(\d{2})$/);
+    if (!m) return -1;
+    return parseInt(m[2],10)*100 + parseInt(m[1],10);
+  };
+  const v = idx(label);
+  const a = start ? idx(start) : -Infinity;
+  const b = end ? idx(end) : Infinity;
+  return (v >= a && v <= b);
+}
+
+function chip(value){
+  const sp = document.createElement("span");
+  sp.className = "chip" + (!value ? " empty" : "");
+  sp.textContent = value || "—";
+  if (COLOR[value]){
+    sp.style.color = "#0b1220";
+    sp.style.background = COLOR[value];
+    sp.style.borderColor = "rgba(255,255,255,.14)";
+  }
+  return sp;
+}
+
+/* ============================================================
+   CARGA DE DADOS — PUBLICADO (CSV)
+============================================================ */
+async function fetchCSV(){
+  const url = ENDPOINT_PUBLISHED_CSV(SHEET_GID);
+  const res = await fetch(url, { cache:"no-store" });
+
+  // Se falhar, retorna um erro bem explícito
+  if (!res.ok){
+    throw new Error(`Falha ao carregar CSV publicado. HTTP ${res.status}. URL: ${url}`);
+  }
+
+  const text = await res.text();
+  if (!text || text.length < 10){
+    throw new Error(`CSV vazio. Verifique o gid (${SHEET_GID}) e se a aba está publicada no documento.`);
+  }
+  return text;
+}
+
+async function load(){
+  $("status").textContent = "Status: carregando…";
+
+  const csv = await fetchCSV();
+  const data = parseCSV(csv);
+
+  // Remove linhas totalmente vazias
+  const cleaned = data.filter(r => r.some(c => c && c !== ""));
+  if (cleaned.length < 3){
+    $("status").textContent = "Status: CSV sem conteúdo útil (estrutura insuficiente). Ajuste publicação/aba.";
+    $("tbody").innerHTML = "";
+    $("theadRow").innerHTML = "";
+    $("kpiRows").textContent = "—";
+    $("kpiCols").textContent = "—";
+    $("kpiFilled").textContent = "—";
+    $("kpiToday").textContent = "—";
+    return;
+  }
+
+  // Heurística esperada:
+  // Linha 1: dias da semana (Sab/Dom/Seg...)
+  // Linha 2: datas (dd/mm)
+  // Linhas seguintes: cliente/projeto + (opcional) M/T + alocação por dia (DO/GE/JC/AL)
+  const dowRow  = cleaned[0];
+  const dateRow = cleaned[1];
+
+  const dateIdxStart = dateRow.findIndex(c => /^\d{1,2}\/\d{1,2}/.test(c));
+  if (dateIdxStart === -1){
+    $("status").textContent = "Status: não localizei coluna inicial de datas (dd/mm). Estrutura divergente.";
+    return;
+  }
+
+  const labels = cleaned.slice(2);
+  const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
+  const dows  = dowRow.slice(dateIdxStart).map(c => c || "");
+
+  // Filtros
+  const q = $("q").value.trim().toLowerCase();
+  const rFilter = $("resource").value.trim();
+  const start = normalizeDateLabel($("start").value.trim());
+  const end   = normalizeDateLabel($("end").value.trim());
+
+  const dateMask = dates.map(d => inWindow(d, start, end));
+  const filteredDates = dates.filter((_,i)=>dateMask[i]);
+  const filteredDows  = dows.filter((_,i)=>dateMask[i]);
+
+  // Header
+  const thead = $("theadRow");
+  thead.innerHTML = "";
+  const th0 = document.createElement("th");
+  th0.textContent = "Cliente / Projeto";
+  thead.appendChild(th0);
+
+  filteredDates.forEach((d, i) => {
+    const th = document.createElement("th");
+    th.innerHTML = `${filteredDows[i] ? filteredDows[i] + "<br/>" : ""}${d}`;
+    thead.appendChild(th);
+  });
+
+  // Body
+  const tbody = $("tbody");
+  tbody.innerHTML = "";
+
+  const today = todayLabel();
+  let rowsCount = 0, filled = 0;
+
+  labels.forEach(r => {
+    const firstNonEmpty = r.findIndex(c => c && c !== "");
+    if (firstNonEmpty === -1) return;
+
+    const name = r[firstNonEmpty];
+    const maybeShift = r[firstNonEmpty+1] || "";
+
+    const alloc = r.slice(dateIdxStart).map(c => (c || "").trim());
+    const allocWin = alloc.filter((_,i)=>dateMask[i]);
+
+    if (q && !name.toLowerCase().includes(q)) return;
+    if (rFilter && !allocWin.some(v => v === rFilter)) return;
+
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    th.textContent = (maybeShift === "M" || maybeShift === "T") ? `${name} • ${maybeShift}` : name;
+    tr.appendChild(th);
+
+    allocWin.forEach((v, idx) => {
+      const td = document.createElement("td");
+      td.appendChild(chip(v));
+
+      const d = filteredDates[idx];
+      if (d === today) td.classList.add("today");
+
+      if (v) filled++;
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+    rowsCount++;
+  });
+
+  // KPIs
+  $("kpiRows").textContent = rowsCount.toLocaleString("pt-BR");
+  $("kpiCols").textContent = filteredDates.length.toLocaleString("pt-BR");
+  $("kpiFilled").textContent = filled.toLocaleString("pt-BR");
+  $("kpiToday").textContent = today;
+
+  $("status").textContent = "Status: carregado com sucesso (SSOT operacional).";
+  $("footRight").textContent = `Atualizado em ${new Date().toLocaleString("pt-BR")} • gid=${SHEET_GID}`;
+}
+
+function wire(){
+  buildLegend();
+  const rerun = () => load().catch(err => {
+    console.error(err);
+    $("status").textContent = "Status: erro na carga. Validar se o gid está correto e se o CSV publicado está acessível.";
+    $("footRight").textContent = err.message;
+  });
+
+  ["q","resource","start","end"].forEach(id => {
+    $(id).addEventListener("input", () => rerun());
+    $(id).addEventListener("change", () => rerun());
+  });
+  $("btnReload").addEventListener("click", () => rerun());
+
+  rerun();
+}
+wire();
+</script>
+</body>
+</html>
