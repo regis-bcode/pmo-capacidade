@@ -6,105 +6,235 @@
   <title>Painel PMO - Gestão de Capacidade (Folha)</title>
   <style>
     :root{
-      --bg:#0b1220; --card:#0f1a30; --muted:#93a4c7; --text:#e8efff;
+      --bg:#0b1220;
+      --muted:#93a4c7;
+      --text:#e8efff;
       --line:rgba(255,255,255,.10);
-      --chip:#15264a;
-      --ok:#2dd4bf; --warn:#fbbf24; --risk:#fb7185;
+
+      /* Chips (recursos) */
+      --do:#60a5fa;
+      --ge:#34d399;
+      --jc:#fbbf24;
+      --al:#fb7185;
+
+      /* Faixas de turno (linha inteira) */
+      --mRow: rgba(167,139,250,.10);  /* Manhã */
+      --tRow: rgba(148,163,184,.10);  /* Tarde */
+      --mLeft: rgba(167,139,250,.22);
+      --tLeft: rgba(148,163,184,.22);
+
+      --card: rgba(15,26,48,.70);
     }
+
     *{box-sizing:border-box}
     body{
-      margin:0; background:radial-gradient(900px 500px at 20% 0%, #14264a 0%, var(--bg) 60%);
-      color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      margin:0;
+      background:radial-gradient(900px 500px at 20% 0%, #14264a 0%, var(--bg) 60%);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
+
     header{
-      padding:18px 18px 10px; border-bottom:1px solid var(--line);
-      position:sticky; top:0; backdrop-filter: blur(10px); background:rgba(11,18,32,.72); z-index:50;
+      padding:18px 18px 10px;
+      border-bottom:1px solid var(--line);
+      position:sticky; top:0;
+      backdrop-filter: blur(10px);
+      background:rgba(11,18,32,.72);
+      z-index:50;
     }
     .wrap{max-width:1400px; margin:0 auto; padding:0 18px;}
     .title{display:flex; align-items:center; justify-content:space-between; gap:16px;}
     h1{margin:0; font-size:16px; font-weight:700; letter-spacing:.2px;}
     .sub{margin:6px 0 0; color:var(--muted); font-size:12px;}
+
     .toolbar{
-      margin-top:12px; display:grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap:10px; align-items:end;
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap:10px;
+      align-items:end;
     }
     .field label{display:block; font-size:11px; color:var(--muted); margin:0 0 6px;}
     .field input, .field select{
-      width:100%; padding:10px 10px; border-radius:12px;
-      border:1px solid var(--line); background:rgba(15,26,48,.70); color:var(--text);
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(15,26,48,.70);
+      color:var(--text);
       outline:none;
     }
     .btn{
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      padding:10px 12px; border-radius:12px; border:1px solid var(--line);
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
       background:linear-gradient(180deg, rgba(45,212,191,.22), rgba(15,26,48,.65));
-      color:var(--text); cursor:pointer; user-select:none; font-weight:650;
+      color:var(--text);
+      cursor:pointer;
+      user-select:none;
+      font-weight:650;
     }
     .btn:active{transform:translateY(1px)}
+
+    .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(21,38,74,.85);
+      border:1px solid var(--line);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--text)
+    }
+    .dot{width:10px; height:10px; border-radius:50%}
+
     .cards{
-      padding:14px 0; display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;
+      padding:14px 0;
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
     }
     .card{
-      background:rgba(15,26,48,.70); border:1px solid var(--line); border-radius:16px; padding:12px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
       box-shadow: 0 12px 26px rgba(0,0,0,.28);
       min-height:80px;
     }
     .kpi{font-size:12px; color:var(--muted)}
     .val{margin-top:6px; font-size:18px; font-weight:800}
-    .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      background:rgba(21,38,74,.85); border:1px solid var(--line);
-      padding:6px 10px; border-radius:999px; font-size:12px; color:var(--text)
-    }
-    .dot{width:10px; height:10px; border-radius:50%}
+
     main{padding:0 18px 22px}
     .gridcard{
       max-width:1400px; margin:0 auto;
-      background:rgba(15,26,48,.70); border:1px solid var(--line); border-radius:18px;
-      overflow:hidden; box-shadow: 0 16px 34px rgba(0,0,0,.30);
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow: 0 16px 34px rgba(0,0,0,.30);
     }
     .gridhead{
       display:flex; justify-content:space-between; align-items:center;
-      padding:12px 14px; border-bottom:1px solid var(--line);
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
     }
     .gridhead .hint{color:var(--muted); font-size:12px}
+
     .tablewrap{overflow:auto; max-height:70vh}
-    table{border-collapse:separate; border-spacing:0; width:max-content; min-width:100%;}
+
+    table{
+      border-collapse:separate;
+      border-spacing:0;
+      width:max-content;
+      min-width:100%;
+    }
+
     thead th{
       position:sticky; top:0; z-index:10;
-      background:rgba(11,18,32,.95); border-bottom:1px solid var(--line);
-      font-size:11px; color:var(--muted); padding:10px 8px; white-space:nowrap;
+      background:rgba(11,18,32,.95);
+      border-bottom:1px solid var(--line);
+      font-size:11px;
+      color:var(--muted);
+      padding:10px 8px;
+      white-space:nowrap;
     }
-    thead th:first-child{
-      left:0; z-index:20; position:sticky; background:rgba(11,18,32,.98);
+
+    /* Sticky: 1ª coluna (Cliente) */
+    thead th.col-client{
+      position:sticky; left:0;
+      z-index:30;
+      background:rgba(11,18,32,.98);
+      border-right:1px solid rgba(255,255,255,.06);
+      min-width:210px;
     }
+    /* Sticky: 2ª coluna (Turno) */
+    thead th.col-shift{
+      position:sticky; left:210px;
+      z-index:30;
+      background:rgba(11,18,32,.98);
+      border-right:1px solid rgba(255,255,255,.06);
+      min-width:90px;
+      text-align:center;
+    }
+
     tbody td, tbody th{
       border-bottom:1px solid rgba(255,255,255,.06);
-      padding:8px 8px; font-size:12px; white-space:nowrap;
+      padding:8px 8px;
+      font-size:12px;
+      white-space:nowrap;
     }
-    tbody th{
-      position:sticky; left:0; z-index:5; background:rgba(11,18,32,.92);
+
+    /* Sticky: Cliente (tbody) */
+    tbody th.col-client{
+      position:sticky; left:0;
+      z-index:20;
+      background:rgba(11,18,32,.92);
       border-right:1px solid rgba(255,255,255,.06);
-      text-align:left; font-weight:700;
+      text-align:left;
+      font-weight:800;
     }
+
+    /* Sticky: Turno (tbody) */
+    tbody td.col-shift{
+      position:sticky; left:210px;
+      z-index:20;
+      background:rgba(11,18,32,.92);
+      border-right:1px solid rgba(255,255,255,.06);
+      text-align:center;
+      font-weight:900;
+      letter-spacing:.2px;
+      min-width:90px;
+    }
+
+    /* Faixa visual por turno (linha inteira) */
+    tr.shift-m td, tr.shift-m th{ background-color: var(--mRow); }
+    tr.shift-t td, tr.shift-t th{ background-color: var(--tRow); }
+
+    /* Mas preserva o “base” escuro nas colunas sticky + adiciona faixa de turno */
+    tr.shift-m th.col-client, tr.shift-m td.col-shift{
+      background: linear-gradient(90deg, var(--mLeft), rgba(11,18,32,.92) 70%);
+    }
+    tr.shift-t th.col-client, tr.shift-t td.col-shift{
+      background: linear-gradient(90deg, var(--tLeft), rgba(11,18,32,.92) 70%);
+    }
+
     .chip{
-      display:inline-flex; align-items:center; justify-content:center;
-      min-width:38px; height:26px; padding:0 8px;
-      border-radius:10px; border:1px solid rgba(255,255,255,.10);
-      background:rgba(21,38,74,.75); font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:38px;
+      height:26px;
+      padding:0 8px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(21,38,74,.75);
+      font-weight:900;
+      color:var(--text);
     }
     .empty{opacity:.25}
+
     .today{
       outline:2px solid rgba(45,212,191,.75);
       box-shadow: inset 0 0 0 1px rgba(45,212,191,.25);
     }
+
     .foot{
-      padding:10px 14px; border-top:1px solid var(--line);
-      display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:12px;
+      padding:10px 14px;
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      color:var(--muted);
+      font-size:12px;
     }
+
     @media (max-width:980px){
-      .toolbar{grid-template-columns: 1fr 1fr; }
+      .toolbar{grid-template-columns: 1fr 1fr;}
       .cards{grid-template-columns: 1fr 1fr;}
+      thead th.col-shift, tbody td.col-shift{ left:180px; }
+      thead th.col-client, tbody th.col-client{ min-width:180px; }
     }
   </style>
 </head>
@@ -149,7 +279,7 @@
 
     <div class="cards">
       <div class="card">
-        <div class="kpi">Linhas (clientes/projetos)</div>
+        <div class="kpi">Clientes/linhas</div>
         <div class="val" id="kpiRows">—</div>
       </div>
       <div class="card">
@@ -171,7 +301,7 @@
 <main>
   <div class="gridcard">
     <div class="gridhead">
-      <div style="font-weight:800">Grade de Alocação</div>
+      <div style="font-weight:900">Grade de Alocação</div>
       <div class="hint" id="status">Status: aguardando carga…</div>
     </div>
     <div class="tablewrap">
@@ -181,7 +311,7 @@
       </table>
     </div>
     <div class="foot">
-      <div>Governança: esta visão é um “single source of truth” operacional; ajuste de critérios deve ser feito na planilha (baseline).</div>
+      <div>Governança: SSOT operacional; ajuste de critérios deve ser feito na planilha (baseline).</div>
       <div id="footRight">—</div>
     </div>
   </div>
@@ -190,12 +320,11 @@
 <script>
 /* ============================================================
    CONFIG — PLANILHA PUBLICADA NA WEB (SEU LINK pubhtml)
-   Troque SOMENTE o SHEET_GID caso a aba publicada não seja gid 0.
 ============================================================ */
 const PUBLISHED_BASE =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub";
 
-const SHEET_GID = "0"; // <-- ajuste conforme a aba desejada
+const SHEET_GID = "0"; // ajuste conforme a aba publicada
 
 const ENDPOINT_PUBLISHED_CSV = (gid) =>
   `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}`;
@@ -204,13 +333,17 @@ const ENDPOINT_PUBLISHED_CSV = (gid) =>
    UI + PARSERS
 ============================================================ */
 const COLOR = {
-  "DO": "#60a5fa",
-  "GE": "#34d399",
-  "JC": "#fbbf24",
-  "AL": "#fb7185",
-  "M":  "#a78bfa",
-  "T":  "#94a3b8"
+  "DO": getCSS("--do"),
+  "GE": getCSS("--ge"),
+  "JC": getCSS("--jc"),
+  "AL": getCSS("--al"),
+  "M":  "rgba(167,139,250,.9)",
+  "T":  "rgba(148,163,184,.9)"
 };
+
+function getCSS(varName){
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
 
 const $ = (id) => document.getElementById(id);
 
@@ -233,8 +366,8 @@ function buildLegend(){
   lg.appendChild(pill("GE", "GE"));
   lg.appendChild(pill("JC", "JC"));
   lg.appendChild(pill("AL", "AL"));
-  lg.appendChild(pill("M (Manhã)", "M"));
-  lg.appendChild(pill("T (Tarde)", "T"));
+  lg.appendChild(pill("Faixa Manhã", "M"));
+  lg.appendChild(pill("Faixa Tarde", "T"));
 }
 
 function parseCSV(text){
@@ -303,17 +436,31 @@ function chip(value){
 async function fetchCSV(){
   const url = ENDPOINT_PUBLISHED_CSV(SHEET_GID);
   const res = await fetch(url, { cache:"no-store" });
-
-  // Se falhar, retorna um erro bem explícito
   if (!res.ok){
     throw new Error(`Falha ao carregar CSV publicado. HTTP ${res.status}. URL: ${url}`);
   }
-
   const text = await res.text();
   if (!text || text.length < 10){
     throw new Error(`CSV vazio. Verifique o gid (${SHEET_GID}) e se a aba está publicada no documento.`);
   }
   return text;
+}
+
+/* ============================================================
+   RENDER — 2 colunas: Cliente + Turno (Manhã/Tarde)
+   Regras de parsing para seu layout:
+   - Caso venha "CLIENTE" na 1ª célula e "M/T" na 2ª, ótimo.
+   - Caso venha linha só com "T" (como no seu print), assume mesmo cliente anterior.
+============================================================ */
+function normalizeShift(s){
+  const v = (s || "").toUpperCase().trim();
+  if (v === "M" || v === "MANHÃ" || v === "MANHA") return "M";
+  if (v === "T" || v === "TARDE") return "T";
+  return "";
+}
+
+function shiftLabel(s){
+  return s === "M" ? "MANHÃ" : (s === "T" ? "TARDE" : "—");
 }
 
 async function load(){
@@ -322,37 +469,25 @@ async function load(){
   const csv = await fetchCSV();
   const data = parseCSV(csv);
 
-  // Remove linhas totalmente vazias
   const cleaned = data.filter(r => r.some(c => c && c !== ""));
   if (cleaned.length < 3){
-    $("status").textContent = "Status: CSV sem conteúdo útil (estrutura insuficiente). Ajuste publicação/aba.";
-    $("tbody").innerHTML = "";
-    $("theadRow").innerHTML = "";
-    $("kpiRows").textContent = "—";
-    $("kpiCols").textContent = "—";
-    $("kpiFilled").textContent = "—";
-    $("kpiToday").textContent = "—";
+    $("status").textContent = "Status: CSV sem conteúdo útil (estrutura insuficiente).";
     return;
   }
 
-  // Heurística esperada:
-  // Linha 1: dias da semana (Sab/Dom/Seg...)
-  // Linha 2: datas (dd/mm)
-  // Linhas seguintes: cliente/projeto + (opcional) M/T + alocação por dia (DO/GE/JC/AL)
   const dowRow  = cleaned[0];
   const dateRow = cleaned[1];
 
   const dateIdxStart = dateRow.findIndex(c => /^\d{1,2}\/\d{1,2}/.test(c));
   if (dateIdxStart === -1){
-    $("status").textContent = "Status: não localizei coluna inicial de datas (dd/mm). Estrutura divergente.";
+    $("status").textContent = "Status: não localizei coluna inicial de datas (dd/mm).";
     return;
   }
 
-  const labels = cleaned.slice(2);
+  const rows = cleaned.slice(2);
   const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
   const dows  = dowRow.slice(dateIdxStart).map(c => c || "");
 
-  // Filtros
   const q = $("q").value.trim().toLowerCase();
   const rFilter = $("resource").value.trim();
   const start = normalizeDateLabel($("start").value.trim());
@@ -362,12 +497,19 @@ async function load(){
   const filteredDates = dates.filter((_,i)=>dateMask[i]);
   const filteredDows  = dows.filter((_,i)=>dateMask[i]);
 
-  // Header
+  // Header: Cliente | Turno | Datas...
   const thead = $("theadRow");
   thead.innerHTML = "";
-  const th0 = document.createElement("th");
-  th0.textContent = "Cliente / Projeto";
-  thead.appendChild(th0);
+
+  const thClient = document.createElement("th");
+  thClient.textContent = "Cliente";
+  thClient.className = "col-client";
+  thead.appendChild(thClient);
+
+  const thShift = document.createElement("th");
+  thShift.textContent = "Turno";
+  thShift.className = "col-shift";
+  thead.appendChild(thShift);
 
   filteredDates.forEach((d, i) => {
     const th = document.createElement("th");
@@ -375,31 +517,65 @@ async function load(){
     thead.appendChild(th);
   });
 
-  // Body
   const tbody = $("tbody");
   tbody.innerHTML = "";
 
   const today = todayLabel();
-  let rowsCount = 0, filled = 0;
+  let lines = 0, filled = 0;
 
-  labels.forEach(r => {
+  let lastClient = "";
+
+  rows.forEach(r => {
     const firstNonEmpty = r.findIndex(c => c && c !== "");
     if (firstNonEmpty === -1) return;
 
-    const name = r[firstNonEmpty];
-    const maybeShift = r[firstNonEmpty+1] || "";
+    const rawA = r[firstNonEmpty] || "";
+    const rawB = r[firstNonEmpty+1] || "";
 
+    let client = rawA;
+    let shift = normalizeShift(rawB);
+
+    // Caso especial: linha “T” (ou “M”) sozinha
+    if (!shift){
+      const maybeSoloShift = normalizeShift(rawA);
+      if (maybeSoloShift && lastClient){
+        client = lastClient;
+        shift = maybeSoloShift;
+      }
+    }
+
+    // Atualiza lastClient se for uma linha “normal” com cliente
+    if (client && !normalizeShift(client) && client !== "T" && client !== "M"){
+      lastClient = client;
+    } else if (lastClient && (client === "T" || client === "M")){
+      client = lastClient;
+    }
+
+    // Se ainda não tiver shift, mantém vazio (vai ficar “—” e sem faixa)
     const alloc = r.slice(dateIdxStart).map(c => (c || "").trim());
     const allocWin = alloc.filter((_,i)=>dateMask[i]);
 
-    if (q && !name.toLowerCase().includes(q)) return;
+    // filtros
+    if (q && !client.toLowerCase().includes(q)) return;
     if (rFilter && !allocWin.some(v => v === rFilter)) return;
 
     const tr = document.createElement("tr");
-    const th = document.createElement("th");
-    th.textContent = (maybeShift === "M" || maybeShift === "T") ? `${name} • ${maybeShift}` : name;
-    tr.appendChild(th);
+    if (shift === "M") tr.classList.add("shift-m");
+    if (shift === "T") tr.classList.add("shift-t");
 
+    // Coluna Cliente (sticky)
+    const thC = document.createElement("th");
+    thC.textContent = client || "—";
+    thC.className = "col-client";
+    tr.appendChild(thC);
+
+    // Coluna Turno (sticky)
+    const tdS = document.createElement("td");
+    tdS.textContent = shiftLabel(shift);
+    tdS.className = "col-shift";
+    tr.appendChild(tdS);
+
+    // Datas
     allocWin.forEach((v, idx) => {
       const td = document.createElement("td");
       td.appendChild(chip(v));
@@ -412,11 +588,10 @@ async function load(){
     });
 
     tbody.appendChild(tr);
-    rowsCount++;
+    lines++;
   });
 
-  // KPIs
-  $("kpiRows").textContent = rowsCount.toLocaleString("pt-BR");
+  $("kpiRows").textContent = lines.toLocaleString("pt-BR");
   $("kpiCols").textContent = filteredDates.length.toLocaleString("pt-BR");
   $("kpiFilled").textContent = filled.toLocaleString("pt-BR");
   $("kpiToday").textContent = today;
@@ -427,17 +602,18 @@ async function load(){
 
 function wire(){
   buildLegend();
+
   const rerun = () => load().catch(err => {
     console.error(err);
-    $("status").textContent = "Status: erro na carga. Validar se o gid está correto e se o CSV publicado está acessível.";
+    $("status").textContent = "Status: erro na carga. Validar CSV publicado (gid/endpoint).";
     $("footRight").textContent = err.message;
   });
 
   ["q","resource","start","end"].forEach(id => {
-    $(id).addEventListener("input", () => rerun());
-    $(id).addEventListener("change", () => rerun());
+    $(id).addEventListener("input", rerun);
+    $(id).addEventListener("change", rerun);
   });
-  $("btnReload").addEventListener("click", () => rerun());
+  $("btnReload").addEventListener("click", rerun);
 
   rerun();
 }
