@@ -18,11 +18,11 @@
       --jc:#fbbf24;
       --al:#fb7185;
 
-      /* Faixas de turno (mais visíveis) */
-      --mRow: rgba(167,139,250,.22);  /* Manhã */
-      --tRow: rgba(56,189,248,.18);   /* Tarde (azul) */
-      --mLeft: rgba(167,139,250,.42);
-      --tLeft: rgba(56,189,248,.36);
+      /* Faixas de turno (visíveis) */
+      --mRow: rgba(167,139,250,.24);  /* Manhã */
+      --tRow: rgba(56,189,248,.20);   /* Tarde */
+      --mLeft: rgba(167,139,250,.46);
+      --tLeft: rgba(56,189,248,.40);
 
       /* Larguras das colunas fixas */
       --wClient: 220px;
@@ -190,6 +190,7 @@
       min-width:var(--wClient);
       max-width:var(--wClient);
       font-weight:950;
+      vertical-align:middle;
     }
     tbody td.col-shift{
       left:var(--leftShift);
@@ -212,13 +213,9 @@
       background: linear-gradient(90deg, var(--tLeft), rgba(11,18,32,.92) 70%);
     }
 
-    /* Cliente não repetir: na 2ª linha (Tarde) some o texto, mas mantém borda/altura */
-    td.col-client.client-continued{
-      color:transparent;              /* não mostra texto */
-      text-shadow:none;
-    }
-    td.col-client.client-continued::after{
-      content:"";                     /* mantém célula “viva” */
+    /* Agrupamento visual: célula do cliente ocupa 2 linhas (rowspan) */
+    td.col-client[rowspan="2"]{
+      border-bottom:1px solid rgba(255,255,255,.10);
     }
 
     .chip{
@@ -268,14 +265,14 @@
     <div class="title">
       <div>
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Fonte: Google Sheets publicado na Web (CSV). Cliente não repete entre Manhã/Tarde + faixas mais visíveis.</div>
+        <div class="sub">Fonte: Google Sheets publicado na Web (CSV). Cliente agrupado (rowspan) com 2 linhas: Manhã e Tarde. Sem coluna Projeto.</div>
       </div>
       <button class="btn" id="btnReload">Recarregar dados</button>
     </div>
 
     <div class="toolbar">
       <div class="field">
-        <label>Busca (cliente/projeto)</label>
+        <label>Busca (cliente)</label>
         <input id="q" placeholder="Ex.: HS MATEUS, ABBR, MEDILAR..." />
       </div>
       <div class="field">
@@ -302,7 +299,7 @@
 
     <div class="cards">
       <div class="card">
-        <div class="kpi">Linhas (cliente/turno)</div>
+        <div class="kpi">Linhas (turnos)</div>
         <div class="val" id="kpiRows">—</div>
       </div>
       <div class="card">
@@ -478,6 +475,48 @@ async function fetchCSV(){
   return text;
 }
 
+/* ============================================================
+   Normalização para agrupamento (cliente -> 2 linhas M/T)
+   Espera layout base: "CLIENTE • M" e linha "T" isolada (ou "CLIENTE • T")
+============================================================ */
+function getClientAndShift(row, dateIdxStart, lastClient){
+  const firstNonEmpty = row.findIndex(c => c && c !== "");
+  if (firstNonEmpty === -1) return null;
+
+  const cellA = (row[firstNonEmpty] || "").trim();
+  const cellB = (row[firstNonEmpty+1] || "").trim();
+
+  let client = cellA;
+  let shift = "";
+
+  if (cellA.includes("•")){
+    const parts = cellA.split("•").map(x=>x.trim());
+    client = parts[0] || cellA;
+    shift = normalizeShift(parts[1] || "");
+  } else {
+    shift = normalizeShift(cellB);
+    const solo = normalizeShift(cellA);
+    if (solo && lastClient){
+      client = lastClient;
+      shift = solo;
+    }
+  }
+
+  if (!shift){
+    // tenta inferir se célula A for "T" ou "M"
+    const solo = normalizeShift(cellA);
+    if (solo && lastClient){
+      client = lastClient;
+      shift = solo;
+    }
+  }
+
+  client = client || lastClient || "—";
+  const alloc = row.slice(dateIdxStart).map(c => (c || "").trim());
+
+  return { client, shift, alloc };
+}
+
 async function load(){
   $("status").textContent = "Status: carregando…";
 
@@ -499,7 +538,7 @@ async function load(){
     return;
   }
 
-  const rows = cleaned.slice(2);
+  const rawRows = cleaned.slice(2);
   const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
   const dows  = dowRow.slice(dateIdxStart).map(c => c || "");
 
@@ -532,76 +571,57 @@ async function load(){
     thead.appendChild(th);
   });
 
-  // BODY
+  // 1) Normaliza linhas em objetos
+  let lastClient = "";
+  const items = [];
+  for (const r of rawRows){
+    const parsed = getClientAndShift(r, dateIdxStart, lastClient);
+    if (!parsed) continue;
+    if (parsed.client && parsed.client !== "—") lastClient = parsed.client;
+    items.push(parsed);
+  }
+
+  // 2) Agrupa por cliente preservando sequência, com 2 linhas M/T
+  const groups = [];
+  const map = new Map();
+  for (const it of items){
+    const key = it.client;
+    if (!map.has(key)){
+      const g = { client: key, M: null, T: null };
+      map.set(key, g);
+      groups.push(g);
+    }
+    const g = map.get(key);
+    if (it.shift === "M") g.M = it;
+    if (it.shift === "T") g.T = it;
+  }
+
+  // 3) Render com rowspan: cliente aparece uma vez e ocupa 2 linhas (M e T)
   const tbody = $("tbody");
   tbody.innerHTML = "";
 
   const today = todayLabel();
   let lines = 0, filled = 0;
 
-  let lastClient = "";
-
-  rows.forEach(r => {
-    const firstNonEmpty = r.findIndex(c => c && c !== "");
-    if (firstNonEmpty === -1) return;
-
-    const cellA = (r[firstNonEmpty] || "").trim();
-    const cellB = (r[firstNonEmpty+1] || "").trim();
-
-    // Layout típico seu: "CLIENTE • M" ou linha "T" isolada
-    let client = cellA;
-    let shift = "";
-
-    if (cellA.includes("•")){
-      const parts = cellA.split("•").map(x=>x.trim());
-      client = parts[0] || cellA;
-      shift = normalizeShift(parts[1] || "");
-    } else {
-      shift = normalizeShift(cellB);
-      const solo = normalizeShift(cellA);
-      if (solo && lastClient){
-        client = lastClient;
-        shift = solo;
-      }
-    }
-
-    if (client && !normalizeShift(client)) lastClient = client;
-
-    const alloc = r.slice(dateIdxStart).map(c => (c || "").trim());
-    const allocWin = alloc.filter((_,i)=>dateMask[i]);
-
-    // filtros
-    if (q && !client.toLowerCase().includes(q)) return;
-    if (rFilter && !allocWin.some(v => v === rFilter)) return;
-
+  function renderShiftRow(shiftKey, it, clientCell, isFirstRow){
     const tr = document.createElement("tr");
-    if (shift === "M") tr.classList.add("shift-m");
-    if (shift === "T") tr.classList.add("shift-t");
+    tr.classList.add(shiftKey === "M" ? "shift-m" : "shift-t");
 
-    // Cliente (não repetir na “linha continuação”)
-    const tdC = document.createElement("td");
-    tdC.className = "col-client";
-    tdC.textContent = client || "—";
-
-    // Se este cliente for igual ao anterior (consecutivo), oculta o texto
-    const prevRow = tbody.lastElementChild;
-    if (prevRow){
-      const prevClientCell = prevRow.querySelector("td.col-client");
-      const prevClientText = (prevClientCell && prevClientCell.textContent || "").trim();
-      if (prevClientText && prevClientText === tdC.textContent.trim()){
-        tdC.classList.add("client-continued");
-      }
+    // cliente com rowspan apenas na primeira linha (M)
+    if (isFirstRow){
+      tr.appendChild(clientCell);
     }
 
-    tr.appendChild(tdC);
-
-    // Turno
+    // turno
     const tdS = document.createElement("td");
     tdS.className = "col-shift";
-    tdS.textContent = shiftLabel(shift);
+    tdS.textContent = shiftLabel(shiftKey);
     tr.appendChild(tdS);
 
-    // Datas
+    // alocações
+    const alloc = (it && it.alloc) ? it.alloc : [];
+    const allocWin = alloc.filter((_,i)=>dateMask[i]);
+
     allocWin.forEach((v, idx) => {
       const td = document.createElement("td");
       td.appendChild(chip(v));
@@ -613,9 +633,42 @@ async function load(){
       tr.appendChild(td);
     });
 
+    // se não houver aloc, ainda renderiza colunas vazias
+    if (allocWin.length === 0){
+      for (let i=0;i<filteredDates.length;i++){
+        const td = document.createElement("td");
+        td.appendChild(chip(""));
+        const d = filteredDates[i];
+        if (d === today) td.classList.add("today");
+        tr.appendChild(td);
+      }
+    }
+
     tbody.appendChild(tr);
     lines++;
-  });
+  }
+
+  for (const g of groups){
+    // filtro por cliente
+    if (q && !g.client.toLowerCase().includes(q)) continue;
+
+    // filtro por recurso: precisa existir em M ou T
+    if (rFilter){
+      const hasInM = g.M && g.M.alloc && g.M.alloc.some(v => v === rFilter);
+      const hasInT = g.T && g.T.alloc && g.T.alloc.some(v => v === rFilter);
+      if (!hasInM && !hasInT) continue;
+    }
+
+    // cliente cell (rowspan 2)
+    const tdC = document.createElement("td");
+    tdC.className = "col-client";
+    tdC.textContent = g.client || "—";
+    tdC.rowSpan = 2;
+
+    // Render M e T sempre, mantendo duas linhas
+    renderShiftRow("M", g.M, tdC, true);
+    renderShiftRow("T", g.T, null, false);
+  }
 
   $("kpiRows").textContent = lines.toLocaleString("pt-BR");
   $("kpiCols").textContent = filteredDates.length.toLocaleString("pt-BR");
