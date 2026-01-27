@@ -191,6 +191,7 @@
       max-width:var(--wClient);
       font-weight:950;
       vertical-align:middle;
+      padding:10px 10px;
     }
     tbody td.col-shift{
       left:var(--leftShift);
@@ -213,10 +214,43 @@
       background: linear-gradient(90deg, var(--tLeft), rgba(11,18,32,.92) 70%);
     }
 
-    /* Agrupamento visual: célula do cliente ocupa 2 linhas (rowspan) */
-    td.col-client[rowspan="2"]{
-      border-bottom:1px solid rgba(255,255,255,.10);
+    /* ===== Cliente agrupado “como no print”: um bloco único ocupando 2 linhas ===== */
+    td.col-client.grouped{
+      padding:0;
+      background:rgba(11,18,32,.92);
     }
+    tr.shift-m td.col-client.grouped{
+      background: linear-gradient(180deg, rgba(167,139,250,.30), rgba(11,18,32,.92) 70%);
+    }
+    tr.shift-t td.col-client.grouped{
+      background: linear-gradient(180deg, rgba(56,189,248,.22), rgba(11,18,32,.92) 70%);
+    }
+    .clientBox{
+      height:100%;
+      width:100%;
+      min-height: 2 * 42px; /* aproxima 2 linhas */
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px 10px;
+    }
+    .clientBadge{
+      width:100%;
+      margin:10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, rgba(148,163,184,.18), rgba(21,38,74,.38));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+      padding:18px 12px;
+      text-align:center;
+      font-weight:950;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+    }
+
+    /* Linhas “M/T” mais compactas e alinhadas */
+    tbody tr td{ height:42px; }
+    tbody tr td.col-shift{ height:42px; }
 
     .chip{
       display:inline-flex;
@@ -265,7 +299,7 @@
     <div class="title">
       <div>
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Fonte: Google Sheets publicado na Web (CSV). Cliente agrupado (rowspan) com 2 linhas: Manhã e Tarde. Sem coluna Projeto.</div>
+        <div class="sub">Fonte: Google Sheets publicado na Web (CSV). Cliente agrupado em um bloco único (rowspan 2) + 2 linhas Manhã/Tarde. Sem coluna Projeto.</div>
       </div>
       <button class="btn" id="btnReload">Recarregar dados</button>
     </div>
@@ -477,7 +511,6 @@ async function fetchCSV(){
 
 /* ============================================================
    Normalização para agrupamento (cliente -> 2 linhas M/T)
-   Espera layout base: "CLIENTE • M" e linha "T" isolada (ou "CLIENTE • T")
 ============================================================ */
 function getClientAndShift(row, dateIdxStart, lastClient){
   const firstNonEmpty = row.findIndex(c => c && c !== "");
@@ -503,7 +536,6 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   }
 
   if (!shift){
-    // tenta inferir se célula A for "T" ou "M"
     const solo = normalizeShift(cellA);
     if (solo && lastClient){
       client = lastClient;
@@ -596,7 +628,7 @@ async function load(){
     if (it.shift === "T") g.T = it;
   }
 
-  // 3) Render com rowspan: cliente aparece uma vez e ocupa 2 linhas (M e T)
+  // 3) Render com bloco de cliente (rowspan 2)
   const tbody = $("tbody");
   tbody.innerHTML = "";
 
@@ -607,41 +639,28 @@ async function load(){
     const tr = document.createElement("tr");
     tr.classList.add(shiftKey === "M" ? "shift-m" : "shift-t");
 
-    // cliente com rowspan apenas na primeira linha (M)
     if (isFirstRow){
       tr.appendChild(clientCell);
     }
 
-    // turno
     const tdS = document.createElement("td");
     tdS.className = "col-shift";
     tdS.textContent = shiftLabel(shiftKey);
     tr.appendChild(tdS);
 
-    // alocações
     const alloc = (it && it.alloc) ? it.alloc : [];
     const allocWin = alloc.filter((_,i)=>dateMask[i]);
 
-    allocWin.forEach((v, idx) => {
+    for (let i=0;i<filteredDates.length;i++){
+      const v = allocWin[i] || "";
       const td = document.createElement("td");
       td.appendChild(chip(v));
 
-      const d = filteredDates[idx];
+      const d = filteredDates[i];
       if (d === today) td.classList.add("today");
 
       if (v) filled++;
       tr.appendChild(td);
-    });
-
-    // se não houver aloc, ainda renderiza colunas vazias
-    if (allocWin.length === 0){
-      for (let i=0;i<filteredDates.length;i++){
-        const td = document.createElement("td");
-        td.appendChild(chip(""));
-        const d = filteredDates[i];
-        if (d === today) td.classList.add("today");
-        tr.appendChild(td);
-      }
     }
 
     tbody.appendChild(tr);
@@ -649,23 +668,28 @@ async function load(){
   }
 
   for (const g of groups){
-    // filtro por cliente
     if (q && !g.client.toLowerCase().includes(q)) continue;
 
-    // filtro por recurso: precisa existir em M ou T
     if (rFilter){
       const hasInM = g.M && g.M.alloc && g.M.alloc.some(v => v === rFilter);
       const hasInT = g.T && g.T.alloc && g.T.alloc.some(v => v === rFilter);
       if (!hasInM && !hasInT) continue;
     }
 
-    // cliente cell (rowspan 2)
     const tdC = document.createElement("td");
-    tdC.className = "col-client";
-    tdC.textContent = g.client || "—";
+    tdC.className = "col-client grouped";
     tdC.rowSpan = 2;
 
-    // Render M e T sempre, mantendo duas linhas
+    const box = document.createElement("div");
+    box.className = "clientBox";
+
+    const badge = document.createElement("div");
+    badge.className = "clientBadge";
+    badge.textContent = g.client || "—";
+
+    box.appendChild(badge);
+    tdC.appendChild(box);
+
     renderShiftRow("M", g.M, tdC, true);
     renderShiftRow("T", g.T, null, false);
   }
