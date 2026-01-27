@@ -18,21 +18,19 @@
       --jc:#fbbf24;
       --al:#fb7185;
 
-      /* Faixas de turno (linha inteira) */
-      --mRow: rgba(167,139,250,.10);  /* Manhã */
-      --tRow: rgba(148,163,184,.10);  /* Tarde */
-      --mLeft: rgba(167,139,250,.22);
-      --tLeft: rgba(148,163,184,.22);
+      /* Faixas de turno (mais visíveis) */
+      --mRow: rgba(167,139,250,.22);  /* Manhã */
+      --tRow: rgba(56,189,248,.18);   /* Tarde (azul) */
+      --mLeft: rgba(167,139,250,.42);
+      --tLeft: rgba(56,189,248,.36);
 
-      /* Larguras das colunas fixas (ajuste fino aqui) */
+      /* Larguras das colunas fixas */
       --wClient: 220px;
-      --wProject: 220px;
       --wShift: 110px;
 
       /* Offsets sticky calculados */
       --leftClient: 0px;
-      --leftProject: var(--wClient);
-      --leftShift: calc(var(--wClient) + var(--wProject));
+      --leftShift: var(--wClient);
     }
 
     *{box-sizing:border-box}
@@ -150,7 +148,7 @@
       white-space:nowrap;
     }
 
-    /* Sticky headers: Cliente | Projeto | Turno */
+    /* Sticky headers: Cliente | Turno */
     thead th.col-client{
       position:sticky; left:var(--leftClient);
       z-index:40;
@@ -158,14 +156,6 @@
       border-right:1px solid rgba(255,255,255,.06);
       min-width:var(--wClient);
       max-width:var(--wClient);
-    }
-    thead th.col-project{
-      position:sticky; left:var(--leftProject);
-      z-index:40;
-      background:rgba(11,18,32,.98);
-      border-right:1px solid rgba(255,255,255,.06);
-      min-width:var(--wProject);
-      max-width:var(--wProject);
     }
     thead th.col-shift{
       position:sticky; left:var(--leftShift);
@@ -177,7 +167,7 @@
       text-align:center;
     }
 
-    tbody td, tbody th{
+    tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
       padding:8px 8px;
       font-size:12px;
@@ -185,7 +175,7 @@
     }
 
     /* Sticky body cells */
-    tbody td.col-client, tbody td.col-project, tbody td.col-shift{
+    tbody td.col-client, tbody td.col-shift{
       position:sticky;
       z-index:25;
       background:rgba(11,18,32,.92);
@@ -199,14 +189,7 @@
       left:var(--leftClient);
       min-width:var(--wClient);
       max-width:var(--wClient);
-      font-weight:900;
-    }
-    tbody td.col-project{
-      left:var(--leftProject);
-      min-width:var(--wProject);
-      max-width:var(--wProject);
-      font-weight:800;
-      color:rgba(232,239,255,.92);
+      font-weight:950;
     }
     tbody td.col-shift{
       left:var(--leftShift);
@@ -222,11 +205,20 @@
     tr.shift-t td{ background-color: var(--tRow); }
 
     /* Mantém contraste nas colunas sticky + adiciona faixa por turno */
-    tr.shift-m td.col-client, tr.shift-m td.col-project, tr.shift-m td.col-shift{
+    tr.shift-m td.col-client, tr.shift-m td.col-shift{
       background: linear-gradient(90deg, var(--mLeft), rgba(11,18,32,.92) 70%);
     }
-    tr.shift-t td.col-client, tr.shift-t td.col-project, tr.shift-t td.col-shift{
+    tr.shift-t td.col-client, tr.shift-t td.col-shift{
       background: linear-gradient(90deg, var(--tLeft), rgba(11,18,32,.92) 70%);
+    }
+
+    /* Cliente não repetir: na 2ª linha (Tarde) some o texto, mas mantém borda/altura */
+    td.col-client.client-continued{
+      color:transparent;              /* não mostra texto */
+      text-shadow:none;
+    }
+    td.col-client.client-continued::after{
+      content:"";                     /* mantém célula “viva” */
     }
 
     .chip{
@@ -245,8 +237,8 @@
     .empty{opacity:.25}
 
     .today{
-      outline:2px solid rgba(45,212,191,.75);
-      box-shadow: inset 0 0 0 1px rgba(45,212,191,.25);
+      outline:2px solid rgba(45,212,191,.85);
+      box-shadow: inset 0 0 0 1px rgba(45,212,191,.28);
     }
 
     .foot{
@@ -264,7 +256,6 @@
       .cards{grid-template-columns: 1fr 1fr;}
       :root{
         --wClient: 190px;
-        --wProject: 190px;
         --wShift: 100px;
       }
     }
@@ -277,7 +268,7 @@
     <div class="title">
       <div>
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Fonte: Google Sheets publicado na Web (CSV). Colunas separadas: Cliente, Projeto e Turno (Manhã/Tarde).</div>
+        <div class="sub">Fonte: Google Sheets publicado na Web (CSV). Cliente não repete entre Manhã/Tarde + faixas mais visíveis.</div>
       </div>
       <button class="btn" id="btnReload">Recarregar dados</button>
     </div>
@@ -311,7 +302,7 @@
 
     <div class="cards">
       <div class="card">
-        <div class="kpi">Linhas (cliente/projeto/turno)</div>
+        <div class="kpi">Linhas (cliente/turno)</div>
         <div class="val" id="kpiRows">—</div>
       </div>
       <div class="card">
@@ -374,8 +365,8 @@ const COLOR = {
   "GE": getCSS("--ge"),
   "JC": getCSS("--jc"),
   "AL": getCSS("--al"),
-  "M":  "rgba(167,139,250,.9)",
-  "T":  "rgba(148,163,184,.9)"
+  "M":  "rgba(167,139,250,.95)",
+  "T":  "rgba(56,189,248,.90)"
 };
 
 function pill(label, key){
@@ -471,57 +462,6 @@ function shiftLabel(s){
   return s === "M" ? "MANHÃ" : (s === "T" ? "TARDE" : "—");
 }
 
-/* Split: "CLIENTE • M" | "CLIENTE / PROJETO • M" | "CLIENTE - PROJETO • M"
-   Também lida com linhas “T” sozinhas (usa lastClient/lastProject).
-*/
-function splitClientProjectShift(cellA, cellB, lastClient, lastProject){
-  const a = (cellA || "").trim();
-  const b = (cellB || "").trim();
-
-  // Caso linha só “T” ou “M”
-  const solo = normalizeShift(a);
-  if (solo && (lastClient || lastProject)){
-    return { client: lastClient || "—", project: lastProject || "", shift: solo, inferred: true };
-  }
-
-  // 1) tenta extrair shift do "•"
-  let left = a;
-  let shift = "";
-
-  if (a.includes("•")){
-    const parts = a.split("•").map(x=>x.trim()).filter(Boolean);
-    left = parts[0] || a;
-    shift = normalizeShift(parts[1] || "");
-  }
-
-  // 2) se não achou shift no "•", tenta na coluna B
-  if (!shift) shift = normalizeShift(b);
-
-  // 3) split cliente/projeto (heurística)
-  let client = left;
-  let project = "";
-
-  if (left.includes(" - ")){
-    const p = left.split(" - ");
-    client = (p[0] || "").trim();
-    project = (p.slice(1).join(" - ") || "").trim();
-  } else if (left.includes(" / ")){
-    const p = left.split(" / ");
-    client = (p[0] || "").trim();
-    project = (p.slice(1).join(" / ") || "").trim();
-  } else if (left.includes("|")){
-    const p = left.split("|");
-    client = (p[0] || "").trim();
-    project = (p.slice(1).join("|") || "").trim();
-  }
-
-  // limpeza final
-  client = client || lastClient || "—";
-  project = project || lastProject || "";
-
-  return { client, project, shift, inferred:false };
-}
-
 /* ============================================================
    DATA LOAD
 ============================================================ */
@@ -572,7 +512,7 @@ async function load(){
   const filteredDates = dates.filter((_,i)=>dateMask[i]);
   const filteredDows  = dows.filter((_,i)=>dateMask[i]);
 
-  // HEADER: Cliente | Projeto | Turno | Datas...
+  // HEADER: Cliente | Turno | Datas...
   const thead = $("theadRow");
   thead.innerHTML = "";
 
@@ -580,11 +520,6 @@ async function load(){
   thClient.textContent = "Cliente";
   thClient.className = "col-client";
   thead.appendChild(thClient);
-
-  const thProject = document.createElement("th");
-  thProject.textContent = "Projeto";
-  thProject.className = "col-project";
-  thead.appendChild(thProject);
 
   const thShift = document.createElement("th");
   thShift.textContent = "Turno";
@@ -605,49 +540,60 @@ async function load(){
   let lines = 0, filled = 0;
 
   let lastClient = "";
-  let lastProject = "";
 
   rows.forEach(r => {
     const firstNonEmpty = r.findIndex(c => c && c !== "");
     if (firstNonEmpty === -1) return;
 
-    const cellA = r[firstNonEmpty] || "";
-    const cellB = r[firstNonEmpty+1] || "";
+    const cellA = (r[firstNonEmpty] || "").trim();
+    const cellB = (r[firstNonEmpty+1] || "").trim();
 
-    const parsed = splitClientProjectShift(cellA, cellB, lastClient, lastProject);
-    const client = parsed.client;
-    const project = parsed.project;
-    const shift = parsed.shift;
+    // Layout típico seu: "CLIENTE • M" ou linha "T" isolada
+    let client = cellA;
+    let shift = "";
 
-    // atualiza lastClient/lastProject somente quando não é linha inferida e tem cliente "real"
-    if (!parsed.inferred){
-      lastClient = client || lastClient;
-      lastProject = project || lastProject;
+    if (cellA.includes("•")){
+      const parts = cellA.split("•").map(x=>x.trim());
+      client = parts[0] || cellA;
+      shift = normalizeShift(parts[1] || "");
+    } else {
+      shift = normalizeShift(cellB);
+      const solo = normalizeShift(cellA);
+      if (solo && lastClient){
+        client = lastClient;
+        shift = solo;
+      }
     }
+
+    if (client && !normalizeShift(client)) lastClient = client;
 
     const alloc = r.slice(dateIdxStart).map(c => (c || "").trim());
     const allocWin = alloc.filter((_,i)=>dateMask[i]);
 
     // filtros
-    const hay = `${client} ${project}`.toLowerCase();
-    if (q && !hay.includes(q)) return;
+    if (q && !client.toLowerCase().includes(q)) return;
     if (rFilter && !allocWin.some(v => v === rFilter)) return;
 
     const tr = document.createElement("tr");
     if (shift === "M") tr.classList.add("shift-m");
     if (shift === "T") tr.classList.add("shift-t");
 
-    // Cliente
+    // Cliente (não repetir na “linha continuação”)
     const tdC = document.createElement("td");
     tdC.className = "col-client";
     tdC.textContent = client || "—";
-    tr.appendChild(tdC);
 
-    // Projeto
-    const tdP = document.createElement("td");
-    tdP.className = "col-project";
-    tdP.textContent = project || "—";
-    tr.appendChild(tdP);
+    // Se este cliente for igual ao anterior (consecutivo), oculta o texto
+    const prevRow = tbody.lastElementChild;
+    if (prevRow){
+      const prevClientCell = prevRow.querySelector("td.col-client");
+      const prevClientText = (prevClientCell && prevClientCell.textContent || "").trim();
+      if (prevClientText && prevClientText === tdC.textContent.trim()){
+        tdC.classList.add("client-continued");
+      }
+    }
+
+    tr.appendChild(tdC);
 
     // Turno
     const tdS = document.createElement("td");
