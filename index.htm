@@ -18,17 +18,17 @@
       --jc:#fbbf24;
       --al:#fb7185;
 
-      /* Faixas de turno (visíveis) */
+      /* Faixas de turno */
       --mRow: rgba(167,139,250,.24);  /* Manhã */
       --tRow: rgba(56,189,248,.20);   /* Tarde */
       --mLeft: rgba(167,139,250,.46);
       --tLeft: rgba(56,189,248,.40);
 
-      /* Larguras das colunas fixas */
+      /* Larguras */
       --wClient: 220px;
       --wShift: 110px;
 
-      /* Offsets sticky calculados */
+      /* Offsets sticky */
       --leftClient: 0px;
       --leftShift: var(--wClient);
     }
@@ -84,6 +84,7 @@
     }
     .btn:active{transform:translateY(1px)}
 
+    /* Pills clicáveis (filtro multi-select) */
     .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
     .pill{
       display:inline-flex; align-items:center; gap:8px;
@@ -92,9 +93,32 @@
       padding:6px 10px;
       border-radius:999px;
       font-size:12px;
-      color:var(--text)
+      color:var(--text);
+      cursor:pointer;
+      user-select:none;
+      transition: transform .05s ease, box-shadow .15s ease, border-color .15s ease, opacity .15s ease;
     }
-    .dot{width:10px; height:10px; border-radius:50%}
+    .pill:hover{
+      border-color: rgba(255,255,255,.22);
+      box-shadow: 0 8px 18px rgba(0,0,0,.25);
+    }
+    .pill:active{transform:translateY(1px)}
+    .pill[aria-pressed="true"]{
+      border-color: rgba(255,255,255,.35);
+      box-shadow: 0 10px 22px rgba(0,0,0,.30);
+    }
+    .pill .dot{width:10px; height:10px; border-radius:50%}
+    .pill small{
+      opacity:.85;
+      font-weight:700;
+    }
+    .pill .x{
+      margin-left:6px;
+      opacity:.75;
+      font-weight:900;
+      display:none;
+    }
+    .pill[aria-pressed="true"] .x{display:inline}
 
     .cards{
       padding:14px 0;
@@ -172,6 +196,7 @@
       padding:8px 8px;
       font-size:12px;
       white-space:nowrap;
+      height:42px;
     }
 
     /* Sticky body cells */
@@ -191,7 +216,7 @@
       max-width:var(--wClient);
       font-weight:950;
       vertical-align:middle;
-      padding:10px 10px;
+      padding:0;
     }
     tbody td.col-shift{
       left:var(--leftShift);
@@ -202,11 +227,10 @@
       letter-spacing:.3px;
     }
 
-    /* Faixa visual por turno (linha inteira) */
+    /* Faixa por turno */
     tr.shift-m td{ background-color: var(--mRow); }
     tr.shift-t td{ background-color: var(--tRow); }
 
-    /* Mantém contraste nas colunas sticky + adiciona faixa por turno */
     tr.shift-m td.col-client, tr.shift-m td.col-shift{
       background: linear-gradient(90deg, var(--mLeft), rgba(11,18,32,.92) 70%);
     }
@@ -214,21 +238,13 @@
       background: linear-gradient(90deg, var(--tLeft), rgba(11,18,32,.92) 70%);
     }
 
-    /* ===== Cliente agrupado “como no print”: um bloco único ocupando 2 linhas ===== */
+    /* Cliente agrupado em bloco (rowspan 2) */
     td.col-client.grouped{
-      padding:0;
       background:rgba(11,18,32,.92);
-    }
-    tr.shift-m td.col-client.grouped{
-      background: linear-gradient(180deg, rgba(167,139,250,.30), rgba(11,18,32,.92) 70%);
-    }
-    tr.shift-t td.col-client.grouped{
-      background: linear-gradient(180deg, rgba(56,189,248,.22), rgba(11,18,32,.92) 70%);
     }
     .clientBox{
       height:100%;
       width:100%;
-      min-height: 2 * 42px; /* aproxima 2 linhas */
       display:flex;
       align-items:center;
       justify-content:center;
@@ -247,10 +263,6 @@
       letter-spacing:.6px;
       text-transform:uppercase;
     }
-
-    /* Linhas “M/T” mais compactas e alinhadas */
-    tbody tr td{ height:42px; }
-    tbody tr td.col-shift{ height:42px; }
 
     .chip{
       display:inline-flex;
@@ -299,7 +311,7 @@
     <div class="title">
       <div>
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Fonte: Google Sheets publicado na Web (CSV). Cliente agrupado em um bloco único (rowspan 2) + 2 linhas Manhã/Tarde. Sem coluna Projeto.</div>
+        <div class="sub">Clique nos chips (DO/GE/JC/AL) para filtrar o grid. Multi-seleção habilitada. Hover mostra o nome do colaborador.</div>
       </div>
       <button class="btn" id="btnReload">Recarregar dados</button>
     </div>
@@ -310,7 +322,7 @@
         <input id="q" placeholder="Ex.: HS MATEUS, ABBR, MEDILAR..." />
       </div>
       <div class="field">
-        <label>Filtro por recurso</label>
+        <label>Filtro por recurso (dropdown)</label>
         <select id="resource">
           <option value="">Todos</option>
           <option value="DO">DO</option>
@@ -329,6 +341,7 @@
       </div>
     </div>
 
+    <!-- Chips clicáveis -->
     <div class="legend" id="legend"></div>
 
     <div class="cards">
@@ -373,7 +386,7 @@
 
 <script>
 /* ============================================================
-   CONFIG — PLANILHA PUBLICADA NA WEB (SEU LINK pubhtml)
+   CONFIG — PLANILHA PUBLICADA NA WEB
 ============================================================ */
 const PUBLISHED_BASE =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub";
@@ -382,6 +395,24 @@ const SHEET_GID = "0"; // ajuste conforme a aba publicada
 
 const ENDPOINT_PUBLISHED_CSV = (gid) =>
   `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}`;
+
+/* ============================================================
+   NOMES DOS COLABORADORES (tooltip)
+============================================================ */
+const RESOURCE_NAMES = {
+  "DO": "Dôra",
+  "GE": "Geovana",
+  "JC": "João Custódio",
+  "AL": "Aline"
+};
+
+/* ============================================================
+   ESTADO — filtro multi-select via chips
+============================================================ */
+const state = {
+  selectedCodes: new Set(), // ex.: {"DO","JC"}
+  lastLoaded: null          // cache da última carga para re-render rápido
+};
 
 /* ============================================================
    HELPERS
@@ -400,27 +431,86 @@ const COLOR = {
   "T":  "rgba(56,189,248,.90)"
 };
 
-function pill(label, key){
-  const el = document.createElement("div");
-  el.className = "pill";
-  const dot = document.createElement("span");
-  dot.className = "dot";
-  dot.style.background = COLOR[key] || "#cbd5e1";
-  const txt = document.createElement("span");
-  txt.textContent = label;
-  el.appendChild(dot); el.appendChild(txt);
-  return el;
-}
-
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
-  lg.appendChild(pill("DO", "DO"));
-  lg.appendChild(pill("GE", "GE"));
-  lg.appendChild(pill("JC", "JC"));
-  lg.appendChild(pill("AL", "AL"));
-  lg.appendChild(pill("Faixa Manhã", "M"));
-  lg.appendChild(pill("Faixa Tarde", "T"));
+
+  // Chips de recursos (clicáveis)
+  ["DO","GE","JC","AL"].forEach(code => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "pill";
+    btn.setAttribute("data-code", code);
+    btn.setAttribute("aria-pressed", "false");
+    btn.title = `${code} = ${RESOURCE_NAMES[code] || code}`; // hover tooltip
+
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    dot.style.background = COLOR[code] || "#cbd5e1";
+
+    const label = document.createElement("span");
+    label.innerHTML = `<small>${code}</small> <span style="opacity:.85">(${RESOURCE_NAMES[code] || code})</span>`;
+
+    const x = document.createElement("span");
+    x.className = "x";
+    x.textContent = "✕";
+
+    btn.appendChild(dot);
+    btn.appendChild(label);
+    btn.appendChild(x);
+
+    btn.addEventListener("click", () => {
+      toggleCode(code);
+    });
+
+    lg.appendChild(btn);
+  });
+
+  // Chips informativos de faixa (não filtram)
+  const sep = document.createElement("div");
+  sep.style.width = "10px";
+  lg.appendChild(sep);
+
+  const pillM = document.createElement("div");
+  pillM.className = "pill";
+  pillM.style.cursor = "default";
+  pillM.title = "Faixa de fundo: Manhã";
+  pillM.innerHTML = `<span class="dot" style="background:${COLOR.M}"></span><small>Faixa Manhã</small>`;
+  lg.appendChild(pillM);
+
+  const pillT = document.createElement("div");
+  pillT.className = "pill";
+  pillT.style.cursor = "default";
+  pillT.title = "Faixa de fundo: Tarde";
+  pillT.innerHTML = `<span class="dot" style="background:${COLOR.T}"></span><small>Faixa Tarde</small>`;
+  lg.appendChild(pillT);
+
+  syncLegendUI();
+}
+
+function syncLegendUI(){
+  document.querySelectorAll('.pill[data-code]').forEach(el => {
+    const code = el.getAttribute("data-code");
+    const pressed = state.selectedCodes.has(code);
+    el.setAttribute("aria-pressed", pressed ? "true" : "false");
+    el.style.opacity = (state.selectedCodes.size === 0 || pressed) ? "1" : ".55";
+  });
+}
+
+function toggleCode(code){
+  if (state.selectedCodes.has(code)) state.selectedCodes.delete(code);
+  else state.selectedCodes.add(code);
+
+  // Mantém dropdown em sincronia (se multi-select estiver ativo, dropdown vira “Todos”)
+  $("resource").value = "";
+  syncLegendUI();
+
+  // re-render sem novo fetch
+  if (state.lastLoaded) {
+    renderFromCache();
+  } else {
+    load(); // fallback
+  }
 }
 
 function parseCSV(text){
@@ -475,6 +565,14 @@ function chip(value){
   const sp = document.createElement("span");
   sp.className = "chip" + (!value ? " empty" : "");
   sp.textContent = value || "—";
+
+  // Tooltip no chip com nome do colaborador
+  if (value && RESOURCE_NAMES[value]) {
+    sp.title = `${value} = ${RESOURCE_NAMES[value]}`;
+  } else if (value) {
+    sp.title = value;
+  }
+
   if (COLOR[value]){
     sp.style.color = "#0b1220";
     sp.style.background = COLOR[value];
@@ -509,9 +607,7 @@ async function fetchCSV(){
   return text;
 }
 
-/* ============================================================
-   Normalização para agrupamento (cliente -> 2 linhas M/T)
-============================================================ */
+/* Normalização para agrupamento (cliente -> 2 linhas M/T) */
 function getClientAndShift(row, dateIdxStart, lastClient){
   const firstNonEmpty = row.findIndex(c => c && c !== "");
   if (firstNonEmpty === -1) return null;
@@ -549,6 +645,27 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   return { client, shift, alloc };
 }
 
+function matchesSelectedCodes(allocArr){
+  // Se nenhum selecionado, passa
+  if (state.selectedCodes.size === 0) return true;
+
+  // Passa se houver interseção entre alocações e selecionados
+  return allocArr.some(v => state.selectedCodes.has(v));
+}
+
+function applyResourceFilter(allocArr){
+  // Dropdown (single) tem precedência se estiver setado
+  const dd = $("resource").value.trim();
+  if (dd) return allocArr.some(v => v === dd);
+
+  // Chips multi-select
+  return matchesSelectedCodes(allocArr);
+}
+
+function renderFromCache(){
+  render(state.lastLoaded);
+}
+
 async function load(){
   $("status").textContent = "Status: carregando…";
 
@@ -574,8 +691,16 @@ async function load(){
   const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
   const dows  = dowRow.slice(dateIdxStart).map(c => c || "");
 
+  // cache bruto
+  state.lastLoaded = { rawRows, dateIdxStart, dates, dows };
+
+  renderFromCache();
+}
+
+function render(cache){
+  const { rawRows, dateIdxStart, dates, dows } = cache;
+
   const q = $("q").value.trim().toLowerCase();
-  const rFilter = $("resource").value.trim();
   const start = normalizeDateLabel($("start").value.trim());
   const end   = normalizeDateLabel($("end").value.trim());
 
@@ -628,7 +753,7 @@ async function load(){
     if (it.shift === "T") g.T = it;
   }
 
-  // 3) Render com bloco de cliente (rowspan 2)
+  // 3) Render
   const tbody = $("tbody");
   tbody.innerHTML = "";
 
@@ -668,13 +793,13 @@ async function load(){
   }
 
   for (const g of groups){
+    // filtro por cliente
     if (q && !g.client.toLowerCase().includes(q)) continue;
 
-    if (rFilter){
-      const hasInM = g.M && g.M.alloc && g.M.alloc.some(v => v === rFilter);
-      const hasInT = g.T && g.T.alloc && g.T.alloc.some(v => v === rFilter);
-      if (!hasInM && !hasInT) continue;
-    }
+    // filtro por recursos (dropdown OU chips)
+    const allocM = (g.M && g.M.alloc) ? g.M.alloc : [];
+    const allocT = (g.T && g.T.alloc) ? g.T.alloc : [];
+    if (!applyResourceFilter(allocM) && !applyResourceFilter(allocT)) continue;
 
     const tdC = document.createElement("td");
     tdC.className = "col-client grouped";
@@ -699,26 +824,52 @@ async function load(){
   $("kpiFilled").textContent = filled.toLocaleString("pt-BR");
   $("kpiToday").textContent = today;
 
-  $("status").textContent = "Status: carregado com sucesso (SSOT operacional).";
+  const sel = Array.from(state.selectedCodes);
+  const selTxt = sel.length ? ` • Filtro: ${sel.join(", ")}` : "";
+  $("status").textContent = `Status: carregado com sucesso (SSOT operacional).${selTxt}`;
   $("footRight").textContent = `Atualizado em ${new Date().toLocaleString("pt-BR")} • gid=${SHEET_GID}`;
+
+  syncLegendUI();
 }
 
 function wire(){
   buildLegend();
 
-  const rerun = () => load().catch(err => {
+  const rerun = () => {
+    if (state.lastLoaded) renderFromCache();
+    else load().catch(err => {
+      console.error(err);
+      $("status").textContent = "Status: erro na carga. Validar CSV publicado (gid/endpoint).";
+      $("footRight").textContent = err.message;
+    });
+  };
+
+  ["q","start","end"].forEach(id => {
+    $(id).addEventListener("input", rerun);
+    $(id).addEventListener("change", rerun);
+  });
+
+  // Dropdown: quando o usuário escolhe, limpa chips e aplica single filter
+  $("resource").addEventListener("change", () => {
+    state.selectedCodes.clear();
+    syncLegendUI();
+    rerun();
+  });
+
+  $("btnReload").addEventListener("click", () => {
+    state.lastLoaded = null;
+    load().catch(err => {
+      console.error(err);
+      $("status").textContent = "Status: erro na carga. Validar CSV publicado (gid/endpoint).";
+      $("footRight").textContent = err.message;
+    });
+  });
+
+  load().catch(err => {
     console.error(err);
     $("status").textContent = "Status: erro na carga. Validar CSV publicado (gid/endpoint).";
     $("footRight").textContent = err.message;
   });
-
-  ["q","resource","start","end"].forEach(id => {
-    $(id).addEventListener("input", rerun);
-    $(id).addEventListener("change", rerun);
-  });
-  $("btnReload").addEventListener("click", rerun);
-
-  rerun();
 }
 wire();
 </script>
