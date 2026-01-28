@@ -21,12 +21,14 @@
       --wClient: 160px;
       --wShift: 82px;
 
-      --mRow: rgba(167,139,250,.14);
-      --tRow: rgba(56,189,248,.10);
+      /* cores “linha” (opacas agora via gradient, sem alpha em sticky) */
+      --mStrip:#2b2a57;   /* manhã */
+      --tStrip:#0f3348;   /* tarde */
 
-      /* NOVO: fundo opaco para colunas congeladas */
-      --stickyBg: #0b1220;          /* sólido */
-      --stickyBg2:#0a162e;          /* leve variação (opcional) */
+      /* fundos sólidos (SEM rgba) */
+      --solidBG: #0b1220;
+      --solidHdr: #0a162e;
+      --solidSticky: #0b1220;
 
       --hdrH: 0px;
     }
@@ -40,12 +42,12 @@
       overflow:hidden;
     }
 
+    /* IMPORTANTE: sem backdrop-filter (blur) para não “parecer translúcido” */
     header{
       padding:10px 12px 8px;
       border-bottom:1px solid var(--line);
       position:sticky; top:0;
-      backdrop-filter: blur(10px);
-      background:rgba(11,18,32,.72);
+      background: var(--solidBG);
       z-index:50;
     }
     header.collapsed .toolbar,
@@ -97,7 +99,7 @@
       padding:7px 8px;
       border-radius:10px;
       border:1px solid var(--line);
-      background:rgba(15,26,48,.70);
+      background:#0f1a30; /* sólido */
       color:var(--text);
       outline:none;
       font-size:12px;
@@ -107,7 +109,7 @@
     .legend{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
     .chipBtn{
       display:inline-flex; align-items:center; gap:8px;
-      background:rgba(21,38,74,.85);
+      background:#14264a; /* sólido */
       border:1px solid var(--line);
       padding:4px 10px; border-radius:999px;
       font-size:11px; color:var(--text);
@@ -128,7 +130,7 @@
       gap:8px;
     }
     .card{
-      background:var(--card);
+      background:#0f1a30; /* sólido */
       border:1px solid var(--line);
       border-radius:14px;
       padding:10px;
@@ -146,7 +148,7 @@
       max-width:1500px;
       height:100%;
       margin:0 auto;
-      background:var(--card);
+      background:#0f1a30; /* sólido */
       border:1px solid var(--line);
       border-radius:16px;
       overflow:hidden;
@@ -158,6 +160,7 @@
       padding:8px 10px;
       border-bottom:1px solid var(--line);
       flex:0 0 auto;
+      background: var(--solidBG);
     }
     .gridhead .hint{color:var(--muted); font-size:11px}
 
@@ -166,9 +169,7 @@
       flex:1 1 auto;
       min-height:0;
       overflow:auto;
-      background:rgba(11,18,32,.35);
-      transform: translateZ(0);
-      will-change: scroll-position;
+      background: var(--solidBG);
       overscroll-behavior: contain;
     }
 
@@ -185,16 +186,13 @@
 
     thead th{
       position:sticky;
-      background:rgba(11,18,32,.97);
-      border-bottom:1px solid var(--line);
+      background: var(--solidHdr);  /* SÓLIDO */
+      border-bottom:1px solid rgba(255,255,255,.16);
       color:var(--muted);
       padding:0 6px;
       white-space:nowrap;
       text-align:center;
       z-index:10;
-      backface-visibility:hidden;
-      transform: translateZ(0);
-      background-clip: padding-box;
     }
     thead tr:nth-child(1) th{
       top:0;
@@ -211,25 +209,22 @@
       z-index:11;
     }
 
-    /* TH rowSpan=2 */
+    /* TH rowSpan=2 (Cliente/Turno) totalmente sólido */
     thead th.stickyClient,
     thead th.stickyShift{
       top:0 !important;
       height: calc(var(--headH1) + var(--headH2));
       line-height: calc(var(--headH1) + var(--headH2));
       z-index:60;
-      background: var(--stickyBg) !important; /* OPACO */
+      background: var(--solidHdr) !important; /* igual ao header */
     }
 
-    /* ===== Colunas congeladas (BODY + HEADER) com fundo opaco ===== */
+    /* colunas sticky (header+body) sempre sólidas */
     .stickyClient, .stickyShift{
       position:sticky;
       z-index:30;
-      border-right:1px solid rgba(255,255,255,.10);
-      backface-visibility:hidden;
-      transform: translateZ(0);
-      background: var(--stickyBg) !important;
-      background-clip: padding-box;
+      border-right:1px solid rgba(255,255,255,.14);
+      background: var(--solidSticky) !important;
     }
     .stickyClient{
       left:0;
@@ -246,12 +241,6 @@
       text-align:center;
     }
 
-    /* ===== Impede a cor da linha (row-m/row-t) de “vazar” nas colunas sticky ===== */
-    .row-m td.stickyClient, .row-m td.stickyShift,
-    .row-t td.stickyClient, .row-t td.stickyShift{
-      background: var(--stickyBg) !important;
-    }
-
     tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
       padding:0 4px;
@@ -260,12 +249,20 @@
       font-size:11px;
       white-space:nowrap;
       vertical-align:middle;
+      background: var(--solidBG); /* base sólida para células */
     }
 
-    .row-m td{ background-color: var(--mRow); }
-    .row-t td{ background-color: var(--tRow); }
+    /* “cor da linha” agora é faixa sólida (não alpha) */
+    .row-m td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
+    .row-t td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
 
-    .weekend-col{ background: rgba(251,191,36,.16) !important; }
+    /* sticky NÃO recebe gradient: fica sólido */
+    .row-m td.stickyClient, .row-m td.stickyShift,
+    .row-t td.stickyClient, .row-t td.stickyShift{
+      background: var(--solidSticky) !important;
+    }
+
+    .weekend-col{ background: #2a2618 !important; } /* sólido p/ fim de semana */
     .today{
       outline:2px solid rgba(45,212,191,.95);
       box-shadow: inset 0 0 0 1px rgba(45,212,191,.28);
@@ -290,7 +287,7 @@
       min-width:22px; height:14px; padding:0 5px;
       border-radius:5px;
       border:1px solid rgba(255,255,255,.10);
-      background:rgba(21,38,74,.75);
+      background:#14264a; /* sólido */
       font-weight:950; color:var(--text);
       font-size:10px; line-height:14px;
     }
@@ -305,6 +302,7 @@
       color:var(--muted);
       font-size:11px;
       flex:0 0 auto;
+      background: var(--solidBG);
     }
   </style>
 </head>
@@ -315,7 +313,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Fix: colunas congeladas agora com fundo 100% opaco (sem transparência ao rolar).</div>
+        <div class="sub">Fix definitivo: headers + colunas sticky 100% sólidos (sem translucidez em scroll H/V).</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" title="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -631,7 +629,6 @@ function render(cache){
     if(isWeekendDOW(fDows[i])) th.classList.add("weekend-col");
     headDow.appendChild(th);
   });
-
   fDates.forEach((d,i)=>{
     const th=document.createElement("th");
     th.textContent=d;
@@ -767,7 +764,9 @@ function wire(){
   });
 
   $("resource").addEventListener("change", ()=>{
-    state.selected.clear(); syncLegendUI(); rerun();
+    state.selected.clear();
+    syncLegendUI();
+    rerun();
   });
 
   $("btnReload").addEventListener("click", ()=>{
