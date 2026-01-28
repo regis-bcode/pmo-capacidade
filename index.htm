@@ -18,15 +18,17 @@
       --jc:#fbbf24;
       --al:#fb7185;
 
-      --mRow: rgba(167,139,250,.18);
-      --tRow: rgba(56,189,248,.14);
+      /* Ultra denso estilo Excel */
+      --rowH: 18px;          /* <<< MAIS COMPACTO */
+      --headH: 26px;         /* altura do header da tabela */
+      --wClient: 150px;
+      --wShift: 74px;
 
-      /* ULTRA DENSO */
-      --rowH: 24px;
-      --wClient: 160px;
-      --wShift: 86px;
+      /* Faixas turno */
+      --mRow: rgba(167,139,250,.14);
+      --tRow: rgba(56,189,248,.10);
 
-      --hdrH: 0px; /* calculado via JS */
+      --hdrH: 0px;
     }
 
     *{box-sizing:border-box}
@@ -38,7 +40,7 @@
       overflow:hidden;
     }
 
-    /* ================= HEADER (max/min filtros) ================= */
+    /* ================= HEADER ================= */
     header{
       padding:10px 12px 8px;
       border-bottom:1px solid var(--line);
@@ -54,7 +56,6 @@
     }
 
     .wrap{max-width:1500px; margin:0 auto; padding:0 12px;}
-
     .title{
       display:flex;
       align-items:flex-start;
@@ -66,9 +67,8 @@
     .sub{margin:0; color:var(--muted); font-size:11px; line-height:1.2;}
 
     .titleRight{display:flex; align-items:center; gap:8px;}
-
     .btn{
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      display:inline-flex; align-items:center; justify-content:center;
       padding:8px 10px;
       border-radius:10px;
       border:1px solid var(--line);
@@ -83,9 +83,9 @@
     .btn:active{transform:translateY(1px)}
     .btn.secondary{ background:rgba(15,26,48,.70); }
 
+    /* Botão funil */
     .iconBtn{
-      width:42px;
-      height:36px;
+      width:42px; height:36px;
       border-radius:10px;
       border:1px solid var(--line);
       background:rgba(15,26,48,.70);
@@ -96,18 +96,11 @@
       user-select:none;
       position:relative;
     }
-    .iconBtn:hover{
-      border-color: rgba(255,255,255,.22);
-      box-shadow: 0 10px 20px rgba(0,0,0,.25);
-    }
-    .iconBtn:active{ transform: translateY(1px); }
-
+    .iconBtn:hover{ border-color: rgba(255,255,255,.22); box-shadow: 0 10px 20px rgba(0,0,0,.25); }
     .funnel{width:16px; height:16px; position:relative;}
     .funnel:before, .funnel:after{
       content:"";
-      position:absolute;
-      left:0; right:0;
-      margin:auto;
+      position:absolute; left:0; right:0; margin:auto;
       border-radius:2px;
       background:rgba(232,239,255,.92);
     }
@@ -117,7 +110,6 @@
                   0 10px 0 rgba(232,239,255,.92);
     }
     .funnel:after{ width:9px; height:3px; top:13px; }
-
     .iconBtn[data-tip]:hover::after{
       content: attr(data-tip);
       position:absolute;
@@ -153,7 +145,7 @@
       font-size:12px;
     }
 
-    /* ===== CHIPS ===== */
+    /* Chips filtro */
     .legendWrap{
       display:flex;
       align-items:center;
@@ -173,19 +165,13 @@
       cursor:pointer;
       user-select:none;
       position:relative;
-      transition: opacity .15s ease, border-color .15s ease, transform .05s ease, box-shadow .15s ease;
+      transition: opacity .15s ease;
     }
-    .chipBtn:hover{ border-color: rgba(255,255,255,.25); box-shadow:0 10px 20px rgba(0,0,0,.25); }
-    .chipBtn:active{ transform: translateY(1px); }
     .chipBtn .dot{width:9px; height:9px; border-radius:50%}
-    .chipBtn .code{font-weight:950; letter-spacing:.2px}
+    .chipBtn .code{font-weight:950;}
     .chipBtn .caret{display:none; font-weight:900; margin-left:2px}
-    .chipBtn[aria-pressed="true"]{
-      border-color: rgba(255,255,255,.38);
-      box-shadow: 0 12px 22px rgba(0,0,0,.32);
-    }
+    .chipBtn[aria-pressed="true"]{ border-color: rgba(255,255,255,.38); }
     .chipBtn[aria-pressed="true"] .caret{display:inline}
-
     .chipBtn[data-tip]:hover::after{
       content: attr(data-tip);
       position:absolute;
@@ -202,10 +188,9 @@
       z-index:999;
       pointer-events:none;
     }
-
     .hintline{ color:var(--muted); font-size:10px; opacity:.9; }
 
-    /* ===== KPI ===== */
+    /* KPI cards compactos */
     .cards{
       padding:8px 0 6px;
       display:grid;
@@ -217,19 +202,17 @@
       border:1px solid var(--line);
       border-radius:14px;
       padding:10px;
-      box-shadow: 0 12px 26px rgba(0,0,0,.28);
-      min-height:60px;
+      min-height:56px;
     }
     .kpi{font-size:11px; color:var(--muted)}
     .val{margin-top:4px; font-size:16px; font-weight:900}
 
-    /* ================= MAIN ================= */
+    /* ================= MAIN / GRID ================= */
     main{
       height: calc(100vh - var(--hdrH));
       padding:0 12px 0;
       overflow:hidden;
     }
-
     .gridcard{
       max-width:1500px;
       height:100%;
@@ -238,26 +221,24 @@
       border:1px solid var(--line);
       border-radius:16px;
       overflow:hidden;
-      box-shadow: 0 16px 34px rgba(0,0,0,.30);
       display:flex;
       flex-direction:column;
     }
     .gridhead{
       display:flex; justify-content:space-between; align-items:center;
-      padding:10px 12px;
+      padding:8px 10px;
       border-bottom:1px solid var(--line);
       flex:0 0 auto;
     }
     .gridhead .hint{color:var(--muted); font-size:11px}
 
-    /* ===== split panes ===== */
     .gridBody{
       display:flex;
       flex:1 1 auto;
       min-height:0;
     }
 
-    /* LEFT frozen: Cliente + Turno */
+    /* LEFT frozen */
     .leftPane{
       width: calc(var(--wClient) + var(--wShift));
       border-right:1px solid rgba(255,255,255,.08);
@@ -290,8 +271,13 @@
       min-height:0;
     }
 
-    table{ border-collapse:separate; border-spacing:0; width:max-content; }
+    table{
+      border-collapse:separate;
+      border-spacing:0;
+      width:max-content;
+    }
 
+    /* HEADER DAS TABELAS: altura fixa para não descasar */
     .leftTable thead th,
     .rightTable thead th{
       position:sticky;
@@ -301,31 +287,37 @@
       border-bottom:1px solid var(--line);
       font-size:10px;
       color:var(--muted);
-      padding:5px 6px;
-      line-height:1.05;
+      padding:0 6px;          /* <<< zera vertical */
+      height: var(--headH);   /* <<< fixa */
+      line-height: var(--headH);
       white-space:nowrap;
     }
     .leftTable thead th{ z-index:15; }
 
+    /* LINHAS: garante altura idêntica em left/right */
+    .leftTable tr,
+    .rightTable tr{
+      height: var(--rowH);
+    }
     .leftTable tbody td,
     .rightTable tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
-      padding:2px 4px;
+      padding:0 4px;          /* <<< zera vertical */
+      height: var(--rowH);    /* <<< fixa */
+      line-height: var(--rowH);
       font-size:11px;
       white-space:nowrap;
-      height:var(--rowH);
+      vertical-align:middle;
     }
 
-    /* row colors for shift */
+    /* Faixas */
     .row-m td{ background-color: var(--mRow); }
     .row-t td{ background-color: var(--tRow); }
 
-    /* weekend highlight for dates grid */
-    .weekend-col{
-      background: rgba(251,191,36,.16) !important;
-    }
+    /* Weekend */
+    .weekend-col{ background: rgba(251,191,36,.16) !important; }
 
-    /* left columns */
+    /* Colunas fixas */
     .col-client{
       min-width:var(--wClient);
       max-width:var(--wClient);
@@ -339,48 +331,43 @@
       font-weight:950;
       letter-spacing:.2px;
     }
-    .clientBox{ height:100%; width:100%; display:flex; align-items:center; justify-content:center; padding:6px 6px; }
-    .clientBadge{
+
+    /* Cliente FLAT (sem “card alto” que estoura a linha) */
+    .clientText{
+      display:block;
       width:100%;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.12);
-      background:linear-gradient(180deg, rgba(148,163,184,.18), rgba(21,38,74,.38));
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-      padding:6px 6px;
-      text-align:center;
-      font-weight:950;
-      font-size:11px;
-      letter-spacing:.3px;
-      text-transform:uppercase;
+      padding:0 6px;          /* sem vertical */
       overflow:hidden;
       text-overflow:ellipsis;
       white-space:nowrap;
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
     }
 
-    /* chips inside grid */
+    /* Chip dentro da grade ultra compacto */
     .chip{
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      min-width:24px;
-      height:16px;
-      padding:0 6px;
-      border-radius:6px;
+      min-width:22px;
+      height:14px;
+      padding:0 5px;
+      border-radius:5px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(21,38,74,.75);
       font-weight:950;
       color:var(--text);
       font-size:10px;
-      line-height:16px;
+      line-height:14px;
     }
     .empty{opacity:.25}
-
     .today{
       outline:2px solid rgba(45,212,191,.95);
       box-shadow: inset 0 0 0 1px rgba(45,212,191,.28);
     }
 
-    /* fixed horizontal scrollbar ONLY for dates grid */
+    /* Barra horizontal fixa só do grid de datas */
     .hscrollBar{
       height:12px;
       overflow-x:auto;
@@ -398,7 +385,7 @@
     .hscrollInner{ height:1px; }
 
     .foot{
-      padding:8px 12px;
+      padding:8px 10px;
       border-top:1px solid var(--line);
       display:flex;
       justify-content:space-between;
@@ -411,7 +398,7 @@
     @media (max-width:1100px){
       .toolbar{grid-template-columns: 1fr 1fr;}
       .cards{grid-template-columns: 1fr 1fr;}
-      :root{ --wClient: 140px; --wShift: 80px; }
+      :root{ --wClient: 130px; --wShift: 70px; --rowH: 18px; }
     }
   </style>
 </head>
@@ -423,9 +410,8 @@
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
         <div class="sub">
-          Ultra-denso. Colunas congeladas: Cliente + Turno. Barra horizontal sempre visível e exclusiva do grid de datas/alocações.
-          Funil: maximiza/minimiza filtros.
-          Clique normal nos chips = seleção exclusiva; Ctrl/⌘ + clique = multi-seleção.
+          Estilo Excel (ultra-denso). Cliente/Turno congelados. Barra horizontal sempre visível apenas para datas/alocações.
+          Funil: maximizar/minimizar filtros.
         </div>
       </div>
 
@@ -465,7 +451,7 @@
     <div class="legendWrap">
       <div class="legend" id="legend"></div>
       <button class="btn secondary" id="btnClear" style="padding:6px 10px; border-radius:999px;">Limpar</button>
-      <span class="hintline">Hover chips: DO=Dôra, GE=Geovana, JC=João Custódio, AL=Aline</span>
+      <span class="hintline">Hover: DO=Dôra, GE=Geovana, JC=João Custódio, AL=Aline</span>
     </div>
 
     <div class="cards">
@@ -489,7 +475,7 @@
   </div>
 </header>
 
-<main id="main">
+<main>
   <div class="gridcard">
     <div class="gridhead">
       <div style="font-weight:900">Grade de Alocação</div>
@@ -497,7 +483,7 @@
     </div>
 
     <div class="gridBody">
-      <!-- LEFT (Cliente + Turno) -->
+      <!-- LEFT -->
       <div class="leftPane">
         <div class="leftScroll" id="leftScroll">
           <table class="leftTable" id="leftTable">
@@ -512,7 +498,7 @@
         </div>
       </div>
 
-      <!-- RIGHT (Datas + Alocações) -->
+      <!-- RIGHT -->
       <div class="rightPaneWrap">
         <div class="rightScroll" id="rightScroll">
           <table class="rightTable" id="rightTable">
@@ -544,14 +530,12 @@ const SHEET_GID = "0";
 const ENDPOINT_PUBLISHED_CSV = (gid) => `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}`;
 
 const RESOURCE_NAMES = { "DO":"Dôra", "GE":"Geovana", "JC":"João Custódio", "AL":"Aline" };
-
 const state = { selected: new Set(), cache: null };
 const $ = (id) => document.getElementById(id);
 
 function getCSS(varName){ return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
 const COLOR = { "DO":getCSS("--do"), "GE":getCSS("--ge"), "JC":getCSS("--jc"), "AL":getCSS("--al") };
 
-/* ===== header height / collapse ===== */
 function syncHeaderHeight(){
   const h = Math.ceil($("hdr").getBoundingClientRect().height);
   document.documentElement.style.setProperty("--hdrH", h + "px");
@@ -563,13 +547,12 @@ function toggleFilters(){
 $("btnToggleFilters").addEventListener("click", toggleFilters);
 window.addEventListener("resize", () => { syncHeaderHeight(); syncHScrollWidth(); });
 
-/* ===== weekend ===== */
 function isWeekendDOW(dowStr){
   const s = (dowStr || "").toUpperCase().trim();
   return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM") || s.startsWith("SÁBADO") || s.startsWith("DOMINGO");
 }
 
-/* ===== chips ===== */
+/* ===== chips filtro ===== */
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
@@ -630,7 +613,7 @@ $("btnClear").addEventListener("click", () => {
   rerender();
 });
 
-/* ===== active filter ===== */
+/* ===== filtro ativo ===== */
 function getActiveCodes(){
   const dd = $("resource").value.trim().toUpperCase();
   if (dd) return new Set([dd]);
@@ -731,7 +714,6 @@ function getClientAndShift(row, dateIdxStart, lastClient){
       shift = solo;
     }
   }
-
   if (!shift){
     const solo = normalizeShift(cellA);
     if (solo && lastClient){
@@ -863,13 +845,10 @@ function render(cache){
     tdClient.className = "col-client";
     tdClient.rowSpan = 2;
 
-    const box = document.createElement("div");
-    box.className = "clientBox";
-    const badge = document.createElement("div");
-    badge.className = "clientBadge";
-    badge.textContent = g.client || "—";
-    box.appendChild(badge);
-    tdClient.appendChild(box);
+    const span = document.createElement("span");
+    span.className = "clientText";
+    span.textContent = g.client || "—";
+    tdClient.appendChild(span);
 
     const tdShiftM = document.createElement("td");
     tdShiftM.className = "col-shift";
@@ -934,6 +913,7 @@ function render(cache){
 
     const allocM = (g.M && g.M.alloc) ? g.M.alloc : [];
     const allocT = (g.T && g.T.alloc) ? g.T.alloc : [];
+
     const winM = allocM.filter((_,i)=>dateMask[i]);
     const winT = allocT.filter((_,i)=>dateMask[i]);
 
