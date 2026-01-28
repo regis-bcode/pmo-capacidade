@@ -3,34 +3,44 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Painel PMO - Gestão de Capacidade (Folha)</title>
+  <title>Painel PMO — Gestão de Capacidade (Folha)</title>
+
   <style>
     :root{
       --bg:#0b1220;
+      --panel:#0f1a30;
       --text:#e8efff;
       --muted:#93a4c7;
       --line:rgba(255,255,255,.10);
 
-      --do:#60a5fa; --ge:#34d399; --jc:#fbbf24; --al:#fb7185;
+      --do:#60a5fa;
+      --ge:#34d399;
+      --jc:#fbbf24;
+      --al:#fb7185;
 
-      /* Ultra-denso */
-      --rowH: 18px;
-      --headH1: 14px;  /* linha DIA DA SEMANA */
-      --headH2: 14px;  /* linha DATA */
-      --headTotal: calc(var(--headH1) + var(--headH2));
+      --danger:#ef4444;
+      --ok:#22c55e;
 
-      /* Larguras fixas (sem subpixel) */
-      --wClient: 170px;
-      --wTurno: 86px;
+      /* ultra-denso */
+      --rowH:18px;
+      --headH1:14px; /* DOW */
+      --headH2:14px; /* DATE */
 
-      /* Fundos sólidos (SEM transparência) */
-      --solidBG: #0b1220;
-      --solidHdr: #0a162e;
-      --solidSticky: #0b1220;
+      --wClient:170px;
+      --wTurno:86px;
+      --wDate:64px;
 
-      /* Faixas (sólidas) para manhã/tarde */
+      --solidBG:#0b1220;
+      --solidHdr:#0a162e;
+      --solidSticky:#0b1220;
+
       --mStrip:#2b2a57;
       --tStrip:#0f3348;
+
+      --weekend:#2a2618;
+      --free:#12321f;
+      --freeHdr:#154027;
+      --confHdr:#3a1212;
     }
 
     *{box-sizing:border-box}
@@ -42,9 +52,125 @@
       overflow:hidden;
     }
 
-    /* === CONTÊINER DO GRID COM SCROLL (VERTICAL + HORIZONTAL) === */
+    /* ===== TOP BAR ===== */
+    .top{
+      padding:10px 12px 8px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(10,22,46,.98), rgba(10,22,46,.86));
+    }
+    .titleRow{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:10px;
+      margin-bottom:8px;
+    }
+    .title{
+      font-weight:950; font-size:16px;
+    }
+    .subtitle{
+      color:var(--muted); font-size:12px; font-weight:700;
+    }
+
+    .filters{
+      display:grid;
+      grid-template-columns: 1.3fr 0.9fr 0.7fr 0.7fr auto;
+      gap:10px;
+      align-items:end;
+    }
+    .field label{
+      display:block;
+      font-size:11px;
+      color:var(--muted);
+      margin:0 0 6px;
+      font-weight:800;
+    }
+    .field input,.field select{
+      width:100%;
+      background:#0f1a30;
+      border:1px solid var(--line);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:800;
+      outline:none;
+    }
+    .btn{
+      border:1px solid rgba(255,255,255,.45);
+      background:transparent;
+      color:#fff;
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
+    }
+
+    .chipRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+
+    .chipBtn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#0f1a30;
+      cursor:pointer;
+      user-select:none;
+      font-weight:900;
+      font-size:12px;
+      color:#fff;
+      transition:transform .05s ease;
+    }
+    .chipBtn:active{ transform:scale(.98); }
+    .chipBtn .dot{ width:10px;height:10px;border-radius:50%; }
+    .chipBtn[aria-pressed="true"]{
+      border-color: rgba(255,255,255,.55);
+      background:#14264a;
+    }
+
+    .modeBtns{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-left:6px;
+    }
+    .modeBtn{
+      display:inline-flex; align-items:center;
+      padding:8px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#0f1a30;
+      cursor:pointer;
+      user-select:none;
+      font-size:12px;
+      font-weight:950;
+      color:#fbbf24; /* amarelo (como você queria) */
+    }
+    .modeBtn[aria-pressed="true"]{
+      background:#14264a;
+      border-color: rgba(255,255,255,.45);
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:10px;
+      margin-top:10px;
+    }
+    .kpi{
+      background:#0f1a30;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    .kpi .k{ color:var(--muted); font-size:11px; font-weight:800; }
+    .kpi .v{ font-size:18px; font-weight:950; margin-top:6px; }
+
+    /* ===== GRID ===== */
     .gridWrap{
-      height: 100vh;
+      height: calc(100vh - 210px);
       padding:12px;
     }
     .gridCard{
@@ -56,18 +182,26 @@
       display:flex;
       flex-direction:column;
     }
-
     .gridTitle{
       padding:10px 12px;
       border-bottom:1px solid var(--line);
-      font-weight:900;
+      font-weight:950;
       background: var(--solidBG);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .status{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
     }
 
     .tableScroll{
       flex:1 1 auto;
       min-height:0;
-      overflow:auto;           /* a rolagem acontece aqui */
+      overflow:auto;
       background: var(--solidBG);
       overscroll-behavior: contain;
     }
@@ -94,17 +228,15 @@
       padding:0 6px;
       white-space:nowrap;
       font-size:10px;
-      font-weight:900;
-      z-index: 10; /* base */
+      font-weight:950;
+      z-index: 10;
     }
-    /* linha 1 do header (DOW) fica no topo */
     thead tr:nth-child(1) th{
       top: 0;
       height: var(--headH1);
       line-height: var(--headH1);
       z-index: 20;
     }
-    /* linha 2 do header (DATA) fica logo abaixo */
     thead tr:nth-child(2) th{
       top: var(--headH1);
       height: var(--headH2);
@@ -112,12 +244,7 @@
       z-index: 19;
     }
 
-    /* =========================
-       FIX DEFINITIVO:
-       CABEÇALHO "CLIENTE" e "TURNO" NÃO PODE SUMIR
-       -> sticky TOP + LEFT (4-way sticky)
-       -> z-index acima de tudo
-       ========================= */
+    /* HEADER Cliente/Turno — sticky TOP + LEFT (não some nunca) */
     thead th.thClient{
       left: 0;
       width: var(--wClient);
@@ -125,7 +252,7 @@
       max-width: var(--wClient);
       text-align:left;
       padding-left:10px;
-      z-index: 1000;            /* acima do resto */
+      z-index: 1000;
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
@@ -134,12 +261,11 @@
       width: var(--wTurno);
       min-width: var(--wTurno);
       max-width: var(--wTurno);
-      z-index: 999;             /* logo abaixo do Cliente */
+      z-index: 999;
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
 
-    /* Corpo */
     tbody td{
       height: var(--rowH);
       line-height: var(--rowH);
@@ -152,7 +278,7 @@
       vertical-align:middle;
     }
 
-    /* Colunas fixas do corpo (Cliente/Turno) - não andam no scroll horizontal */
+    /* COLUNAS FIXAS (Cliente/Turno) — sempre opacas */
     tbody td.tdClient{
       position: sticky;
       left: 0;
@@ -160,7 +286,7 @@
       min-width: var(--wClient);
       max-width: var(--wClient);
       z-index: 50;
-      background: var(--solidSticky);
+      background: var(--solidSticky) !important;
       border-right:1px solid rgba(255,255,255,.14);
     }
     tbody td.tdTurno{
@@ -170,10 +296,10 @@
       min-width: var(--wTurno);
       max-width: var(--wTurno);
       z-index: 49;
-      background: var(--solidSticky);
+      background: var(--solidSticky) !important;
       border-right:1px solid rgba(255,255,255,.14);
       text-align:center;
-      font-weight:900;
+      font-weight:950;
     }
 
     .clientText{
@@ -181,21 +307,27 @@
       padding:0 6px;
       overflow:hidden;
       text-overflow:ellipsis;
-      font-weight:900;
+      font-weight:950;
       text-transform:uppercase;
     }
 
-    /* faixas manhã/tarde (no BODY todo) */
+    /* Faixas manhã/tarde */
     tr.rowM td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
     tr.rowT td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
-    /* mas as colunas fixas continuam sólidas */
     tr.rowM td.tdClient, tr.rowM td.tdTurno,
     tr.rowT td.tdClient, tr.rowT td.tdTurno{
       background: var(--solidSticky) !important;
     }
 
-    /* Fim de semana */
-    .weekend{ background:#2a2618 !important; }
+    /* Weekend */
+    .weekend{ background: var(--weekend) !important; }
+
+    /* Período livre (Taxa Ociosidade) */
+    .freeCell{ background: var(--free) !important; }
+    .freeHdr{ background: var(--freeHdr) !important; color:#d1fae5 !important; }
+
+    /* Conflito (Cap vs Dem) */
+    .confHdr{ background: var(--confHdr) !important; color:#fee2e2 !important; }
 
     /* Chips */
     .cellChips{display:flex; align-items:center; justify-content:center; gap:2px;}
@@ -210,15 +342,91 @@
       line-height:14px;
       color:var(--text);
     }
-    .empty{opacity:.25}
+    .chip.empty{opacity:.25}
+    .chip.conflict{
+      background: var(--danger) !important;
+      color:#0b1220 !important;
+      border-color: rgba(0,0,0,.15);
+    }
 
+    /* Linha escondida por filtro */
+    tr.hidden{ display:none; }
+
+    /* Colunas escondidas (janela) */
+    .colHidden{ display:none; }
   </style>
 </head>
 
 <body>
+  <div class="top">
+    <div class="titleRow">
+      <div>
+        <div class="title">Painel PMO — Gestão de Capacidade (Folha)</div>
+        <div class="subtitle" id="subTitle">Fonte: Google Sheets publicado (CSV). Filtro estrito por colaborador + modos especiais.</div>
+      </div>
+      <button class="btn" id="btnReload">Recarregar dados</button>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <label>Busca (cliente)</label>
+        <input id="qClient" placeholder="Ex.: HS MATEUS, ABBR, MEDILAR..." />
+      </div>
+      <div class="field">
+        <label>Filtro por recurso (dropdown)</label>
+        <select id="selRes">
+          <option value="">Todos</option>
+          <option value="DO">DO (Dôra)</option>
+          <option value="GE">GE (Geovana)</option>
+          <option value="JC">JC (João Custódio)</option>
+          <option value="AL">AL (Aline)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Data início (dd/mm)</label>
+        <input id="dStart" placeholder="Ex.: 24/01" />
+      </div>
+      <div class="field">
+        <label>Data fim (dd/mm)</label>
+        <input id="dEnd" placeholder="Ex.: 29/04" />
+      </div>
+      <button class="btn" id="btnClear">Limpar</button>
+    </div>
+
+    <div class="chipRow">
+      <button class="chipBtn" data-code="DO" aria-pressed="false" title="DO = Dôra">
+        <span class="dot" style="background:var(--do)"></span> DO
+      </button>
+      <button class="chipBtn" data-code="GE" aria-pressed="false" title="GE = Geovana">
+        <span class="dot" style="background:var(--ge)"></span> GE
+      </button>
+      <button class="chipBtn" data-code="JC" aria-pressed="false" title="JC = João Custódio">
+        <span class="dot" style="background:var(--jc)"></span> JC
+      </button>
+      <button class="chipBtn" data-code="AL" aria-pressed="false" title="AL = Aline">
+        <span class="dot" style="background:var(--al)"></span> AL
+      </button>
+
+      <div class="modeBtns">
+        <button class="modeBtn" id="btnCap" aria-pressed="false">Capacidade vs. Demandas</button>
+        <button class="modeBtn" id="btnIdle" aria-pressed="false">Taxa de Ociosidade</button>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k">Linhas exibidas</div><div class="v" id="kRows">—</div></div>
+      <div class="kpi"><div class="k">Colunas (janela)</div><div class="v" id="kCols">—</div></div>
+      <div class="kpi"><div class="k">Células preenchidas</div><div class="v" id="kFilled">—</div></div>
+      <div class="kpi"><div class="k">Hoje</div><div class="v" id="kToday">—</div></div>
+    </div>
+  </div>
+
   <div class="gridWrap">
     <div class="gridCard">
-      <div class="gridTitle">Grade de Alocação</div>
+      <div class="gridTitle">
+        <div>Grade de Alocação</div>
+        <div class="status" id="status">Status: carregando…</div>
+      </div>
 
       <div class="tableScroll" id="tableScroll">
         <table id="gridTable">
@@ -233,11 +441,26 @@
   </div>
 
 <script>
-/* ===== CONFIG ===== */
+/* ===================== CONFIG ===================== */
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub?gid=0&single=true&output=csv";
 const RESOURCE_NAMES = { DO:"Dôra", GE:"Geovana", JC:"João Custódio", AL:"Aline" };
 const VALID = new Set(["DO","GE","JC","AL"]);
+const TURNOS = { M:"MANHÃ", T:"TARDE" };
 
+/* ===================== STATE ===================== */
+let rawRows = [];
+let dows = [];
+let dates = [];          // ["12/01", ...]
+let dateIdxStart = -1;   // coluna inicial de datas
+let bodyData = [];       // [{client, turnoNorm, turnoKey(M/T), cellsRaw:[], codesByCol:[["DO"],["AL","GE"]...]}]
+let selectedCodes = new Set();
+let mode = "";           // "", "cap", "idle"
+let windowFrom = null;   // index inclusive
+let windowTo = null;     // index inclusive
+let conflicts = new Set();  // keys: `${code}|${col}|${turnoKey}`
+let idleCols = new Set();   // keys: `${col}|${turnoKey}`
+
+/* ===================== CSV PARSER ===================== */
 function parseCSV(text){
   const rows=[];
   let row=[], cur="", inQ=false;
@@ -286,39 +509,230 @@ function parseCellCodes(cellRaw){
   return out;
 }
 
-function chipEl(code){
+function toTurnoKey(turnoNorm){
+  const t = String(turnoNorm||"").toUpperCase().trim();
+  if (t==="M" || t==="MANHÃ" || t==="MANHA") return "M";
+  if (t==="T" || t==="TARDE") return "T";
+  return "";
+}
+
+function ddmmToIndex(ddmm){
+  const x = String(ddmm||"").trim();
+  const m = x.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if(!m) return null;
+  const label = `${String(m[1]).padStart(2,"0")}/${String(m[2]).padStart(2,"0")}`;
+  const idx = dates.indexOf(label);
+  return idx>=0 ? idx : null;
+}
+
+/* ===================== RENDER HELPERS ===================== */
+function chipEl(code, opts={}){
   const v=String(code||"").toUpperCase().trim();
   const sp=document.createElement("span");
   sp.className="chip"+(!v?" empty":"");
   sp.textContent=v || "—";
-  if(RESOURCE_NAMES[v]) sp.title=`${v} = ${RESOURCE_NAMES[v]}`;
+  if (v && RESOURCE_NAMES[v]) sp.title = `${v} = ${RESOURCE_NAMES[v]}`;
+  if (opts.conflict) sp.classList.add("conflict");
+
   const css=getComputedStyle(document.documentElement);
-  const colors={ DO:css.getPropertyValue("--do").trim(), GE:css.getPropertyValue("--ge").trim(), JC:css.getPropertyValue("--jc").trim(), AL:css.getPropertyValue("--al").trim() };
-  if(colors[v]){
+  const colors={
+    DO:css.getPropertyValue("--do").trim(),
+    GE:css.getPropertyValue("--ge").trim(),
+    JC:css.getPropertyValue("--jc").trim(),
+    AL:css.getPropertyValue("--al").trim()
+  };
+  if(colors[v] && !opts.conflict){
     sp.style.background=colors[v];
+    sp.style.color="#0b1220";
+  }
+  if(opts.conflict){
     sp.style.color="#0b1220";
   }
   return sp;
 }
 
-/* ===== RENDER ===== */
-async function load(){
-  const res=await fetch(CSV_URL, {cache:"no-store"});
-  if(!res.ok) throw new Error("Falha ao buscar CSV");
-  const csv=await res.text();
-  const rows=parseCSV(csv).filter(r=>r.some(c=>c && c!==""));
-  if(rows.length<3) return;
+function setStatus(msg){ document.getElementById("status").textContent = msg; }
 
-  const dowRow=rows[0];
-  const dateRow=rows[1];
+function updateKPIs(rowsShown, colsShown, filled, todayLabel){
+  document.getElementById("kRows").textContent = String(rowsShown);
+  document.getElementById("kCols").textContent = String(colsShown);
+  document.getElementById("kFilled").textContent = String(filled);
+  document.getElementById("kToday").textContent = todayLabel || "—";
+}
 
-  const dateIdxStart = dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
-  if(dateIdxStart<0) return;
+/* ===================== BUILD DATA MODEL ===================== */
+function buildBodyData(rows){
+  const out = [];
+  let lastClient="";
+  for(let r=2;r<rows.length;r++){
+    const row=rows[r];
+    const first=row.findIndex(c=>c && c!=="");
+    if(first<0) continue;
 
-  const dows = dowRow.slice(dateIdxStart);
-  const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
+    let client=(row[first]||"").trim();
+    let turno=(row[first+1]||"").trim();
 
-  // Header (linha 1 e 2) + CLIENTE/TURNO 4-way sticky
+    const t=(x)=>String(x||"").toUpperCase().trim();
+    const isM = (x)=> (t(x)==="M" || t(x)==="MANHÃ" || t(x)==="MANHA");
+    const isT = (x)=> (t(x)==="T" || t(x)==="TARDE");
+
+    if(isM(client) || isT(client)){
+      turno = client;
+      client = lastClient || "—";
+    }
+    if(client && client!=="—") lastClient=client;
+
+    const turnoKey = isM(turno) ? "M" : (isT(turno) ? "T" : toTurnoKey(turno));
+    const turnoNorm = TURNOS[turnoKey] || String(turno||"").toUpperCase().trim() || "—";
+
+    const cellsRaw = row.slice(dateIdxStart);
+    const codesByCol = cellsRaw.map(c=>parseCellCodes(c));
+
+    out.push({ client, turnoNorm, turnoKey, cellsRaw, codesByCol });
+  }
+  return out;
+}
+
+/* ===================== MODES: CONFLICTS & IDLE ===================== */
+function computeConflicts(){
+  conflicts.clear();
+  // conflito = mesmo colaborador alocado em >1 cliente no mesmo dia + turno
+  // usa janela ativa (windowFrom/windowTo)
+  const from = windowFrom ?? 0;
+  const to = windowTo ?? (dates.length-1);
+
+  // map: key(code|col|turno) -> Set(client)
+  const map = new Map();
+  for(const row of bodyData){
+    if(!row.turnoKey) continue;
+    for(let col=from; col<=to; col++){
+      const codes = row.codesByCol[col] || [];
+      for(const code of codes){
+        const k = `${code}|${col}|${row.turnoKey}`;
+        if(!map.has(k)) map.set(k, new Set());
+        map.get(k).add(row.client);
+      }
+    }
+  }
+  for(const [k, setClients] of map.entries()){
+    if(setClients.size > 1){
+      conflicts.add(k);
+    }
+  }
+}
+
+function computeIdleCols(){
+  idleCols.clear();
+  // período livre = nenhum analista alocado no dia+turno (time 100% ocioso)
+  const from = windowFrom ?? 0;
+  const to = windowTo ?? (dates.length-1);
+
+  // map: key(col|turno) -> count allocations (qualquer code)
+  const map = new Map();
+  for(const row of bodyData){
+    if(!row.turnoKey) continue;
+    for(let col=from; col<=to; col++){
+      const codes = row.codesByCol[col] || [];
+      if(codes.length>0){
+        const k = `${col}|${row.turnoKey}`;
+        map.set(k, (map.get(k)||0) + codes.length);
+      }
+    }
+  }
+
+  // se não existe registro no map => zero => livre
+  for(let col=from; col<=to; col++){
+    for(const turnoKey of ["M","T"]){
+      const k = `${col}|${turnoKey}`;
+      if(!map.has(k)) idleCols.add(k);
+    }
+  }
+}
+
+/* ===================== APPLY FILTERS ===================== */
+function applyWindowFromInputs(){
+  const s = document.getElementById("dStart").value.trim();
+  const e = document.getElementById("dEnd").value.trim();
+  const sIdx = s ? ddmmToIndex(s) : null;
+  const eIdx = e ? ddmmToIndex(e) : null;
+
+  windowFrom = (sIdx!==null) ? sIdx : null;
+  windowTo = (eIdx!==null) ? eIdx : null;
+
+  if(windowFrom!==null && windowTo!==null && windowFrom>windowTo){
+    // swap
+    const tmp = windowFrom; windowFrom = windowTo; windowTo = tmp;
+  }
+}
+
+function passesRowFilters(row, from, to){
+  const q = document.getElementById("qClient").value.trim().toUpperCase();
+  if(q && !String(row.client||"").toUpperCase().includes(q)) return false;
+
+  const dd = document.getElementById("selRes").value.trim().toUpperCase();
+  const ddSet = dd ? new Set([dd]) : null;
+
+  // seleção final de códigos = (chips selecionados) OU (dropdown) OU ambos (interseção)
+  let activeSet = null;
+  if(selectedCodes.size>0) activeSet = new Set(selectedCodes);
+  if(ddSet){
+    if(activeSet){
+      activeSet = new Set([...activeSet].filter(x=>ddSet.has(x)));
+    }else{
+      activeSet = ddSet;
+    }
+  }
+
+  // modos especiais podem filtrar
+  const capOn = (mode==="cap");
+  const idleOn = (mode==="idle");
+
+  // se não há set ativo e nenhum modo, não filtra por conteúdo
+  if(!activeSet && !capOn && !idleOn) return true;
+
+  // checar se a linha tem algo relevante na janela
+  for(let col=from; col<=to; col++){
+    const codes = row.codesByCol[col] || [];
+
+    // modo idle: exibir linhas do turno que está livre (col|turno)
+    if(idleOn){
+      const k = `${col}|${row.turnoKey}`;
+      if(idleCols.has(k)) return true;
+      continue;
+    }
+
+    // modo cap: exibir apenas onde há conflito
+    if(capOn){
+      for(const c of codes){
+        const k = `${c}|${col}|${row.turnoKey}`;
+        if(conflicts.has(k)) return true;
+      }
+      continue;
+    }
+
+    // filtro estrito por colaborador
+    if(activeSet){
+      for(const c of codes){
+        if(activeSet.has(c)) return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/* ===================== RENDER GRID ===================== */
+function render(){
+  applyWindowFromInputs();
+
+  const from = windowFrom ?? 0;
+  const to = windowTo ?? (dates.length-1);
+
+  // recomputa modos
+  if(mode==="cap") computeConflicts(); else conflicts.clear();
+  if(mode==="idle") computeIdleCols(); else idleCols.clear();
+
+  // ===== Header =====
   const headDow=document.getElementById("headDow");
   const headDate=document.getElementById("headDate");
   headDow.innerHTML=""; headDate.innerHTML="";
@@ -336,88 +750,280 @@ async function load(){
   headDow.appendChild(thClient);
   headDow.appendChild(thTurno);
 
-  for(let i=0;i<dates.length;i++){
+  for(let col=0; col<dates.length; col++){
     const th=document.createElement("th");
-    th.textContent=(dows[i]||"").toUpperCase();
-    th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
-    if(isWeekend(dows[i])) th.classList.add("weekend");
+    th.textContent=(dows[col]||"").toUpperCase();
+    th.style.width=th.style.minWidth=th.style.maxWidth=getComputedStyle(document.documentElement).getPropertyValue("--wDate").trim() || "64px";
+
+    const inWindow = (col>=from && col<=to);
+    if(!inWindow) th.classList.add("colHidden");
+
+    const wk = isWeekend(dows[col]);
+    if(wk) th.classList.add("weekend");
+
+    // headers especiais
+    if(mode==="idle"){
+      const kM = `${col}|M`, kT = `${col}|T`;
+      if(idleCols.has(kM) || idleCols.has(kT)) th.classList.add("freeHdr");
+    }
+    if(mode==="cap"){
+      // se houver qualquer conflito nesse col, marca header
+      let any=false;
+      for(const code of VALID){
+        if(conflicts.has(`${code}|${col}|M`) || conflicts.has(`${code}|${col}|T`)){ any=true; break; }
+      }
+      if(any) th.classList.add("confHdr");
+    }
+
     headDow.appendChild(th);
   }
-  for(let i=0;i<dates.length;i++){
+
+  for(let col=0; col<dates.length; col++){
     const th=document.createElement("th");
-    th.textContent=dates[i];
-    th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
-    if(isWeekend(dows[i])) th.classList.add("weekend");
+    th.textContent=dates[col];
+    th.style.width=th.style.minWidth=th.style.maxWidth=getComputedStyle(document.documentElement).getPropertyValue("--wDate").trim() || "64px";
+
+    const inWindow = (col>=from && col<=to);
+    if(!inWindow) th.classList.add("colHidden");
+
+    const wk = isWeekend(dows[col]);
+    if(wk) th.classList.add("weekend");
+
+    if(mode==="idle"){
+      const kM = `${col}|M`, kT = `${col}|T`;
+      if(idleCols.has(kM) || idleCols.has(kT)) th.classList.add("freeHdr");
+    }
+    if(mode==="cap"){
+      let any=false;
+      for(const code of VALID){
+        if(conflicts.has(`${code}|${col}|M`) || conflicts.has(`${code}|${col}|T`)){ any=true; break; }
+      }
+      if(any) th.classList.add("confHdr");
+    }
+
     headDate.appendChild(th);
   }
 
-  // Body
-  const body=document.getElementById("body");
-  body.innerHTML="";
+  // ===== body =====
+  const tbody=document.getElementById("body");
+  tbody.innerHTML="";
 
-  let lastClient="";
-  for(let r=2;r<rows.length;r++){
-    const row=rows[r];
-
-    // tentar identificar cliente e turno (M/T) no começo da linha
-    const first=row.findIndex(c=>c && c!=="");
-    if(first<0) continue;
-
-    let client=(row[first]||"").trim();
-    let turno=(row[first+1]||"").trim();
-
-    // Se vier linha só com "T" ou "M", reaproveita último cliente
-    const t=(x)=>String(x||"").toUpperCase().trim();
-    const isM = (x)=> (t(x)==="M" || t(x)==="MANHÃ" || t(x)==="MANHA");
-    const isT = (x)=> (t(x)==="T" || t(x)==="TARDE");
-
-    if(isM(client) || isT(client)){
-      turno = client;
-      client = lastClient || "—";
+  // construir set ativo (chips + dropdown)
+  const dd = document.getElementById("selRes").value.trim().toUpperCase();
+  const ddSet = dd ? new Set([dd]) : null;
+  let activeSet = null;
+  if(selectedCodes.size>0) activeSet = new Set(selectedCodes);
+  if(ddSet){
+    if(activeSet){
+      activeSet = new Set([...activeSet].filter(x=>ddSet.has(x)));
+    }else{
+      activeSet = ddSet;
     }
-    if(client && client!=="—") lastClient=client;
+  }
 
-    const turnoNorm = isM(turno) ? "MANHÃ" : (isT(turno) ? "TARDE" : turno);
+  let shownRows=0;
+  let filled=0;
+
+  for(const row of bodyData){
+    if(!row.turnoKey) continue;
+
+    if(!passesRowFilters(row, from, to)){
+      continue;
+    }
+
     const tr=document.createElement("tr");
-    tr.className = (turnoNorm==="MANHÃ") ? "rowM" : "rowT";
+    tr.className = (row.turnoKey==="M") ? "rowM" : "rowT";
 
     const tdClient=document.createElement("td");
     tdClient.className="tdClient";
     const span=document.createElement("span");
     span.className="clientText";
-    span.textContent=client;
+    span.textContent=row.client;
     tdClient.appendChild(span);
 
     const tdTurno=document.createElement("td");
     tdTurno.className="tdTurno";
-    tdTurno.textContent=turnoNorm || "—";
+    tdTurno.textContent=row.turnoNorm;
 
     tr.appendChild(tdClient);
     tr.appendChild(tdTurno);
 
-    const cells=row.slice(dateIdxStart);
-    for(let i=0;i<dates.length;i++){
+    for(let col=0; col<dates.length; col++){
       const td=document.createElement("td");
-      td.style.width="64px"; td.style.minWidth="64px"; td.style.maxWidth="64px";
-      if(isWeekend(dows[i])) td.classList.add("weekend");
+      td.style.width=td.style.minWidth=td.style.maxWidth=getComputedStyle(document.documentElement).getPropertyValue("--wDate").trim() || "64px";
 
-      const codes=parseCellCodes(cells[i]||"");
+      const inWindow = (col>=from && col<=to);
+      if(!inWindow) td.classList.add("colHidden");
+
+      if(isWeekend(dows[col])) td.classList.add("weekend");
+
+      // idle highlight (sem alocações no time)
+      if(mode==="idle"){
+        const k = `${col}|${row.turnoKey}`;
+        if(idleCols.has(k)){
+          td.classList.add("freeCell");
+        }
+      }
+
+      const codesAll = row.codesByCol[col] || [];
+      if(codesAll.length>0) filled += codesAll.length;
+
+      // aplicar filtro estrito de colaborador (se tiver activeSet)
+      let codes = codesAll;
+      if(activeSet){
+        codes = codesAll.filter(c=>activeSet.has(c));
+      }
+
+      // modo cap: mostrar apenas conflitos e pintar vermelho
+      let outCodes = codes;
+      if(mode==="cap"){
+        outCodes = [];
+        for(const c of codesAll){
+          const k = `${c}|${col}|${row.turnoKey}`;
+          if(conflicts.has(k)) outCodes.push(c);
+        }
+      }
+
       const box=document.createElement("div");
       box.className="cellChips";
-      if(!codes.length){
-        box.appendChild(chipEl(""));
+
+      if(outCodes.length===0){
+        box.appendChild(chipEl("", {}));
       }else{
-        for(const c of codes) box.appendChild(chipEl(c));
+        for(const c of outCodes){
+          const isConf = (mode==="cap") ? conflicts.has(`${c}|${col}|${row.turnoKey}`) : false;
+          box.appendChild(chipEl(c, { conflict:isConf }));
+        }
       }
+
       td.appendChild(box);
       tr.appendChild(td);
     }
 
-    body.appendChild(tr);
+    tbody.appendChild(tr);
+    shownRows++;
+  }
+
+  // KPIs
+  const colsShown = (to - from + 1);
+  const todayLabel = (() => {
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2,"0");
+    const mm = String(now.getMonth()+1).padStart(2,"0");
+    const label = `${dd}/${mm}`;
+    return dates.includes(label) ? label : label;
+  })();
+
+  updateKPIs(shownRows, colsShown, filled, todayLabel);
+
+  // status
+  if(mode==="cap"){
+    setStatus(`Status: carregado • Modo: Conflitos (Capacidade vs. Demandas) • Conflitos: ${conflicts.size}`);
+  }else if(mode==="idle"){
+    setStatus(`Status: carregado • Modo: Ociosidade • Períodos livres (time): ${idleCols.size}`);
+  }else{
+    setStatus("Status: carregado");
   }
 }
 
-load().catch(console.error);
+/* ===================== LOAD CSV ===================== */
+async function load(){
+  setStatus("Status: carregando…");
+  try{
+    const res=await fetch(CSV_URL, {cache:"no-store"});
+    if(!res.ok) throw new Error("Falha ao buscar CSV");
+    const csv=await res.text();
+
+    rawRows=parseCSV(csv).filter(r=>r.some(c=>c && c!==""));
+    if(rawRows.length<3){
+      setStatus("Status: CSV vazio/curto");
+      return;
+    }
+
+    const dowRow=rawRows[0];
+    const dateRow=rawRows[1];
+
+    dateIdxStart = dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
+    if(dateIdxStart<0){
+      setStatus("Status: não encontrei linha de datas");
+      return;
+    }
+
+    dows = dowRow.slice(dateIdxStart);
+    dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
+
+    bodyData = buildBodyData(rawRows);
+
+    render();
+  }catch(e){
+    console.error(e);
+    setStatus("Status: erro ao carregar");
+  }
+}
+
+/* ===================== UI EVENTS ===================== */
+function wire(){
+  // chips seleção
+  document.querySelectorAll(".chipBtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const code = btn.getAttribute("data-code");
+      const on = btn.getAttribute("aria-pressed")==="true";
+      btn.setAttribute("aria-pressed", on ? "false" : "true");
+      if(on) selectedCodes.delete(code);
+      else selectedCodes.add(code);
+
+      // se estava em modo especial, mantém; apenas re-render
+      render();
+    });
+  });
+
+  // modos especiais
+  const btnCap = document.getElementById("btnCap");
+  const btnIdle = document.getElementById("btnIdle");
+
+  btnCap.addEventListener("click", ()=>{
+    const on = btnCap.getAttribute("aria-pressed")==="true";
+    btnCap.setAttribute("aria-pressed", on ? "false" : "true");
+    btnIdle.setAttribute("aria-pressed", "false");
+    mode = on ? "" : "cap";
+    render();
+  });
+
+  btnIdle.addEventListener("click", ()=>{
+    const on = btnIdle.getAttribute("aria-pressed")==="true";
+    btnIdle.setAttribute("aria-pressed", on ? "false" : "true");
+    btnCap.setAttribute("aria-pressed", "false");
+    mode = on ? "" : "idle";
+    render();
+  });
+
+  // inputs básicos
+  ["qClient","selRes","dStart","dEnd"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", ()=>render());
+    document.getElementById(id).addEventListener("change", ()=>render());
+  });
+
+  // limpar
+  document.getElementById("btnClear").addEventListener("click", ()=>{
+    selectedCodes.clear();
+    document.querySelectorAll(".chipBtn").forEach(b=>b.setAttribute("aria-pressed","false"));
+    document.getElementById("qClient").value="";
+    document.getElementById("selRes").value="";
+    document.getElementById("dStart").value="";
+    document.getElementById("dEnd").value="";
+    mode="";
+    document.getElementById("btnCap").setAttribute("aria-pressed","false");
+    document.getElementById("btnIdle").setAttribute("aria-pressed","false");
+    render();
+  });
+
+  // reload
+  document.getElementById("btnReload").addEventListener("click", ()=>load());
+}
+
+/* ===================== BOOT ===================== */
+wire();
+load();
 </script>
 </body>
 </html>
