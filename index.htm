@@ -209,11 +209,13 @@
       flex-direction:column;
       min-height:0;
     }
+    /* IMPORTANTE: o sticky do header gruda neste container */
     .rightScroll{
       overflow-y:auto;
       overflow-x:hidden;
       flex:1 1 auto;
       min-height:0;
+      position:relative; /* contexto para sticky */
     }
 
     table{
@@ -222,12 +224,44 @@
       width:max-content;
     }
 
-    .leftTable thead th,
+    /* ===== FIX STICKY DE 2 LINHAS (SEM DESCASAR) ===== */
     .rightTable thead th{
       position:sticky;
-      top:0;
+      background:rgba(11,18,32,.97);
+      border-bottom:1px solid var(--line);
+      color:var(--muted);
+      padding:0 6px;
+      white-space:nowrap;
+      vertical-align:middle;
+      text-align:center;
       z-index:10;
-      background:rgba(11,18,32,.95);
+    }
+    /* 1ª linha do header (DOW) fixa no topo do container */
+    #rightHeadDow th{
+      top:0;
+      height: var(--headH1);
+      line-height: var(--headH1);
+      font-size:10px;
+      font-weight:800;
+      z-index:12;
+    }
+    /* 2ª linha do header (DATA) fixa logo abaixo da 1ª */
+    #rightHeadDt th{
+      top: var(--headH1);
+      height: var(--headH2);
+      line-height: var(--headH2);
+      font-size:10px;
+      font-weight:800;
+      opacity:.95;
+      z-index:11;
+    }
+
+    /* header esquerdo: mesma altura total e sticky também */
+    .leftTable thead th{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:rgba(11,18,32,.97);
       border-bottom:1px solid var(--line);
       color:var(--muted);
       padding:0 6px;
@@ -235,11 +269,6 @@
       vertical-align:middle;
       text-align:center;
     }
-    .leftTable thead th{ z-index:15; }
-
-    .thDow{ height: var(--headH1); line-height: var(--headH1); font-size:10px; font-weight:800; }
-    .thDt { height: var(--headH2); line-height: var(--headH2); font-size:10px; font-weight:800; opacity:.95; }
-
     .thLeftSpan{
       height: calc(var(--headH1) + var(--headH2));
       line-height: calc(var(--headH1) + var(--headH2));
@@ -355,7 +384,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Padrão operacional: múltiplos recursos na mesma célula separados por “-” (ex.: <b>AL - GE</b>). Dashboard renderiza ambos com cores e filtros.</div>
+        <div class="sub">Correção aplicada: cabeçalho de datas/dias fixo (sticky 2 linhas) sem descasamento.</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" title="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -464,22 +493,16 @@ function isWeekendDOW(dowStr){
   return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM") || s.startsWith("SÁBADO") || s.startsWith("DOMINGO");
 }
 
-/* ===== PARSER PADRÃO: suporta "AL - GE" =====
-   Regra: se houver "-", a célula pode conter múltiplos recursos.
-   Também aceita: vírgula, barra, quebra de linha, ponto e vírgula.
-*/
+/* Parser padrão: suporta "AL - GE" */
 function parseCellCodes(cellRaw){
   const raw = String(cellRaw || "").trim();
   if (!raw) return [];
-
-  // normaliza separadores para espaço
   const normalized = raw
     .toUpperCase()
     .replace(/\u00A0/g, " ")
     .replace(/[\n\r\t]/g, " ")
     .replace(/[\/,;|]/g, " ")
-    .replace(/\s*-\s*/g, " "); // o seu padrão oficial
-
+    .replace(/\s*-\s*/g, " ");
   const parts = normalized.split(/\s+/).filter(Boolean);
 
   const out = [];
@@ -497,7 +520,7 @@ function parseCellCodes(cellRaw){
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
-  const COLOR = {
+  const colors = {
     DO:getComputedStyle(document.documentElement).getPropertyValue("--do").trim(),
     GE:getComputedStyle(document.documentElement).getPropertyValue("--ge").trim(),
     JC:getComputedStyle(document.documentElement).getPropertyValue("--jc").trim(),
@@ -514,7 +537,7 @@ function buildLegend(){
 
     const dot = document.createElement("span");
     dot.className = "dot";
-    dot.style.background = COLOR[code];
+    dot.style.background = colors[code];
 
     const codeEl = document.createElement("span");
     codeEl.className = "code";
@@ -646,6 +669,23 @@ function renderCellChips(codes, activeCodes){
   const box = document.createElement("div");
   box.className = "cellChips";
 
+  const filtered = (activeCodes && activeCodes_toggle.size)
+    ? codes.filter(c => activeCodes_toggle.has(c))
+    : codes.slice();
+
+  if (filtered.length === 0){
+    box.appendChild(chipEl(""));
+    return { box, shownCount: 0 };
+  }
+  for (const c of filtered) box.appendChild(chipEl(c));
+  return { box, shownCount: filtered.length };
+}
+
+/* BUG FIX: use activeCodes param (sem variável fantasma) */
+function renderCellChipsSafe(codes, activeCodes){
+  const box = document.createElement("div");
+  box.className = "cellChips";
+
   const filtered = (activeCodes && activeCodes.size)
     ? codes.filter(c => activeCodes.has(c))
     : codes.slice();
@@ -696,7 +736,7 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   }
 
   client = client || lastClient || "—";
-  const alloc = row.slice(dateIdxStart).map(c => parseCellCodes(c)); // agora entende "AL - GE"
+  const alloc = row.slice(dateIdxStart).map(c => parseCellCodes(c));
   return { client, shift, alloc };
 }
 
@@ -774,11 +814,9 @@ function render(cache){
     const dow = (filteredDows[i] || "").toUpperCase();
 
     const th1 = document.createElement("th");
-    th1.className = "thDow";
     th1.textContent = dow || "—";
 
     const th2 = document.createElement("th");
-    th2.className = "thDt";
     th2.textContent = d;
 
     if (isWeekendDOW(filteredDows[i])) { th1.classList.add("weekend-col"); th2.classList.add("weekend-col"); }
@@ -865,14 +903,14 @@ function render(cache){
       const codesT = Array.isArray(winT[i]) ? winT[i] : [];
 
       const tdM = document.createElement("td");
-      const rM = renderCellChips(codesM, activeCodes);
+      const rM = renderCellChipsSafe(codesM, activeCodes);
       tdM.appendChild(rM.box);
       shownChips += rM.shownCount;
       if (filteredDates[i] === today) tdM.classList.add("today");
       if (weekend) tdM.classList.add("weekend-col");
 
       const tdT = document.createElement("td");
-      const rT = renderCellChips(codesT, activeCodes);
+      const rT = renderCellChipsSafe(codesT, activeCodes);
       tdT.appendChild(rT.box);
       shownChips += rT.shownCount;
       if (filteredDates[i] === today) tdT.classList.add("today");
