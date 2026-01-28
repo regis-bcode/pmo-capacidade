@@ -18,10 +18,7 @@
       --jc:#fbbf24;
       --al:#fb7185;
 
-      /* Ultra denso estilo Excel */
       --rowH: 18px;
-
-      /* Header em 2 linhas (DOW + Data) */
       --headH1: 14px;
       --headH2: 14px;
 
@@ -53,9 +50,7 @@
     }
     header.collapsed .toolbar,
     header.collapsed .legendWrap,
-    header.collapsed .cards{
-      display:none !important;
-    }
+    header.collapsed .cards{ display:none !important; }
 
     .wrap{max-width:1500px; margin:0 auto; padding:0 12px;}
     .title{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
@@ -161,6 +156,7 @@
     .chipBtn .caret{display:none; font-weight:900; margin-left:2px}
     .chipBtn[aria-pressed="true"]{ border-color: rgba(255,255,255,.38); }
     .chipBtn[aria-pressed="true"] .caret{display:inline}
+
     .chipBtn[data-tip]:hover::after{
       content: attr(data-tip);
       position:absolute;
@@ -327,7 +323,6 @@
       text-transform:uppercase;
     }
 
-    /* MULTI-CHIPS por célula */
     .cellChips{
       display:flex;
       align-items:center;
@@ -392,7 +387,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Agora suporta múltiplos recursos na mesma célula (ex.: GE + AL no mesmo dia/período).</div>
+        <div class="sub">Suporta colunas repetidas no mesmo dia (subcolunas) para representar 2 recursos no mesmo cliente/turno/data.</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" data-tip="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -420,7 +415,7 @@
 
     <div class="cards">
       <div class="card"><div class="kpi">Linhas (turnos)</div><div class="val" id="kpiRows">—</div></div>
-      <div class="card"><div class="kpi">Janela de datas</div><div class="val" id="kpiCols">—</div></div>
+      <div class="card"><div class="kpi">Colunas (inclui repetidas)</div><div class="val" id="kpiCols">—</div></div>
       <div class="card"><div class="kpi">Chips exibidos</div><div class="val" id="kpiFilled">—</div></div>
       <div class="card"><div class="kpi">Hoje</div><div class="val" id="kpiToday">—</div></div>
     </div>
@@ -503,13 +498,10 @@ function isWeekendDOW(dowStr){
   return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM") || s.startsWith("SÁBADO") || s.startsWith("DOMINGO");
 }
 
-/* ===== EXTRAÇÃO MULTI-CÓDIGOS POR CÉLULA =====
-   Suporta: "GE", "GE AL", "GE/AL", "GE,AL", "GE\nAL", etc.
-*/
+/* Multi-codes por célula (continua compatível) */
 function parseCellCodes(cellRaw){
   const s = String(cellRaw || "").toUpperCase();
   if (!s.trim()) return [];
-  // Extrai tokens 2 letras (DO, GE, JC, AL)
   const matches = s.match(/[A-Z]{2}/g) || [];
   const out = [];
   const seen = new Set();
@@ -522,7 +514,6 @@ function parseCellCodes(cellRaw){
   return out;
 }
 
-/* Chips filtro */
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
@@ -628,6 +619,9 @@ function todayLabel(){
   const d = new Date();
   return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
 }
+
+/* janela de datas precisa respeitar repetição:
+   se dd/mm repetiu, todas as colunas daquela data entram/saem juntas */
 function inWindow(label, start, end){
   if (!start && !end) return true;
   const idx = (x)=> {
@@ -641,7 +635,6 @@ function inWindow(label, start, end){
   return (v >= a && v <= b);
 }
 
-/* chip visual */
 function chipEl(code){
   const v = (code || "").trim().toUpperCase();
   const sp = document.createElement("span");
@@ -656,8 +649,6 @@ function chipEl(code){
   }
   return sp;
 }
-
-/* Renderiza 0..N chips em uma célula (com filtro interno) */
 function renderCellChips(codes, activeCodes){
   const box = document.createElement("div");
   box.className = "cellChips";
@@ -667,13 +658,10 @@ function renderCellChips(codes, activeCodes){
     : codes.slice();
 
   if (filtered.length === 0){
-    box.appendChild(chipEl("")); // vazio
+    box.appendChild(chipEl(""));
     return { box, shownCount: 0 };
   }
-
-  for (const c of filtered){
-    box.appendChild(chipEl(c));
-  }
+  for (const c of filtered) box.appendChild(chipEl(c));
   return { box, shownCount: filtered.length };
 }
 
@@ -716,8 +704,6 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   }
 
   client = client || lastClient || "—";
-
-  // IMPORTANTE: agora cada célula vira array de códigos
   const alloc = row.slice(dateIdxStart).map(c => parseCellCodes(c));
   return { client, shift, alloc };
 }
@@ -768,12 +754,12 @@ function syncHScrollWidth(){
   inner.style.width = tbl.scrollWidth + "px";
 }
 
+/* render */
 function rerender(){
   if (!state.cache) return;
   render(state.cache);
   syncHScrollWidth();
 }
-
 function render(cache){
   const { rawRows, dateIdxStart, dates, dows } = cache;
 
@@ -781,6 +767,7 @@ function render(cache){
   const start = normalizeDateLabel($("start").value.trim());
   const end   = normalizeDateLabel($("end").value.trim());
 
+  // IMPORTANTE: máscara por coluna (inclui repetidas) usando dd/mm
   const dateMask = dates.map(d => inWindow(d, start, end));
   const filteredDates = dates.filter((_,i)=>dateMask[i]);
   const filteredDows  = dows.filter((_,i)=>dateMask[i]);
@@ -788,6 +775,7 @@ function render(cache){
   const activeCodes = getActiveCodes();
   const today = todayLabel();
 
+  // Cabeçalho 2 linhas com colunas repetidas preservadas
   const headDow = $("rightHeadDow");
   const headDt  = $("rightHeadDt");
   headDow.innerHTML = "";
@@ -844,7 +832,6 @@ function render(cache){
   let shownChips = 0;
 
   function appendRowsForClient(g){
-    // LEFT
     const trL1 = document.createElement("tr");
     const trL2 = document.createElement("tr");
     trL1.className = "row-m";
@@ -874,7 +861,6 @@ function render(cache){
     leftBody.appendChild(trL1);
     leftBody.appendChild(trL2);
 
-    // RIGHT
     const trR1 = document.createElement("tr");
     const trR2 = document.createElement("tr");
     trR1.className = "row-m";
