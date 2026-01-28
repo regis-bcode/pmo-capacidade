@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Painel PMO - Gestão de Capacidade (Folha)</title>
-
   <style>
     :root{
       --bg:#0b1220;
@@ -13,17 +12,14 @@
       --line:rgba(255,255,255,.10);
       --card: rgba(15,26,48,.70);
 
-      --do:#60a5fa;
-      --ge:#34d399;
-      --jc:#fbbf24;
-      --al:#fb7185;
+      --do:#60a5fa; --ge:#34d399; --jc:#fbbf24; --al:#fb7185;
 
       --rowH: 18px;
       --headH1: 14px;
       --headH2: 14px;
 
-      --wClient: 150px;
-      --wShift: 74px;
+      --wClient: 160px;
+      --wShift: 82px;
 
       --mRow: rgba(167,139,250,.14);
       --tRow: rgba(56,189,248,.10);
@@ -55,50 +51,34 @@
     .wrap{max-width:1500px; margin:0 auto; padding:0 12px;}
     .title{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
     .titleLeft{display:flex; flex-direction:column; gap:6px;}
-    h1{margin:0; font-size:14px; font-weight:900; letter-spacing:.2px;}
+    h1{margin:0; font-size:14px; font-weight:900;}
     .sub{margin:0; color:var(--muted); font-size:11px; line-height:1.2;}
     .titleRight{display:flex; align-items:center; gap:8px;}
-
     .btn{
       display:inline-flex; align-items:center; justify-content:center;
-      padding:8px 10px;
-      border-radius:10px;
+      padding:8px 10px; border-radius:10px;
       border:1px solid var(--line);
       background:linear-gradient(180deg, rgba(45,212,191,.22), rgba(15,26,48,.65));
-      color:var(--text);
-      cursor:pointer;
-      user-select:none;
-      font-weight:800;
-      white-space:nowrap;
-      font-size:12px;
+      color:var(--text); cursor:pointer; user-select:none;
+      font-weight:800; font-size:12px;
     }
-    .btn:active{transform:translateY(1px)}
     .btn.secondary{ background:rgba(15,26,48,.70); }
 
     .iconBtn{
-      width:42px; height:36px;
-      border-radius:10px;
+      width:42px; height:36px; border-radius:10px;
       border:1px solid var(--line);
       background:rgba(15,26,48,.70);
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      user-select:none;
-      position:relative;
+      display:inline-flex; align-items:center; justify-content:center;
+      cursor:pointer; user-select:none;
     }
-    .iconBtn:hover{ border-color: rgba(255,255,255,.22); box-shadow: 0 10px 20px rgba(0,0,0,.25); }
     .funnel{width:16px; height:16px; position:relative;}
     .funnel:before, .funnel:after{
-      content:"";
-      position:absolute; left:0; right:0; margin:auto;
-      border-radius:2px;
-      background:rgba(232,239,255,.92);
+      content:""; position:absolute; left:0; right:0; margin:auto;
+      border-radius:2px; background:rgba(232,239,255,.92);
     }
     .funnel:before{
       width:16px; height:3px; top:0px;
-      box-shadow: 0 5px 0 rgba(232,239,255,.92),
-                  0 10px 0 rgba(232,239,255,.92);
+      box-shadow: 0 5px 0 rgba(232,239,255,.92), 0 10px 0 rgba(232,239,255,.92);
     }
     .funnel:after{ width:9px; height:3px; top:13px; }
 
@@ -106,8 +86,7 @@
       margin-top:8px;
       display:grid;
       grid-template-columns: 1.4fr 1fr 1fr 1fr;
-      gap:8px;
-      align-items:end;
+      gap:8px; align-items:end;
     }
     .field label{display:block; font-size:10px; color:var(--muted); margin:0 0 4px;}
     .field input, .field select{
@@ -127,13 +106,9 @@
       display:inline-flex; align-items:center; gap:8px;
       background:rgba(21,38,74,.85);
       border:1px solid var(--line);
-      padding:4px 10px;
-      border-radius:999px;
-      font-size:11px;
-      color:var(--text);
-      cursor:pointer;
-      user-select:none;
-      position:relative;
+      padding:4px 10px; border-radius:999px;
+      font-size:11px; color:var(--text);
+      cursor:pointer; user-select:none;
       transition: opacity .15s ease;
     }
     .chipBtn .dot{width:9px; height:9px; border-radius:50%}
@@ -161,7 +136,7 @@
 
     main{
       height: calc(100vh - var(--hdrH));
-      padding:0 12px 0;
+      padding:0 12px;
       overflow:hidden;
     }
     .gridcard{
@@ -183,39 +158,13 @@
     }
     .gridhead .hint{color:var(--muted); font-size:11px}
 
-    .gridBody{display:flex; flex:1 1 auto; min-height:0;}
-
-    .leftPane{
-      width: calc(var(--wClient) + var(--wShift));
-      border-right:1px solid rgba(255,255,255,.08);
-      background:rgba(11,18,32,.55);
-      display:flex;
-      flex-direction:column;
-      min-height:0;
-    }
-    .leftScroll{
-      overflow-y:auto;
-      overflow-x:hidden;
+    /* === UM ÚNICO SCROLL (H+V) PARA GARANTIR STICKY PERFEITO === */
+    .tableScroll{
+      position:relative;
       flex:1 1 auto;
       min-height:0;
-    }
-    .leftScroll::-webkit-scrollbar{ width:0px; height:0px; }
-    .leftScroll{ scrollbar-width:none; }
-
-    .rightPaneWrap{
-      flex:1 1 auto;
-      min-width:0;
-      display:flex;
-      flex-direction:column;
-      min-height:0;
-    }
-    /* IMPORTANTE: o sticky do header gruda neste container */
-    .rightScroll{
-      overflow-y:auto;
-      overflow-x:hidden;
-      flex:1 1 auto;
-      min-height:0;
-      position:relative; /* contexto para sticky */
+      overflow:auto; /* horizontal e vertical aqui */
+      background:rgba(11,18,32,.35);
     }
 
     table{
@@ -224,62 +173,34 @@
       width:max-content;
     }
 
-    /* ===== FIX STICKY DE 2 LINHAS (SEM DESCASAR) ===== */
-    .rightTable thead th{
+    thead th{
       position:sticky;
       background:rgba(11,18,32,.97);
       border-bottom:1px solid var(--line);
       color:var(--muted);
       padding:0 6px;
       white-space:nowrap;
-      vertical-align:middle;
       text-align:center;
       z-index:10;
     }
-    /* 1ª linha do header (DOW) fixa no topo do container */
-    #rightHeadDow th{
-      top:0;
-      height: var(--headH1);
-      line-height: var(--headH1);
-      font-size:10px;
-      font-weight:800;
-      z-index:12;
-    }
-    /* 2ª linha do header (DATA) fixa logo abaixo da 1ª */
-    #rightHeadDt th{
-      top: var(--headH1);
-      height: var(--headH2);
-      line-height: var(--headH2);
-      font-size:10px;
-      font-weight:800;
-      opacity:.95;
-      z-index:11;
-    }
+    /* sticky vertical 2 linhas */
+    thead tr:nth-child(1) th{ top:0; height:var(--headH1); line-height:var(--headH1); font-size:10px; font-weight:800; z-index:12; }
+    thead tr:nth-child(2) th{ top:var(--headH1); height:var(--headH2); line-height:var(--headH2); font-size:10px; font-weight:800; z-index:11; }
 
-    /* header esquerdo: mesma altura total e sticky também */
-    .leftTable thead th{
+    /* === COLUNAS CONGELADAS (Cliente e Turno) === */
+    .stickyClient, .stickyShift{
       position:sticky;
-      top:0;
-      z-index:20;
       background:rgba(11,18,32,.97);
-      border-bottom:1px solid var(--line);
-      color:var(--muted);
-      padding:0 6px;
-      white-space:nowrap;
-      vertical-align:middle;
-      text-align:center;
+      z-index:30; /* acima das células */
+      border-right:1px solid rgba(255,255,255,.10);
     }
-    .thLeftSpan{
-      height: calc(var(--headH1) + var(--headH2));
-      line-height: calc(var(--headH1) + var(--headH2));
-      text-align:left;
-      font-size:10px;
-      font-weight:900;
-    }
-    .thLeftSpan.center{ text-align:center; }
+    .stickyClient{ left:0; min-width:var(--wClient); max-width:var(--wClient); text-align:left; }
+    .stickyShift{ left:var(--wClient); min-width:var(--wShift); max-width:var(--wShift); text-align:center; }
 
-    .leftTable tbody td,
-    .rightTable tbody td{
+    /* garante que os TH dessas colunas também fiquem acima do header de datas */
+    thead .stickyClient, thead .stickyShift{ z-index:40; }
+
+    tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
       padding:0 4px;
       height:var(--rowH);
@@ -288,26 +209,16 @@
       white-space:nowrap;
       vertical-align:middle;
     }
-    .leftTable tr, .rightTable tr{ height:var(--rowH); }
-
+    tbody tr{ height:var(--rowH); }
     .row-m td{ background-color: var(--mRow); }
     .row-t td{ background-color: var(--tRow); }
 
     .weekend-col{ background: rgba(251,191,36,.16) !important; }
+    .today{
+      outline:2px solid rgba(45,212,191,.95);
+      box-shadow: inset 0 0 0 1px rgba(45,212,191,.28);
+    }
 
-    .col-client{
-      min-width:var(--wClient);
-      max-width:var(--wClient);
-      font-weight:950;
-      padding:0 !important;
-    }
-    .col-shift{
-      min-width:var(--wShift);
-      max-width:var(--wShift);
-      text-align:center;
-      font-weight:950;
-      letter-spacing:.2px;
-    }
     .clientText{
       display:block;
       width:100%;
@@ -318,52 +229,23 @@
       font-size:11px;
       font-weight:900;
       text-transform:uppercase;
+      color:var(--text);
     }
 
     .cellChips{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:2px;
-      width:100%;
+      display:flex; align-items:center; justify-content:center;
+      gap:2px; width:100%;
     }
-
     .chip{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:22px;
-      height:14px;
-      padding:0 5px;
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:22px; height:14px; padding:0 5px;
       border-radius:5px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(21,38,74,.75);
-      font-weight:950;
-      color:var(--text);
-      font-size:10px;
-      line-height:14px;
+      font-weight:950; color:var(--text);
+      font-size:10px; line-height:14px;
     }
     .empty{opacity:.25}
-    .today{
-      outline:2px solid rgba(45,212,191,.95);
-      box-shadow: inset 0 0 0 1px rgba(45,212,191,.28);
-    }
-
-    .hscrollBar{
-      height:12px;
-      overflow-x:auto;
-      overflow-y:hidden;
-      background:rgba(11,18,32,.75);
-      border-top:1px solid rgba(255,255,255,.08);
-      flex:0 0 auto;
-    }
-    .hscrollBar::-webkit-scrollbar{ height:12px; }
-    .hscrollBar::-webkit-scrollbar-thumb{
-      background:rgba(255,255,255,.22);
-      border-radius:999px;
-      border:2px solid rgba(11,18,32,.75);
-    }
-    .hscrollInner{ height:1px; }
 
     .foot{
       padding:8px 10px;
@@ -384,7 +266,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Correção aplicada: cabeçalho de datas/dias fixo (sticky 2 linhas) sem descasamento.</div>
+        <div class="sub">Correção aplicada: cabeçalho fixo + colunas Cliente/Turno congeladas (sticky left) no mesmo scroll do grid.</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" title="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -426,35 +308,14 @@
       <div class="hint" id="status">Status: aguardando carga…</div>
     </div>
 
-    <div class="gridBody">
-      <div class="leftPane">
-        <div class="leftScroll" id="leftScroll">
-          <table class="leftTable" id="leftTable">
-            <thead>
-              <tr>
-                <th class="thLeftSpan" rowspan="2">Cliente</th>
-                <th class="thLeftSpan center" rowspan="2">Turno</th>
-              </tr>
-              <tr></tr>
-            </thead>
-            <tbody id="leftBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="rightPaneWrap">
-        <div class="rightScroll" id="rightScroll">
-          <table class="rightTable" id="rightTable">
-            <thead>
-              <tr id="rightHeadDow"></tr>
-              <tr id="rightHeadDt"></tr>
-            </thead>
-            <tbody id="rightBody"></tbody>
-          </table>
-        </div>
-
-        <div class="hscrollBar" id="hscrollBar"><div class="hscrollInner" id="hscrollInner"></div></div>
-      </div>
+    <div class="tableScroll" id="tableScroll">
+      <table id="gridTable">
+        <thead>
+          <tr id="headDow"></tr>
+          <tr id="headDt"></tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
     </div>
 
     <div class="foot">
@@ -473,8 +334,7 @@ const ENDPOINT_PUBLISHED_CSV = (gid, ts) =>
 
 const RESOURCE_NAMES = { "DO":"Dôra", "GE":"Geovana", "JC":"João Custódio", "AL":"Aline" };
 const VALID_CODES = new Set(["DO","GE","JC","AL"]);
-
-const state = { selected: new Set(), cache: null };
+const state = { selected:new Set(), cache:null };
 const $ = (id) => document.getElementById(id);
 
 function syncHeaderHeight(){
@@ -486,14 +346,13 @@ function toggleFilters(){
   syncHeaderHeight();
 }
 $("btnToggleFilters").addEventListener("click", toggleFilters);
-window.addEventListener("resize", () => { syncHeaderHeight(); syncHScrollWidth(); });
+window.addEventListener("resize", syncHeaderHeight);
 
 function isWeekendDOW(dowStr){
   const s = (dowStr || "").toUpperCase().trim();
-  return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM") || s.startsWith("SÁBADO") || s.startsWith("DOMINGO");
+  return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM");
 }
 
-/* Parser padrão: suporta "AL - GE" */
 function parseCellCodes(cellRaw){
   const raw = String(cellRaw || "").trim();
   if (!raw) return [];
@@ -504,15 +363,12 @@ function parseCellCodes(cellRaw){
     .replace(/[\/,;|]/g, " ")
     .replace(/\s*-\s*/g, " ");
   const parts = normalized.split(/\s+/).filter(Boolean);
-
-  const out = [];
-  const seen = new Set();
+  const out=[], seen=new Set();
   for (const p of parts){
     const code = p.replace(/[^A-Z]/g,"").slice(0,2);
     if (!VALID_CODES.has(code)) continue;
     if (seen.has(code)) continue;
-    seen.add(code);
-    out.push(code);
+    seen.add(code); out.push(code);
   }
   return out;
 }
@@ -527,39 +383,38 @@ function buildLegend(){
     AL:getComputedStyle(document.documentElement).getPropertyValue("--al").trim()
   };
 
-  ["DO","GE","JC","AL"].forEach(code => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "chipBtn";
+  ["DO","GE","JC","AL"].forEach(code=>{
+    const b=document.createElement("button");
+    b.className="chipBtn";
+    b.type="button";
     b.setAttribute("data-code", code);
-    b.setAttribute("aria-pressed", "false");
-    b.setAttribute("data-tip", `${code} = ${RESOURCE_NAMES[code]}`);
+    b.setAttribute("aria-pressed","false");
 
-    const dot = document.createElement("span");
-    dot.className = "dot";
-    dot.style.background = colors[code];
+    const dot=document.createElement("span");
+    dot.className="dot";
+    dot.style.background=colors[code];
 
-    const codeEl = document.createElement("span");
-    codeEl.className = "code";
-    codeEl.textContent = code;
+    const codeEl=document.createElement("span");
+    codeEl.className="code";
+    codeEl.textContent=code;
 
-    const caret = document.createElement("span");
-    caret.className = "caret";
-    caret.textContent = "✓";
+    const caret=document.createElement("span");
+    caret.className="caret";
+    caret.textContent="✓";
 
-    b.appendChild(dot); b.appendChild(codeEl); b.appendChild(caret);
+    b.title = `${code} = ${RESOURCE_NAMES[code]}`;
+    b.append(dot, codeEl, caret);
 
-    b.addEventListener("click", (ev) => {
+    b.addEventListener("click",(ev)=>{
       const multi = ev.ctrlKey || ev.metaKey;
       if (multi){
-        if (state.selected.has(code)) state.selected.delete(code);
-        else state.selected.add(code);
+        if (state.selected.has(code)) state.selected.delete(code); else state.selected.add(code);
       } else {
-        const onlyThisAlready = state.selected.size === 1 && state.selected.has(code);
+        const onlyThis = state.selected.size===1 && state.selected.has(code);
         state.selected.clear();
-        if (!onlyThisAlready) state.selected.add(code);
+        if (!onlyThis) state.selected.add(code);
       }
-      $("resource").value = "";
+      $("resource").value="";
       syncLegendUI();
       rerender();
     });
@@ -568,20 +423,22 @@ function buildLegend(){
   });
   syncLegendUI();
 }
+
 function syncLegendUI(){
-  const any = state.selected.size > 0;
-  document.querySelectorAll(".chipBtn[data-code]").forEach(btn => {
-    const code = btn.getAttribute("data-code");
-    const on = state.selected.has(code);
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  const any = state.selected.size>0;
+  document.querySelectorAll(".chipBtn[data-code]").forEach(btn=>{
+    const code=btn.getAttribute("data-code");
+    const on=state.selected.has(code);
+    btn.setAttribute("aria-pressed", on ? "true":"false");
     btn.style.opacity = (!any || on) ? "1" : ".55";
-    const caret = btn.querySelector(".caret");
-    if (caret) caret.style.display = on ? "inline" : "none";
+    const caret=btn.querySelector(".caret");
+    if (caret) caret.style.display = on ? "inline":"none";
   });
 }
-$("btnClear").addEventListener("click", () => {
+
+$("btnClear").addEventListener("click", ()=>{
   state.selected.clear();
-  $("resource").value = "";
+  $("resource").value="";
   syncLegendUI();
   rerender();
 });
@@ -589,428 +446,335 @@ $("btnClear").addEventListener("click", () => {
 function getActiveCodes(){
   const dd = $("resource").value.trim().toUpperCase();
   if (dd) return new Set([dd]);
-  return new Set(Array.from(state.selected).map(x => String(x).toUpperCase()));
+  return new Set(Array.from(state.selected));
 }
 
 function parseCSV(text){
-  const rows = [];
-  let row = [], cur = "", inQ = false;
+  const rows=[];
+  let row=[], cur="", inQ=false;
   for (let i=0;i<text.length;i++){
-    const ch = text[i], nx = text[i+1];
-    if (ch === '"' && nx === '"'){ cur += '"'; i++; continue; }
-    if (ch === '"'){ inQ = !inQ; continue; }
+    const ch=text[i], nx=text[i+1];
+    if (ch === '"' && nx === '"'){ cur+='"'; i++; continue; }
+    if (ch === '"'){ inQ=!inQ; continue; }
     if (ch === ',' && !inQ){ row.push(cur); cur=""; continue; }
     if ((ch === '\n' || ch === '\r') && !inQ){
       if (cur.length || row.length){ row.push(cur); rows.push(row); }
-      row=[]; cur="";
-      continue;
+      row=[]; cur=""; continue;
     }
-    cur += ch;
+    cur+=ch;
   }
   if (cur.length || row.length){ row.push(cur); rows.push(row); }
-  return rows.map(r => r.map(c => (c ?? "").trim()));
+  return rows.map(r=>r.map(c=>(c??"").trim()));
 }
 
 async function fetchCSV(){
-  const ts = Date.now();
-  const url = ENDPOINT_PUBLISHED_CSV(SHEET_GID, ts);
-  const res = await fetch(url, { cache:"no-store" });
-  if (!res.ok) throw new Error(`Falha ao carregar CSV publicado. HTTP ${res.status}.`);
-  const text = await res.text();
-  if (!text || text.length < 10) throw new Error(`CSV vazio. Verifique gid (${SHEET_GID}).`);
+  const ts=Date.now();
+  const url=ENDPOINT_PUBLISHED_CSV(SHEET_GID, ts);
+  const res=await fetch(url,{cache:"no-store"});
+  if(!res.ok) throw new Error(`Falha ao carregar CSV (HTTP ${res.status})`);
+  const text=await res.text();
+  if(!text || text.length<10) throw new Error("CSV vazio");
   return text;
 }
 
 function normalizeDateLabel(s){
   if (!s) return "";
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})(?:\/\d{2,4})?$/);
-  if (!m) return s;
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})(?:\/\d{2,4})?$/);
+  if(!m) return s;
   return `${String(m[1]).padStart(2,"0")}/${String(m[2]).padStart(2,"0")}`;
 }
 function todayLabel(){
-  const d = new Date();
+  const d=new Date();
   return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
 }
 function inWindow(label, start, end){
-  if (!start && !end) return true;
-  const idx = (x)=> {
-    const m = x.match(/^(\d{2})\/(\d{2})$/);
-    if (!m) return -1;
+  if(!start && !end) return true;
+  const idx=(x)=>{
+    const m=x.match(/^(\d{2})\/(\d{2})$/);
+    if(!m) return -1;
     return parseInt(m[2],10)*100 + parseInt(m[1],10);
   };
-  const v = idx(label);
-  const a = start ? idx(start) : -Infinity;
-  const b = end ? idx(end) : Infinity;
-  return (v >= a && v <= b);
+  const v=idx(label);
+  const a=start?idx(start):-Infinity;
+  const b=end?idx(end):Infinity;
+  return v>=a && v<=b;
 }
 
 function chipEl(code){
-  const v = (code || "").trim().toUpperCase();
-  const sp = document.createElement("span");
-  sp.className = "chip" + (!v ? " empty" : "");
-  sp.textContent = v || "—";
+  const v=(code||"").trim().toUpperCase();
+  const sp=document.createElement("span");
+  sp.className="chip"+(!v?" empty":"");
+  sp.textContent=v||"—";
   if (v && RESOURCE_NAMES[v]) sp.title = `${v} = ${RESOURCE_NAMES[v]}`;
 
-  const colors = {
+  const colors={
     DO:getComputedStyle(document.documentElement).getPropertyValue("--do").trim(),
     GE:getComputedStyle(document.documentElement).getPropertyValue("--ge").trim(),
     JC:getComputedStyle(document.documentElement).getPropertyValue("--jc").trim(),
     AL:getComputedStyle(document.documentElement).getPropertyValue("--al").trim(),
   };
-  if (colors[v]){
-    sp.style.color = "#0b1220";
-    sp.style.background = colors[v];
-    sp.style.borderColor = "rgba(255,255,255,.14)";
+  if(colors[v]){
+    sp.style.color="#0b1220";
+    sp.style.background=colors[v];
+    sp.style.borderColor="rgba(255,255,255,.14)";
   }
   return sp;
 }
 
 function renderCellChips(codes, activeCodes){
-  const box = document.createElement("div");
-  box.className = "cellChips";
-
-  const filtered = (activeCodes && activeCodes_toggle.size)
-    ? codes.filter(c => activeCodes_toggle.has(c))
+  const box=document.createElement("div");
+  box.className="cellChips";
+  const filtered=(activeCodes && activeCodes.size)
+    ? codes.filter(c=>activeCodes.has(c))
     : codes.slice();
-
-  if (filtered.length === 0){
+  if(filtered.length===0){
     box.appendChild(chipEl(""));
-    return { box, shownCount: 0 };
+    return { box, shownCount:0 };
   }
-  for (const c of filtered) box.appendChild(chipEl(c));
-  return { box, shownCount: filtered.length };
-}
-
-/* BUG FIX: use activeCodes param (sem variável fantasma) */
-function renderCellChipsSafe(codes, activeCodes){
-  const box = document.createElement("div");
-  box.className = "cellChips";
-
-  const filtered = (activeCodes && activeCodes.size)
-    ? codes.filter(c => activeCodes.has(c))
-    : codes.slice();
-
-  if (filtered.length === 0){
-    box.appendChild(chipEl(""));
-    return { box, shownCount: 0 };
-  }
-  for (const c of filtered) box.appendChild(chipEl(c));
-  return { box, shownCount: filtered.length };
+  for(const c of filtered) box.appendChild(chipEl(c));
+  return { box, shownCount:filtered.length };
 }
 
 function normalizeShift(s){
-  const v = (s || "").toUpperCase().trim();
-  if (v === "M" || v === "MANHÃ" || v === "MANHA") return "M";
-  if (v === "T" || v === "TARDE") return "T";
+  const v=(s||"").toUpperCase().trim();
+  if(v==="M"||v==="MANHÃ"||v==="MANHA") return "M";
+  if(v==="T"||v==="TARDE") return "T";
   return "";
 }
 
 function getClientAndShift(row, dateIdxStart, lastClient){
-  const firstNonEmpty = row.findIndex(c => c && c !== "");
-  if (firstNonEmpty === -1) return null;
+  const first=row.findIndex(c=>c && c!=="");
+  if(first===-1) return null;
 
-  const cellA = (row[firstNonEmpty] || "").trim();
-  const cellB = (row[firstNonEmpty+1] || "").trim();
+  const cellA=(row[first]||"").trim();
+  const cellB=(row[first+1]||"").trim();
 
-  let client = cellA;
-  let shift = "";
-
-  if (cellA.includes("•")){
-    const parts = cellA.split("•").map(x=>x.trim());
-    client = parts[0] || cellA;
-    shift = normalizeShift(parts[1] || "");
-  } else {
-    shift = normalizeShift(cellB);
-    const solo = normalizeShift(cellA);
-    if (solo && lastClient){
-      client = lastClient;
-      shift = solo;
-    }
+  let client=cellA, shift="";
+  if(cellA.includes("•")){
+    const parts=cellA.split("•").map(x=>x.trim());
+    client=parts[0]||cellA;
+    shift=normalizeShift(parts[1]||"");
+  }else{
+    shift=normalizeShift(cellB);
+    const solo=normalizeShift(cellA);
+    if(solo && lastClient){ client=lastClient; shift=solo; }
   }
-  if (!shift){
-    const solo = normalizeShift(cellA);
-    if (solo && lastClient){
-      client = lastClient;
-      shift = solo;
-    }
+  if(!shift){
+    const solo=normalizeShift(cellA);
+    if(solo && lastClient){ client=lastClient; shift=solo; }
   }
-
   client = client || lastClient || "—";
-  const alloc = row.slice(dateIdxStart).map(c => parseCellCodes(c));
+  const alloc=row.slice(dateIdxStart).map(c=>parseCellCodes(c));
   return { client, shift, alloc };
 }
 
-function hasAnyActiveMulti(allocWin, activeCodes){
-  if (activeCodes.size === 0) return true;
-  return allocWin.some(arr => arr.some(code => activeCodes.has(code)));
+function hasAnyActive(allocWin, activeCodes){
+  if(activeCodes.size===0) return true;
+  return allocWin.some(arr=>arr.some(code=>activeCodes.has(code)));
 }
 
-function bindScrollSync(){
-  const left = $("leftScroll");
-  const right = $("rightScroll");
-  const bar = $("hscrollBar");
-
-  let lockV = false;
-  left.addEventListener("scroll", () => {
-    if (lockV) return;
-    lockV = true;
-    right.scrollTop = left.scrollTop;
-    requestAnimationFrame(()=>lockV=false);
-  });
-  right.addEventListener("scroll", () => {
-    if (lockV) return;
-    lockV = true;
-    left.scrollTop = right.scrollTop;
-    requestAnimationFrame(()=>lockV=false);
-  });
-
-  let lockH = false;
-  bar.addEventListener("scroll", () => {
-    if (lockH) return;
-    lockH = true;
-    right.scrollLeft = bar.scrollLeft;
-    requestAnimationFrame(()=>lockH=false);
-  });
-  right.addEventListener("scroll", () => {
-    if (lockH) return;
-    lockH = true;
-    bar.scrollLeft = right.scrollLeft;
-    requestAnimationFrame(()=>lockH=false);
-  });
-}
-function syncHScrollWidth(){
-  const tbl = $("rightTable");
-  const inner = $("hscrollInner");
-  if (!tbl || !inner) return;
-  inner.style.width = tbl.scrollWidth + "px";
-}
-
-function rerender(){
-  if (!state.cache) return;
-  render(state.cache);
-  syncHScrollWidth();
-}
+function rerender(){ if(state.cache) render(state.cache); }
 
 function render(cache){
   const { rawRows, dateIdxStart, dates, dows } = cache;
 
-  const q = $("q").value.trim().toLowerCase();
-  const start = normalizeDateLabel($("start").value.trim());
-  const end   = normalizeDateLabel($("end").value.trim());
+  const q=$("q").value.trim().toLowerCase();
+  const start=normalizeDateLabel($("start").value.trim());
+  const end=normalizeDateLabel($("end").value.trim());
 
-  const dateMask = dates.map(d => inWindow(d, start, end));
-  const filteredDates = dates.filter((_,i)=>dateMask[i]);
-  const filteredDows  = dows.filter((_,i)=>dateMask[i]);
+  const mask=dates.map(d=>inWindow(d,start,end));
+  const fDates=dates.filter((_,i)=>mask[i]);
+  const fDows=dows.filter((_,i)=>mask[i]);
 
-  const activeCodes = getActiveCodes();
-  const today = todayLabel();
+  const activeCodes=getActiveCodes();
+  const today=todayLabel();
 
-  const headDow = $("rightHeadDow");
-  const headDt  = $("rightHeadDt");
-  headDow.innerHTML = "";
-  headDt.innerHTML  = "";
+  const headDow=$("headDow");
+  const headDt=$("headDt");
+  const body=$("body");
+  headDow.innerHTML=""; headDt.innerHTML=""; body.innerHTML="";
 
-  filteredDates.forEach((d, i) => {
-    const dow = (filteredDows[i] || "").toUpperCase();
+  // Headers com 2 colunas sticky à esquerda
+  const thClient1=document.createElement("th");
+  thClient1.className="stickyClient";
+  thClient1.textContent="Cliente";
+  thClient1.rowSpan=2;
 
-    const th1 = document.createElement("th");
-    th1.textContent = dow || "—";
+  const thShift1=document.createElement("th");
+  thShift1.className="stickyShift";
+  thShift1.textContent="Turno";
+  thShift1.rowSpan=2;
 
-    const th2 = document.createElement("th");
-    th2.textContent = d;
+  headDow.appendChild(thClient1);
+  headDow.appendChild(thShift1);
 
-    if (isWeekendDOW(filteredDows[i])) { th1.classList.add("weekend-col"); th2.classList.add("weekend-col"); }
-
-    headDow.appendChild(th1);
-    headDt.appendChild(th2);
+  // Completa o header de datas
+  fDates.forEach((d,i)=>{
+    const th=document.createElement("th");
+    th.textContent=(fDows[i]||"—").toUpperCase();
+    if(isWeekendDOW(fDows[i])) th.classList.add("weekend-col");
+    headDow.appendChild(th);
   });
 
-  let lastClient = "";
-  const items = [];
-  for (const r of rawRows){
-    const parsed = getClientAndShift(r, dateIdxStart, lastClient);
-    if (!parsed) continue;
-    if (parsed.client && parsed.client !== "—") lastClient = parsed.client;
+  fDates.forEach((d,i)=>{
+    const th=document.createElement("th");
+    th.textContent=d;
+    if(isWeekendDOW(fDows[i])) th.classList.add("weekend-col");
+    headDt.appendChild(th);
+  });
+
+  // Normalize items
+  let lastClient="";
+  const items=[];
+  for(const r of rawRows){
+    const parsed=getClientAndShift(r,dateIdxStart,lastClient);
+    if(!parsed) continue;
+    if(parsed.client && parsed.client!=="—") lastClient=parsed.client;
     items.push(parsed);
   }
 
-  const groups = [];
-  const map = new Map();
-  for (const it of items){
-    const key = it.client;
-    if (!map.has(key)){
-      const g = { client: key, M: null, T: null };
-      map.set(key, g);
-      groups.push(g);
+  // Group by client (M/T)
+  const groups=[];
+  const map=new Map();
+  for(const it of items){
+    const key=it.client;
+    if(!map.has(key)){
+      const g={client:key, M:null, T:null};
+      map.set(key,g); groups.push(g);
     }
-    const g = map.get(key);
-    if (it.shift === "M") g.M = it;
-    if (it.shift === "T") g.T = it;
+    const g=map.get(key);
+    if(it.shift==="M") g.M=it;
+    if(it.shift==="T") g.T=it;
   }
 
-  const leftBody = $("leftBody");
-  const rightBody = $("rightBody");
-  leftBody.innerHTML = "";
-  rightBody.innerHTML = "";
+  let lines=0, shown=0;
 
-  let lines = 0;
-  let shownChips = 0;
+  for(const g of groups){
+    if(q && !g.client.toLowerCase().includes(q)) continue;
 
-  function appendRowsForClient(g){
-    const trL1 = document.createElement("tr");
-    const trL2 = document.createElement("tr");
-    trL1.className = "row-m";
-    trL2.className = "row-t";
+    const allocM=(g.M&&g.M.alloc)?g.M.alloc:[];
+    const allocT=(g.T&&g.T.alloc)?g.T.alloc:[];
+    const winM=allocM.filter((_,i)=>mask[i]);
+    const winT=allocT.filter((_,i)=>mask[i]);
 
-    const tdClient = document.createElement("td");
-    tdClient.className = "col-client";
-    tdClient.rowSpan = 2;
+    if(!hasAnyActive(winM,activeCodes) && !hasAnyActive(winT,activeCodes)) continue;
 
-    const span = document.createElement("span");
-    span.className = "clientText";
-    span.textContent = g.client || "—";
+    // Linha MANHÃ
+    const trM=document.createElement("tr");
+    trM.className="row-m";
+
+    const tdClient=document.createElement("td");
+    tdClient.className="stickyClient";
+    tdClient.rowSpan=2;
+    const span=document.createElement("span");
+    span.className="clientText";
+    span.textContent=g.client||"—";
     tdClient.appendChild(span);
 
-    const tdShiftM = document.createElement("td");
-    tdShiftM.className = "col-shift";
-    tdShiftM.textContent = "MANHÃ";
+    const tdShiftM=document.createElement("td");
+    tdShiftM.className="stickyShift";
+    tdShiftM.textContent="MANHÃ";
 
-    const tdShiftT = document.createElement("td");
-    tdShiftT.className = "col-shift";
-    tdShiftT.textContent = "TARDE";
+    trM.appendChild(tdClient);
+    trM.appendChild(tdShiftM);
 
-    trL1.appendChild(tdClient);
-    trL1.appendChild(tdShiftM);
-    trL2.appendChild(tdShiftT);
-
-    leftBody.appendChild(trL1);
-    leftBody.appendChild(trL2);
-
-    const trR1 = document.createElement("tr");
-    const trR2 = document.createElement("tr");
-    trR1.className = "row-m";
-    trR2.className = "row-t";
-
-    const allocM = (g.M && g.M.alloc) ? g.M.alloc : [];
-    const allocT = (g.T && g.T.alloc) ? g.T.alloc : [];
-    const winM = allocM.filter((_,i)=>dateMask[i]);
-    const winT = allocT.filter((_,i)=>dateMask[i]);
-
-    for (let i=0;i<filteredDates.length;i++){
-      const weekend = isWeekendDOW(filteredDows[i]);
-
-      const codesM = Array.isArray(winM[i]) ? winM[i] : [];
-      const codesT = Array.isArray(winT[i]) ? winT[i] : [];
-
-      const tdM = document.createElement("td");
-      const rM = renderCellChipsSafe(codesM, activeCodes);
-      tdM.appendChild(rM.box);
-      shownChips += rM.shownCount;
-      if (filteredDates[i] === today) tdM.classList.add("today");
-      if (weekend) tdM.classList.add("weekend-col");
-
-      const tdT = document.createElement("td");
-      const rT = renderCellChipsSafe(codesT, activeCodes);
-      tdT.appendChild(rT.box);
-      shownChips += rT.shownCount;
-      if (filteredDates[i] === today) tdT.classList.add("today");
-      if (weekend) tdT.classList.add("weekend-col");
-
-      trR1.appendChild(tdM);
-      trR2.appendChild(tdT);
+    for(let i=0;i<fDates.length;i++){
+      const td=document.createElement("td");
+      const codes=Array.isArray(winM[i])?winM[i]:[];
+      const r=renderCellChips(codes, activeCodes);
+      td.appendChild(r.box);
+      shown+=r.shownCount;
+      if(fDates[i]===today) td.classList.add("today");
+      if(isWeekendDOW(fDows[i])) td.classList.add("weekend-col");
+      trM.appendChild(td);
     }
 
-    rightBody.appendChild(trR1);
-    rightBody.appendChild(trR2);
+    // Linha TARDE
+    const trT=document.createElement("tr");
+    trT.className="row-t";
+
+    const tdShiftT=document.createElement("td");
+    tdShiftT.className="stickyShift";
+    tdShiftT.textContent="TARDE";
+    trT.appendChild(tdShiftT);
+
+    for(let i=0;i<fDates.length;i++){
+      const td=document.createElement("td");
+      const codes=Array.isArray(winT[i])?winT[i]:[];
+      const r=renderCellChips(codes, activeCodes);
+      td.appendChild(r.box);
+      shown+=r.shownCount;
+      if(fDates[i]===today) td.classList.add("today");
+      if(isWeekendDOW(fDows[i])) td.classList.add("weekend-col");
+      trT.appendChild(td);
+    }
+
+    body.appendChild(trM);
+    body.appendChild(trT);
     lines += 2;
   }
 
-  for (const g of groups){
-    if (q && !g.client.toLowerCase().includes(q)) continue;
-
-    const allocM = (g.M && g.M.alloc) ? g.M.alloc : [];
-    const allocT = (g.T && g.T.alloc) ? g.T.alloc : [];
-    const winM = allocM.filter((_,i)=>dateMask[i]);
-    const winT = allocT.filter((_,i)=>dateMask[i]);
-
-    if (!hasAnyActiveMulti(winM, activeCodes) && !hasAnyActiveMulti(winT, activeCodes)) continue;
-    appendRowsForClient(g);
-  }
-
   $("kpiRows").textContent = lines.toLocaleString("pt-BR");
-  $("kpiCols").textContent = filteredDates.length.toLocaleString("pt-BR");
-  $("kpiFilled").textContent = shownChips.toLocaleString("pt-BR");
+  $("kpiCols").textContent = fDates.length.toLocaleString("pt-BR");
+  $("kpiFilled").textContent = shown.toLocaleString("pt-BR");
   $("kpiToday").textContent = today;
 
-  const sel = Array.from(activeCodes);
-  const selTxt = sel.length ? ` • Filtro: ${sel.map(x=>`${x}=${RESOURCE_NAMES[x]}`).join(" | ")}` : "";
+  const sel=Array.from(activeCodes);
+  const selTxt=sel.length ? ` • Filtro: ${sel.map(x=>`${x}=${RESOURCE_NAMES[x]}`).join(" | ")}` : "";
   $("status").textContent = `Status: carregado com sucesso (SSOT operacional).${selTxt}`;
   $("footRight").textContent = `Atualizado em ${new Date().toLocaleString("pt-BR")} • gid=${SHEET_GID}`;
 }
 
 async function load(){
-  $("status").textContent = "Status: carregando…";
+  $("status").textContent="Status: carregando…";
+  const data=parseCSV(await fetchCSV());
+  const cleaned=data.filter(r=>r.some(c=>c && c!==""));
+  if(cleaned.length<3){ $("status").textContent="Status: CSV sem conteúdo útil."; return; }
 
-  const data = parseCSV(await fetchCSV());
-  const cleaned = data.filter(r => r.some(c => c && c !== ""));
+  const dowRow=cleaned[0];
+  const dateRow=cleaned[1];
+  const dateIdxStart=dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
+  if(dateIdxStart===-1){ $("status").textContent="Status: não localizei coluna inicial de datas."; return; }
 
-  if (cleaned.length < 3){
-    $("status").textContent = "Status: CSV sem conteúdo útil (estrutura insuficiente).";
-    return;
-  }
+  const rawRows=cleaned.slice(2);
+  const dates=dateRow.slice(dateIdxStart).map(normalizeDateLabel);
+  const dows=dowRow.slice(dateIdxStart).map(c=>c||"");
 
-  const dowRow  = cleaned[0];
-  const dateRow = cleaned[1];
-
-  const dateIdxStart = dateRow.findIndex(c => /^\d{1,2}\/\d{1,2}/.test(c));
-  if (dateIdxStart === -1){
-    $("status").textContent = "Status: não localizei coluna inicial de datas (dd/mm).";
-    return;
-  }
-
-  const rawRows = cleaned.slice(2);
-  const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
-  const dows  = dowRow.slice(dateIdxStart).map(c => c || "");
-
-  state.cache = { rawRows, dateIdxStart, dates, dows };
+  state.cache={ rawRows, dateIdxStart, dates, dows };
   render(state.cache);
   syncHeaderHeight();
-  syncHScrollWidth();
 }
 
 function wire(){
   buildLegend();
-  bindScrollSync();
 
-  const rerun = () => rerender();
-
-  ["q","start","end"].forEach(id => {
+  const rerun=()=>rerender();
+  ["q","start","end"].forEach(id=>{
     $(id).addEventListener("input", rerun);
     $(id).addEventListener("change", rerun);
   });
 
-  $("resource").addEventListener("change", () => {
+  $("resource").addEventListener("change", ()=>{
     state.selected.clear();
     syncLegendUI();
     rerun();
   });
 
-  $("btnReload").addEventListener("click", () => {
-    state.cache = null;
-    load().catch(err => {
+  $("btnReload").addEventListener("click", ()=>{
+    state.cache=null;
+    load().catch(err=>{
       console.error(err);
-      $("status").textContent = "Status: erro na carga. Validar CSV publicado (gid/endpoint).";
-      $("footRight").textContent = err.message;
+      $("status").textContent="Status: erro na carga do CSV.";
+      $("footRight").textContent=err.message;
     });
   });
 
-  load().catch(err => {
+  load().catch(err=>{
     console.error(err);
-    $("status").textContent = "Status: erro na carga. Validar CSV publicado (gid/endpoint).";
-    $("footRight").textContent = err.message;
+    $("status").textContent="Status: erro na carga do CSV.";
+    $("footRight").textContent=err.message;
   });
 }
-
 wire();
 </script>
 </body>
