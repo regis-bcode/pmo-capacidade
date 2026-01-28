@@ -7,30 +7,30 @@
   <style>
     :root{
       --bg:#0b1220;
-      --muted:#93a4c7;
       --text:#e8efff;
+      --muted:#93a4c7;
       --line:rgba(255,255,255,.10);
-      --card: rgba(15,26,48,.70);
 
       --do:#60a5fa; --ge:#34d399; --jc:#fbbf24; --al:#fb7185;
 
+      /* Ultra-denso */
       --rowH: 18px;
-      --headH1: 14px;
-      --headH2: 14px;
+      --headH1: 14px;  /* linha DIA DA SEMANA */
+      --headH2: 14px;  /* linha DATA */
+      --headTotal: calc(var(--headH1) + var(--headH2));
 
-      --wClient: 160px;
-      --wShift: 82px;
+      /* Larguras fixas (sem subpixel) */
+      --wClient: 170px;
+      --wTurno: 86px;
 
-      /* cores “linha” (opacas agora via gradient, sem alpha em sticky) */
-      --mStrip:#2b2a57;   /* manhã */
-      --tStrip:#0f3348;   /* tarde */
-
-      /* fundos sólidos (SEM rgba) */
+      /* Fundos sólidos (SEM transparência) */
       --solidBG: #0b1220;
       --solidHdr: #0a162e;
       --solidSticky: #0b1220;
 
-      --hdrH: 0px;
+      /* Faixas (sólidas) para manhã/tarde */
+      --mStrip:#2b2a57;
+      --tStrip:#0f3348;
     }
 
     *{box-sizing:border-box}
@@ -42,133 +42,108 @@
       overflow:hidden;
     }
 
-    /* IMPORTANTE: sem backdrop-filter (blur) para não “parecer translúcido” */
-    header{
-      padding:10px 12px 8px;
-      border-bottom:1px solid var(--line);
-      position:sticky; top:0;
-      background: var(--solidBG);
-      z-index:50;
-    }
-    header.collapsed .toolbar,
-    header.collapsed .legendWrap,
-    header.collapsed .cards{ display:none !important; }
-
-    .wrap{max-width:1500px; margin:0 auto; padding:0 12px;}
-    .title{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
-    .titleLeft{display:flex; flex-direction:column; gap:6px;}
-    h1{margin:0; font-size:14px; font-weight:900;}
-    .sub{margin:0; color:var(--muted); font-size:11px; line-height:1.2;}
-    .titleRight{display:flex; align-items:center; gap:8px;}
-    .btn{
-      display:inline-flex; align-items:center; justify-content:center;
-      padding:8px 10px; border-radius:10px;
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(45,212,191,.22), rgba(15,26,48,.65));
-      color:var(--text); cursor:pointer; user-select:none;
-      font-weight:800; font-size:12px;
-    }
-    .btn.secondary{ background:rgba(15,26,48,.70); }
-    .iconBtn{
-      width:42px; height:36px; border-radius:10px;
-      border:1px solid var(--line);
-      background:rgba(15,26,48,.70);
-      display:inline-flex; align-items:center; justify-content:center;
-      cursor:pointer; user-select:none;
-    }
-    .funnel{width:16px; height:16px; position:relative;}
-    .funnel:before, .funnel:after{
-      content:""; position:absolute; left:0; right:0; margin:auto;
-      border-radius:2px; background:rgba(232,239,255,.92);
-    }
-    .funnel:before{
-      width:16px; height:3px; top:0px;
-      box-shadow: 0 5px 0 rgba(232,239,255,.92), 0 10px 0 rgba(232,239,255,.92);
-    }
-    .funnel:after{ width:9px; height:3px; top:13px; }
-
-    .toolbar{
-      margin-top:8px;
-      display:grid;
-      grid-template-columns: 1.4fr 1fr 1fr 1fr;
-      gap:8px; align-items:end;
-    }
-    .field label{display:block; font-size:10px; color:var(--muted); margin:0 0 4px;}
-    .field input, .field select{
-      width:100%;
-      padding:7px 8px;
-      border-radius:10px;
-      border:1px solid var(--line);
-      background:#0f1a30; /* sólido */
-      color:var(--text);
-      outline:none;
-      font-size:12px;
+    /* ====== TOP BAR (chips + botões) ====== */
+    .topBar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px 0;
     }
 
-    .legendWrap{display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap;}
-    .legend{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
-    .chipBtn{
-      display:inline-flex; align-items:center; gap:8px;
-      background:#14264a; /* sólido */
-      border:1px solid var(--line);
-      padding:4px 10px; border-radius:999px;
-      font-size:11px; color:var(--text);
-      cursor:pointer; user-select:none;
-      transition: opacity .15s ease;
-    }
-    .chipBtn .dot{width:9px; height:9px; border-radius:50%}
-    .chipBtn .code{font-weight:950;}
-    .chipBtn .caret{display:none; font-weight:900; margin-left:2px}
-    .chipBtn[aria-pressed="true"]{ border-color: rgba(255,255,255,.38); }
-    .chipBtn[aria-pressed="true"] .caret{display:inline}
-    .hintline{ color:var(--muted); font-size:10px; opacity:.9; }
-
-    .cards{
-      padding:8px 0 6px;
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
+    .chipBar{
+      display:flex;
+      align-items:center;
       gap:8px;
+      flex-wrap:wrap;
     }
-    .card{
-      background:#0f1a30; /* sólido */
+
+    .chipBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#0f1a30;
+      cursor:pointer;
+      user-select:none;
+      font-size:11px;
+      font-weight:900;
+      color:#fff;
+    }
+    .chipBtn .dot{
+      width:9px;height:9px;border-radius:50%;
+    }
+
+    /* Botões de modo (FONTE AMARELA SEMPRE) */
+    .modeBtns{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-left:10px;
+      flex-wrap:wrap;
+    }
+
+    .modeBtn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#0f1a30;
+      cursor:pointer;
+      user-select:none;
+      font-size:12px;
+      font-weight:900;
+
+      color:#fbbf24; /* <<< AMARELO SEMPRE */
+    }
+    .modeBtn[aria-pressed="true"]{
+      background:#14264a;
+      border-color: rgba(255,255,255,.45);
+      color:#fbbf24; /* mantém amarelo quando ativo */
+    }
+
+    .btnClear{
+      margin-left:auto;
+      padding:8px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.55);
+      background:transparent;
+      color:#fff;
+      cursor:pointer;
+      font-size:12px;
+      font-weight:900;
+      user-select:none;
+    }
+
+    /* === CONTÊINER DO GRID COM SCROLL (VERTICAL + HORIZONTAL) === */
+    .gridWrap{
+      height: calc(100vh - 58px);
+      padding:12px;
+    }
+    .gridCard{
+      height: 100%;
       border:1px solid var(--line);
       border-radius:14px;
-      padding:10px;
-      min-height:56px;
-    }
-    .kpi{font-size:11px; color:var(--muted)}
-    .val{margin-top:4px; font-size:16px; font-weight:900}
-
-    main{
-      height: calc(100vh - var(--hdrH));
-      padding:0 12px;
       overflow:hidden;
-    }
-    .gridcard{
-      max-width:1500px;
-      height:100%;
-      margin:0 auto;
-      background:#0f1a30; /* sólido */
-      border:1px solid var(--line);
-      border-radius:16px;
-      overflow:hidden;
+      background:#0f1a30;
       display:flex;
       flex-direction:column;
     }
-    .gridhead{
-      display:flex; justify-content:space-between; align-items:center;
-      padding:8px 10px;
+
+    .gridTitle{
+      padding:10px 12px;
       border-bottom:1px solid var(--line);
-      flex:0 0 auto;
+      font-weight:900;
       background: var(--solidBG);
     }
-    .gridhead .hint{color:var(--muted); font-size:11px}
 
     .tableScroll{
-      position:relative;
       flex:1 1 auto;
       min-height:0;
-      overflow:auto;
+      overflow:auto;           /* a rolagem acontece aqui */
       background: var(--solidBG);
       overscroll-behavior: contain;
     }
@@ -176,8 +151,9 @@
     table{
       border-collapse:separate;
       border-spacing:0;
-      width:max-content;
       table-layout:fixed;
+      width:max-content;
+      min-width: 100%;
     }
 
     thead tr{ height: var(--headH1); }
@@ -185,306 +161,164 @@
     tbody tr{ height: var(--rowH); }
 
     thead th{
-      position:sticky;
-      background: var(--solidHdr);  /* SÓLIDO */
+      position: sticky;
+      background: var(--solidHdr);
+      color: var(--muted);
       border-bottom:1px solid rgba(255,255,255,.16);
-      color:var(--muted);
+      border-right:1px solid rgba(255,255,255,.06);
+      text-align:center;
       padding:0 6px;
       white-space:nowrap;
-      text-align:center;
-      z-index:10;
+      font-size:10px;
+      font-weight:900;
+      z-index: 10; /* base */
     }
+    /* linha 1 do header (DOW) fica no topo */
     thead tr:nth-child(1) th{
-      top:0;
-      height:var(--headH1);
-      line-height:var(--headH1);
-      font-size:10px; font-weight:800;
-      z-index:12;
+      top: 0;
+      height: var(--headH1);
+      line-height: var(--headH1);
+      z-index: 20;
     }
+    /* linha 2 do header (DATA) fica logo abaixo */
     thead tr:nth-child(2) th{
-      top:var(--headH1);
-      height:var(--headH2);
-      line-height:var(--headH2);
-      font-size:10px; font-weight:800;
-      z-index:11;
+      top: var(--headH1);
+      height: var(--headH2);
+      line-height: var(--headH2);
+      z-index: 19;
     }
 
-    /* TH rowSpan=2 (Cliente/Turno) totalmente sólido */
-    thead th.stickyClient,
-    thead th.stickyShift{
-      top:0 !important;
-      height: calc(var(--headH1) + var(--headH2));
-      line-height: calc(var(--headH1) + var(--headH2));
-      z-index:60;
-      background: var(--solidHdr) !important; /* igual ao header */
-    }
-
-    /* colunas sticky (header+body) sempre sólidas */
-    .stickyClient, .stickyShift{
-      position:sticky;
-      z-index:30;
-      border-right:1px solid rgba(255,255,255,.14);
-      background: var(--solidSticky) !important;
-    }
-    .stickyClient{
-      left:0;
-      width:var(--wClient);
-      min-width:var(--wClient);
-      max-width:var(--wClient);
+    /* FIX DEFINITIVO: header Cliente/Turno */
+    thead th.thClient{
+      left: 0;
+      width: var(--wClient);
+      min-width: var(--wClient);
+      max-width: var(--wClient);
       text-align:left;
+      padding-left:10px;
+      z-index: 1000;
+      background: var(--solidHdr);
+      border-right:1px solid rgba(255,255,255,.14);
     }
-    .stickyShift{
-      left:var(--wClient);
-      width:var(--wShift);
-      min-width:var(--wShift);
-      max-width:var(--wShift);
-      text-align:center;
+    thead th.thTurno{
+      left: var(--wClient);
+      width: var(--wTurno);
+      min-width: var(--wTurno);
+      max-width: var(--wTurno);
+      z-index: 999;
+      background: var(--solidHdr);
+      border-right:1px solid rgba(255,255,255,.14);
     }
 
+    /* Corpo */
     tbody td{
-      border-bottom:1px solid rgba(255,255,255,.06);
-      padding:0 4px;
-      height:var(--rowH);
-      line-height:var(--rowH);
+      height: var(--rowH);
+      line-height: var(--rowH);
       font-size:11px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      border-right:1px solid rgba(255,255,255,.04);
+      padding:0 4px;
       white-space:nowrap;
+      background: var(--solidBG);
       vertical-align:middle;
-      background: var(--solidBG); /* base sólida para células */
     }
 
-    /* “cor da linha” agora é faixa sólida (não alpha) */
-    .row-m td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
-    .row-t td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
-
-    /* sticky NÃO recebe gradient: fica sólido */
-    .row-m td.stickyClient, .row-m td.stickyShift,
-    .row-t td.stickyClient, .row-t td.stickyShift{
-      background: var(--solidSticky) !important;
+    /* Colunas fixas do corpo (Cliente/Turno) */
+    tbody td.tdClient{
+      position: sticky;
+      left: 0;
+      width: var(--wClient);
+      min-width: var(--wClient);
+      max-width: var(--wClient);
+      z-index: 50;
+      background: var(--solidSticky);
+      border-right:1px solid rgba(255,255,255,.14);
     }
-
-    .weekend-col{ background: #2a2618 !important; } /* sólido p/ fim de semana */
-    .today{
-      outline:2px solid rgba(45,212,191,.95);
-      box-shadow: inset 0 0 0 1px rgba(45,212,191,.28);
+    tbody td.tdTurno{
+      position: sticky;
+      left: var(--wClient);
+      width: var(--wTurno);
+      min-width: var(--wTurno);
+      max-width: var(--wTurno);
+      z-index: 49;
+      background: var(--solidSticky);
+      border-right:1px solid rgba(255,255,255,.14);
+      text-align:center;
+      font-weight:900;
     }
 
     .clientText{
       display:block;
-      width:100%;
       padding:0 6px;
       overflow:hidden;
       text-overflow:ellipsis;
-      white-space:nowrap;
-      font-size:11px;
       font-weight:900;
       text-transform:uppercase;
-      color:var(--text);
     }
 
-    .cellChips{display:flex; align-items:center; justify-content:center; gap:2px; width:100%;}
+    /* faixas manhã/tarde */
+    tr.rowM td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
+    tr.rowT td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
+    tr.rowM td.tdClient, tr.rowM td.tdTurno,
+    tr.rowT td.tdClient, tr.rowT td.tdTurno{
+      background: var(--solidSticky) !important;
+    }
+
+    /* Fim de semana */
+    .weekend{ background:#2a2618 !important; }
+
+    /* Chips (dentro da célula) */
+    .cellChips{display:flex; align-items:center; justify-content:center; gap:2px;}
     .chip{
       display:inline-flex; align-items:center; justify-content:center;
       min-width:22px; height:14px; padding:0 5px;
       border-radius:5px;
       border:1px solid rgba(255,255,255,.10);
-      background:#14264a; /* sólido */
-      font-weight:950; color:var(--text);
-      font-size:10px; line-height:14px;
+      background:#14264a;
+      font-weight:950;
+      font-size:10px;
+      line-height:14px;
+      color:var(--text);
     }
     .empty{opacity:.25}
-
-    .foot{
-      padding:8px 10px;
-      border-top:1px solid var(--line);
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      color:var(--muted);
-      font-size:11px;
-      flex:0 0 auto;
-      background: var(--solidBG);
-    }
   </style>
 </head>
 
 <body>
-<header id="hdr">
-  <div class="wrap">
-    <div class="title">
-      <div class="titleLeft">
-        <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Fix definitivo: headers + colunas sticky 100% sólidos (sem translucidez em scroll H/V).</div>
-      </div>
-      <div class="titleRight">
-        <button class="iconBtn" id="btnToggleFilters" title="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
-        <button class="btn" id="btnReload">Recarregar</button>
-      </div>
+
+  <!-- Barra superior: chips + modos + limpar -->
+  <div class="topBar">
+    <div class="chipBar" id="chipBar"></div>
+
+    <div class="modeBtns">
+      <button class="modeBtn" id="btnCap" aria-pressed="false">Capacidade vs. Demandas</button>
+      <button class="modeBtn" id="btnIdle" aria-pressed="false">Taxa de Ociosidade</button>
     </div>
 
-    <div class="toolbar">
-      <div class="field"><label>Busca (cliente)</label><input id="q" placeholder="Ex.: HS MATEUS, ABBR, MEDILAR..." /></div>
-      <div class="field">
-        <label>Filtro por recurso (dropdown)</label>
-        <select id="resource">
-          <option value="">Todos</option><option value="DO">DO</option><option value="GE">GE</option><option value="JC">JC</option><option value="AL">AL</option>
-        </select>
+    <button class="btnClear" id="btnClear">Limpar</button>
+  </div>
+
+  <div class="gridWrap">
+    <div class="gridCard">
+      <div class="gridTitle">Grade de Alocação</div>
+
+      <div class="tableScroll" id="tableScroll">
+        <table id="gridTable">
+          <thead>
+            <tr id="headDow"></tr>
+            <tr id="headDate"></tr>
+          </thead>
+          <tbody id="body"></tbody>
+        </table>
       </div>
-      <div class="field"><label>Data início (dd/mm)</label><input id="start" placeholder="Ex.: 24/01" /></div>
-      <div class="field"><label>Data fim (dd/mm)</label><input id="end" placeholder="Ex.: 29/04" /></div>
-    </div>
-
-    <div class="legendWrap">
-      <div class="legend" id="legend"></div>
-      <button class="btn secondary" id="btnClear" style="padding:6px 10px; border-radius:999px;">Limpar</button>
-      <span class="hintline">Hover: DO=Dôra, GE=Geovana, JC=João Custódio, AL=Aline</span>
-    </div>
-
-    <div class="cards">
-      <div class="card"><div class="kpi">Linhas (turnos)</div><div class="val" id="kpiRows">—</div></div>
-      <div class="card"><div class="kpi">Colunas</div><div class="val" id="kpiCols">—</div></div>
-      <div class="card"><div class="kpi">Chips exibidos</div><div class="val" id="kpiFilled">—</div></div>
-      <div class="card"><div class="kpi">Hoje</div><div class="val" id="kpiToday">—</div></div>
     </div>
   </div>
-</header>
-
-<main>
-  <div class="gridcard">
-    <div class="gridhead">
-      <div style="font-weight:900">Grade de Alocação</div>
-      <div class="hint" id="status">Status: aguardando carga…</div>
-    </div>
-
-    <div class="tableScroll" id="tableScroll">
-      <table id="gridTable">
-        <thead>
-          <tr id="headDow"></tr>
-          <tr id="headDt"></tr>
-        </thead>
-        <tbody id="body"></tbody>
-      </table>
-    </div>
-
-    <div class="foot">
-      <div>Governança: SSOT operacional; ajuste de critérios deve ser feito na planilha (baseline).</div>
-      <div id="footRight">—</div>
-    </div>
-  </div>
-</main>
 
 <script>
-const PUBLISHED_BASE =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub";
-const SHEET_GID = "0";
-const ENDPOINT_PUBLISHED_CSV = (gid, ts) =>
-  `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}&ts=${encodeURIComponent(ts)}`;
-
-const RESOURCE_NAMES = { "DO":"Dôra", "GE":"Geovana", "JC":"João Custódio", "AL":"Aline" };
-const VALID_CODES = new Set(["DO","GE","JC","AL"]);
-const state = { selected:new Set(), cache:null };
-const $ = (id) => document.getElementById(id);
-
-function syncHeaderHeight(){
-  const h = Math.ceil($("hdr").getBoundingClientRect().height);
-  document.documentElement.style.setProperty("--hdrH", h + "px");
-}
-function toggleFilters(){
-  $("hdr").classList.toggle("collapsed");
-  syncHeaderHeight();
-}
-$("btnToggleFilters").addEventListener("click", toggleFilters);
-window.addEventListener("resize", syncHeaderHeight);
-
-function isWeekendDOW(dowStr){
-  const s = (dowStr || "").toUpperCase().trim();
-  return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM");
-}
-function parseCellCodes(cellRaw){
-  const raw = String(cellRaw || "").trim();
-  if (!raw) return [];
-  const normalized = raw.toUpperCase()
-    .replace(/\u00A0/g, " ")
-    .replace(/[\n\r\t]/g, " ")
-    .replace(/[\/,;|]/g, " ")
-    .replace(/\s*-\s*/g, " ");
-  const parts = normalized.split(/\s+/).filter(Boolean);
-  const out=[], seen=new Set();
-  for (const p of parts){
-    const code = p.replace(/[^A-Z]/g,"").slice(0,2);
-    if (!VALID_CODES.has(code)) continue;
-    if (seen.has(code)) continue;
-    seen.add(code); out.push(code);
-  }
-  return out;
-}
-
-function buildLegend(){
-  const lg = $("legend");
-  lg.innerHTML = "";
-  const colors = {
-    DO:getComputedStyle(document.documentElement).getPropertyValue("--do").trim(),
-    GE:getComputedStyle(document.documentElement).getPropertyValue("--ge").trim(),
-    JC:getComputedStyle(document.documentElement).getPropertyValue("--jc").trim(),
-    AL:getComputedStyle(document.documentElement).getPropertyValue("--al").trim()
-  };
-  ["DO","GE","JC","AL"].forEach(code=>{
-    const b=document.createElement("button");
-    b.className="chipBtn"; b.type="button";
-    b.setAttribute("data-code", code);
-    b.setAttribute("aria-pressed","false");
-    b.title = `${code} = ${RESOURCE_NAMES[code]}`;
-
-    const dot=document.createElement("span");
-    dot.className="dot";
-    dot.style.background=colors[code];
-
-    const codeEl=document.createElement("span");
-    codeEl.className="code";
-    codeEl.textContent=code;
-
-    const caret=document.createElement("span");
-    caret.className="caret";
-    caret.textContent="✓";
-
-    b.append(dot, codeEl, caret);
-
-    b.addEventListener("click",(ev)=>{
-      const multi = ev.ctrlKey || ev.metaKey;
-      if (multi){
-        if (state.selected.has(code)) state.selected.delete(code); else state.selected.add(code);
-      } else {
-        const onlyThis = state.selected.size===1 && state.selected.has(code);
-        state.selected.clear();
-        if (!onlyThis) state.selected.add(code);
-      }
-      $("resource").value="";
-      syncLegendUI();
-      rerender();
-    });
-    lg.appendChild(b);
-  });
-  syncLegendUI();
-}
-function syncLegendUI(){
-  const any = state.selected.size>0;
-  document.querySelectorAll(".chipBtn[data-code]").forEach(btn=>{
-    const code=btn.getAttribute("data-code");
-    const on=state.selected.has(code);
-    btn.setAttribute("aria-pressed", on ? "true":"false");
-    btn.style.opacity = (!any || on) ? "1" : ".55";
-    const caret=btn.querySelector(".caret");
-    if (caret) caret.style.display = on ? "inline":"none";
-  });
-}
-$("btnClear").addEventListener("click", ()=>{
-  state.selected.clear(); $("resource").value="";
-  syncLegendUI(); rerender();
-});
-function getActiveCodes(){
-  const dd = $("resource").value.trim().toUpperCase();
-  if (dd) return new Set([dd]);
-  return new Set(Array.from(state.selected));
-}
+/* ===== CONFIG ===== */
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub?gid=0&single=true&output=csv";
+const RESOURCE_NAMES = { DO:"Dôra", GE:"Geovana", JC:"João Custódio", AL:"Aline" };
+const VALID = new Set(["DO","GE","JC","AL"]);
 
 function parseCSV(text){
   const rows=[];
@@ -503,288 +337,224 @@ function parseCSV(text){
   if (cur.length || row.length){ row.push(cur); rows.push(row); }
   return rows.map(r=>r.map(c=>(c??"").trim()));
 }
-async function fetchCSV(){
-  const ts=Date.now();
-  const url=ENDPOINT_PUBLISHED_CSV(SHEET_GID, ts);
-  const res=await fetch(url,{cache:"no-store"});
-  if(!res.ok) throw new Error(`Falha ao carregar CSV (HTTP ${res.status})`);
-  const text=await res.text();
-  if(!text || text.length<10) throw new Error("CSV vazio");
-  return text;
-}
+
 function normalizeDateLabel(s){
-  if (!s) return "";
-  const m=s.match(/^(\d{1,2})\/(\d{1,2})(?:\/\d{2,4})?$/);
-  if(!m) return s;
+  const m=String(s||"").trim().match(/^(\d{1,2})\/(\d{1,2})/);
+  if(!m) return String(s||"").trim();
   return `${String(m[1]).padStart(2,"0")}/${String(m[2]).padStart(2,"0")}`;
 }
-function todayLabel(){
-  const d=new Date();
-  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
+
+function isWeekend(dow){
+  const x=String(dow||"").toUpperCase();
+  return x.startsWith("SAB") || x.startsWith("SÁB") || x.startsWith("DOM");
 }
-function inWindow(label, start, end){
-  if(!start && !end) return true;
-  const idx=(x)=>{
-    const m=x.match(/^(\d{2})\/(\d{2})$/);
-    if(!m) return -1;
-    return parseInt(m[2],10)*100 + parseInt(m[1],10);
-  };
-  const v=idx(label);
-  const a=start?idx(start):-Infinity;
-  const b=end?idx(end):Infinity;
-  return v>=a && v<=b;
+
+function parseCellCodes(cellRaw){
+  const raw=String(cellRaw||"").trim();
+  if(!raw) return [];
+  const normalized = raw.toUpperCase()
+    .replace(/\u00A0/g," ")
+    .replace(/[\n\r\t]/g," ")
+    .replace(/[\/,;|]/g," ")
+    .replace(/\s*-\s*/g," ");
+  const parts=normalized.split(/\s+/).filter(Boolean);
+  const out=[], seen=new Set();
+  for(const p of parts){
+    const code=p.replace(/[^A-Z]/g,"").slice(0,2);
+    if(!VALID.has(code)) continue;
+    if(seen.has(code)) continue;
+    seen.add(code); out.push(code);
+  }
+  return out;
 }
+
 function chipEl(code){
-  const v=(code||"").trim().toUpperCase();
+  const v=String(code||"").toUpperCase().trim();
   const sp=document.createElement("span");
   sp.className="chip"+(!v?" empty":"");
-  sp.textContent=v||"—";
-  if (v && RESOURCE_NAMES[v]) sp.title = `${v} = ${RESOURCE_NAMES[v]}`;
-
-  const colors={
-    DO:getComputedStyle(document.documentElement).getPropertyValue("--do").trim(),
-    GE:getComputedStyle(document.documentElement).getPropertyValue("--ge").trim(),
-    JC:getComputedStyle(document.documentElement).getPropertyValue("--jc").trim(),
-    AL:getComputedStyle(document.documentElement).getPropertyValue("--al").trim(),
-  };
+  sp.textContent=v || "—";
+  if(RESOURCE_NAMES[v]) sp.title=`${v} = ${RESOURCE_NAMES[v]}`;
+  const css=getComputedStyle(document.documentElement);
+  const colors={ DO:css.getPropertyValue("--do").trim(), GE:css.getPropertyValue("--ge").trim(), JC:css.getPropertyValue("--jc").trim(), AL:css.getPropertyValue("--al").trim() };
   if(colors[v]){
-    sp.style.color="#0b1220";
     sp.style.background=colors[v];
-    sp.style.borderColor="rgba(255,255,255,.14)";
+    sp.style.color="#0b1220";
   }
   return sp;
 }
-function renderCellChips(codes, activeCodes){
-  const box=document.createElement("div");
-  box.className="cellChips";
-  const filtered=(activeCodes && activeCodes.size)
-    ? codes.filter(c=>activeCodes.has(c))
-    : codes.slice();
-  if(filtered.length===0){
-    box.appendChild(chipEl(""));
-    return { box, shownCount:0 };
+
+/* ===== TOP CHIPS (visual) ===== */
+function buildTopChips(){
+  const bar = document.getElementById("chipBar");
+  bar.innerHTML = "";
+
+  const css = getComputedStyle(document.documentElement);
+  const colors = {
+    DO: css.getPropertyValue("--do").trim(),
+    GE: css.getPropertyValue("--ge").trim(),
+    JC: css.getPropertyValue("--jc").trim(),
+    AL: css.getPropertyValue("--al").trim(),
+  };
+
+  for(const code of ["DO","GE","JC","AL"]){
+    const btn = document.createElement("button");
+    btn.className = "chipBtn";
+    btn.type = "button";
+    btn.title = `${code} = ${RESOURCE_NAMES[code]}`;
+
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    dot.style.background = colors[code];
+
+    const txt = document.createElement("span");
+    txt.textContent = code;
+
+    btn.append(dot, txt);
+    bar.appendChild(btn);
   }
-  for(const c of filtered) box.appendChild(chipEl(c));
-  return { box, shownCount:filtered.length };
 }
-function normalizeShift(s){
-  const v=(s||"").toUpperCase().trim();
-  if(v==="M"||v==="MANHÃ"||v==="MANHA") return "M";
-  if(v==="T"||v==="TARDE") return "T";
-  return "";
+
+/* ===== MENU MODOS (somente visual por enquanto) ===== */
+function wireModeMenu(){
+  const cap = document.getElementById("btnCap");
+  const idle = document.getElementById("btnIdle");
+  const clear = document.getElementById("btnClear");
+
+  cap.addEventListener("click", ()=>{
+    const on = cap.getAttribute("aria-pressed")==="true";
+    cap.setAttribute("aria-pressed", on ? "false":"true");
+    idle.setAttribute("aria-pressed","false");
+  });
+
+  idle.addEventListener("click", ()=>{
+    const on = idle.getAttribute("aria-pressed")==="true";
+    idle.setAttribute("aria-pressed", on ? "false":"true");
+    cap.setAttribute("aria-pressed","false");
+  });
+
+  clear.addEventListener("click", ()=>{
+    cap.setAttribute("aria-pressed","false");
+    idle.setAttribute("aria-pressed","false");
+  });
 }
-function getClientAndShift(row, dateIdxStart, lastClient){
-  const first=row.findIndex(c=>c && c!=="");
-  if(first===-1) return null;
-  const cellA=(row[first]||"").trim();
-  const cellB=(row[first+1]||"").trim();
-  let client=cellA, shift=normalizeShift(cellB);
-  const solo=normalizeShift(cellA);
-  if(solo && lastClient){ client=lastClient; shift=solo; }
-  client = client || lastClient || "—";
-  const alloc=row.slice(dateIdxStart).map(c=>parseCellCodes(c));
-  return { client, shift, alloc };
-}
-function hasAnyActive(allocWin, activeCodes){
-  if(activeCodes.size===0) return true;
-  return allocWin.some(arr=>arr.some(code=>activeCodes.has(code)));
-}
-function rerender(){ if(state.cache) render(state.cache); }
 
-function render(cache){
-  const { rawRows, dateIdxStart, dates, dows } = cache;
+/* ===== RENDER GRID ===== */
+async function load(){
+  const res=await fetch(CSV_URL, {cache:"no-store"});
+  if(!res.ok) throw new Error("Falha ao buscar CSV");
+  const csv=await res.text();
+  const rows=parseCSV(csv).filter(r=>r.some(c=>c && c!==""));
+  if(rows.length<3) return;
 
-  const q=$("q").value.trim().toLowerCase();
-  const start=normalizeDateLabel($("start").value.trim());
-  const end=normalizeDateLabel($("end").value.trim());
+  const dowRow=rows[0];
+  const dateRow=rows[1];
 
-  const mask=dates.map(d=>inWindow(d,start,end));
-  const fDates=dates.filter((_,i)=>mask[i]);
-  const fDows=dows.filter((_,i)=>mask[i]);
+  const dateIdxStart = dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
+  if(dateIdxStart<0) return;
 
-  const activeCodes=getActiveCodes();
-  const today=todayLabel();
+  const dows = dowRow.slice(dateIdxStart);
+  const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
 
-  const headDow=$("headDow");
-  const headDt=$("headDt");
-  const body=$("body");
-  headDow.innerHTML=""; headDt.innerHTML=""; body.innerHTML="";
+  // Header
+  const headDow=document.getElementById("headDow");
+  const headDate=document.getElementById("headDate");
+  headDow.innerHTML=""; headDate.innerHTML="";
 
   const thClient=document.createElement("th");
-  thClient.className="stickyClient";
+  thClient.className="thClient";
   thClient.textContent="Cliente";
   thClient.rowSpan=2;
 
-  const thShift=document.createElement("th");
-  thShift.className="stickyShift";
-  thShift.textContent="Turno";
-  thShift.rowSpan=2;
+  const thTurno=document.createElement("th");
+  thTurno.className="thTurno";
+  thTurno.textContent="Turno";
+  thTurno.rowSpan=2;
 
   headDow.appendChild(thClient);
-  headDow.appendChild(thShift);
+  headDow.appendChild(thTurno);
 
-  fDates.forEach((d,i)=>{
+  for(let i=0;i<dates.length;i++){
     const th=document.createElement("th");
-    th.textContent=(fDows[i]||"—").toUpperCase();
-    if(isWeekendDOW(fDows[i])) th.classList.add("weekend-col");
+    th.textContent=(dows[i]||"").toUpperCase();
+    th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
+    if(isWeekend(dows[i])) th.classList.add("weekend");
     headDow.appendChild(th);
-  });
-  fDates.forEach((d,i)=>{
+  }
+  for(let i=0;i<dates.length;i++){
     const th=document.createElement("th");
-    th.textContent=d;
-    if(isWeekendDOW(fDows[i])) th.classList.add("weekend-col");
-    headDt.appendChild(th);
-  });
+    th.textContent=dates[i];
+    th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
+    if(isWeekend(dows[i])) th.classList.add("weekend");
+    headDate.appendChild(th);
+  }
+
+  // Body
+  const body=document.getElementById("body");
+  body.innerHTML="";
 
   let lastClient="";
-  const items=[];
-  for(const r of rawRows){
-    const parsed=getClientAndShift(r,dateIdxStart,lastClient);
-    if(!parsed) continue;
-    if(parsed.client && parsed.client!=="—") lastClient=parsed.client;
-    items.push(parsed);
-  }
+  for(let r=2;r<rows.length;r++){
+    const row=rows[r];
 
-  const groups=[];
-  const map=new Map();
-  for(const it of items){
-    const key=it.client;
-    if(!map.has(key)){
-      const g={client:key, M:null, T:null};
-      map.set(key,g); groups.push(g);
+    const first=row.findIndex(c=>c && c!=="");
+    if(first<0) continue;
+
+    let client=(row[first]||"").trim();
+    let turno=(row[first+1]||"").trim();
+
+    const t=(x)=>String(x||"").toUpperCase().trim();
+    const isM = (x)=> (t(x)==="M" || t(x)==="MANHÃ" || t(x)==="MANHA");
+    const isT = (x)=> (t(x)==="T" || t(x)==="TARDE");
+
+    if(isM(client) || isT(client)){
+      turno = client;
+      client = lastClient || "—";
     }
-    const g=map.get(key);
-    if(it.shift==="M") g.M=it;
-    if(it.shift==="T") g.T=it;
-  }
+    if(client && client!=="—") lastClient=client;
 
-  let lines=0, shown=0;
-
-  for(const g of groups){
-    if(q && !g.client.toLowerCase().includes(q)) continue;
-
-    const allocM=(g.M&&g.M.alloc)?g.M.alloc:[];
-    const allocT=(g.T&&g.T.alloc)?g.T.alloc:[];
-    const winM=allocM.filter((_,i)=>mask[i]);
-    const winT=allocT.filter((_,i)=>mask[i]);
-
-    if(!hasAnyActive(winM,activeCodes) && !hasAnyActive(winT,activeCodes)) continue;
-
-    const trM=document.createElement("tr");
-    trM.className="row-m";
+    const turnoNorm = isM(turno) ? "MANHÃ" : (isT(turno) ? "TARDE" : turno);
+    const tr=document.createElement("tr");
+    tr.className = (turnoNorm==="MANHÃ") ? "rowM" : "rowT";
 
     const tdClient=document.createElement("td");
-    tdClient.className="stickyClient";
-    tdClient.rowSpan=2;
+    tdClient.className="tdClient";
     const span=document.createElement("span");
     span.className="clientText";
-    span.textContent=g.client||"—";
+    span.textContent=client;
     tdClient.appendChild(span);
 
-    const tdShiftM=document.createElement("td");
-    tdShiftM.className="stickyShift";
-    tdShiftM.textContent="MANHÃ";
+    const tdTurno=document.createElement("td");
+    tdTurno.className="tdTurno";
+    tdTurno.textContent=turnoNorm || "—";
 
-    trM.appendChild(tdClient);
-    trM.appendChild(tdShiftM);
+    tr.appendChild(tdClient);
+    tr.appendChild(tdTurno);
 
-    for(let i=0;i<fDates.length;i++){
+    const cells=row.slice(dateIdxStart);
+    for(let i=0;i<dates.length;i++){
       const td=document.createElement("td");
-      const codes=Array.isArray(winM[i])?winM[i]:[];
-      const r=renderCellChips(codes, activeCodes);
-      td.appendChild(r.box);
-      shown+=r.shownCount;
-      if(fDates[i]===today) td.classList.add("today");
-      if(isWeekendDOW(fDows[i])) td.classList.add("weekend-col");
-      trM.appendChild(td);
+      td.style.width="64px"; td.style.minWidth="64px"; td.style.maxWidth="64px";
+      if(isWeekend(dows[i])) td.classList.add("weekend");
+
+      const codes=parseCellCodes(cells[i]||"");
+      const box=document.createElement("div");
+      box.className="cellChips";
+      if(!codes.length){
+        box.appendChild(chipEl(""));
+      }else{
+        for(const c of codes) box.appendChild(chipEl(c));
+      }
+      td.appendChild(box);
+      tr.appendChild(td);
     }
 
-    const trT=document.createElement("tr");
-    trT.className="row-t";
-
-    const tdShiftT=document.createElement("td");
-    tdShiftT.className="stickyShift";
-    tdShiftT.textContent="TARDE";
-    trT.appendChild(tdShiftT);
-
-    for(let i=0;i<fDates.length;i++){
-      const td=document.createElement("td");
-      const codes=Array.isArray(winT[i])?winT[i]:[];
-      const r=renderCellChips(codes, activeCodes);
-      td.appendChild(r.box);
-      shown+=r.shownCount;
-      if(fDates[i]===today) td.classList.add("today");
-      if(isWeekendDOW(fDows[i])) td.classList.add("weekend-col");
-      trT.appendChild(td);
-    }
-
-    body.appendChild(trM);
-    body.appendChild(trT);
-    lines+=2;
+    body.appendChild(tr);
   }
-
-  $("kpiRows").textContent = lines.toLocaleString("pt-BR");
-  $("kpiCols").textContent = fDates.length.toLocaleString("pt-BR");
-  $("kpiFilled").textContent = shown.toLocaleString("pt-BR");
-  $("kpiToday").textContent = today;
-
-  const sel=Array.from(activeCodes);
-  const selTxt=sel.length ? ` • Filtro: ${sel.map(x=>`${x}=${RESOURCE_NAMES[x]}`).join(" | ")}` : "";
-  $("status").textContent = `Status: carregado com sucesso (SSOT operacional).${selTxt}`;
-  $("footRight").textContent = `Atualizado em ${new Date().toLocaleString("pt-BR")} • gid=${SHEET_GID}`;
 }
 
-async function load(){
-  $("status").textContent="Status: carregando…";
-  const data=parseCSV(await fetchCSV());
-  const cleaned=data.filter(r=>r.some(c=>c && c!==""));
-  if(cleaned.length<3){ $("status").textContent="Status: CSV sem conteúdo útil."; return; }
-
-  const dowRow=cleaned[0];
-  const dateRow=cleaned[1];
-  const dateIdxStart=dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
-  if(dateIdxStart===-1){ $("status").textContent="Status: não localizei coluna inicial de datas."; return; }
-
-  const rawRows=cleaned.slice(2);
-  const dates=dateRow.slice(dateIdxStart).map(normalizeDateLabel);
-  const dows=dowRow.slice(dateIdxStart).map(c=>c||"");
-
-  state.cache={ rawRows, dateIdxStart, dates, dows };
-  render(state.cache);
-  syncHeaderHeight();
-}
-
-function wire(){
-  buildLegend();
-
-  const rerun=()=>rerender();
-  ["q","start","end"].forEach(id=>{
-    $(id).addEventListener("input", rerun);
-    $(id).addEventListener("change", rerun);
-  });
-
-  $("resource").addEventListener("change", ()=>{
-    state.selected.clear();
-    syncLegendUI();
-    rerun();
-  });
-
-  $("btnReload").addEventListener("click", ()=>{
-    state.cache=null;
-    load().catch(err=>{
-      console.error(err);
-      $("status").textContent="Status: erro na carga do CSV.";
-      $("footRight").textContent=err.message;
-    });
-  });
-
-  load().catch(err=>{
-    console.error(err);
-    $("status").textContent="Status: erro na carga do CSV.";
-    $("footRight").textContent=err.message;
-  });
-}
-wire();
+buildTopChips();
+wireModeMenu();
+load().catch(console.error);
 </script>
 </body>
 </html>
