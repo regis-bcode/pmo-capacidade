@@ -14,10 +14,12 @@
 
       --do:#60a5fa; --ge:#34d399; --jc:#fbbf24; --al:#fb7185;
 
+      /* ALTURAS FIXAS */
       --rowH: 18px;
       --headH1: 14px;
       --headH2: 14px;
 
+      /* LARGURAS FIXAS (SEM SUBPIXEL) */
       --wClient: 160px;
       --wShift: 82px;
 
@@ -63,7 +65,6 @@
       font-weight:800; font-size:12px;
     }
     .btn.secondary{ background:rgba(15,26,48,.70); }
-
     .iconBtn{
       width:42px; height:36px; border-radius:10px;
       border:1px solid var(--line);
@@ -158,20 +159,29 @@
     }
     .gridhead .hint{color:var(--muted); font-size:11px}
 
-    /* === UM ÚNICO SCROLL (H+V) PARA GARANTIR STICKY PERFEITO === */
+    /* SCROLL ÚNICO, COM GPU HINT PARA NÃO JITTER */
     .tableScroll{
       position:relative;
       flex:1 1 auto;
       min-height:0;
-      overflow:auto; /* horizontal e vertical aqui */
+      overflow:auto;
       background:rgba(11,18,32,.35);
+      transform: translateZ(0);
+      will-change: scroll-position;
+      overscroll-behavior: contain;
     }
 
     table{
       border-collapse:separate;
       border-spacing:0;
       width:max-content;
+      table-layout:fixed;             /* CRÍTICO: evita recalculo / subpixel */
     }
+
+    /* fixa alturas de tr para não variar */
+    thead tr{ height: var(--headH1); }
+    thead tr:nth-child(2){ height: var(--headH2); }
+    tbody tr{ height: var(--rowH); }
 
     thead th{
       position:sticky;
@@ -182,23 +192,48 @@
       white-space:nowrap;
       text-align:center;
       z-index:10;
+      backface-visibility:hidden;
+      transform: translateZ(0);
     }
-    /* sticky vertical 2 linhas */
-    thead tr:nth-child(1) th{ top:0; height:var(--headH1); line-height:var(--headH1); font-size:10px; font-weight:800; z-index:12; }
-    thead tr:nth-child(2) th{ top:var(--headH1); height:var(--headH2); line-height:var(--headH2); font-size:10px; font-weight:800; z-index:11; }
+    thead tr:nth-child(1) th{
+      top:0;
+      height:var(--headH1);
+      line-height:var(--headH1);
+      font-size:10px; font-weight:800;
+      z-index:12;
+    }
+    thead tr:nth-child(2) th{
+      top:var(--headH1);
+      height:var(--headH2);
+      line-height:var(--headH2);
+      font-size:10px; font-weight:800;
+      z-index:11;
+    }
 
-    /* === COLUNAS CONGELADAS (Cliente e Turno) === */
+    /* COLUNAS CONGELADAS */
     .stickyClient, .stickyShift{
       position:sticky;
       background:rgba(11,18,32,.97);
-      z-index:30; /* acima das células */
+      z-index:30;
       border-right:1px solid rgba(255,255,255,.10);
+      backface-visibility:hidden;
+      transform: translateZ(0);
     }
-    .stickyClient{ left:0; min-width:var(--wClient); max-width:var(--wClient); text-align:left; }
-    .stickyShift{ left:var(--wClient); min-width:var(--wShift); max-width:var(--wShift); text-align:center; }
-
-    /* garante que os TH dessas colunas também fiquem acima do header de datas */
-    thead .stickyClient, thead .stickyShift{ z-index:40; }
+    .stickyClient{
+      left:0;
+      width:var(--wClient);
+      min-width:var(--wClient);
+      max-width:var(--wClient);
+      text-align:left;
+    }
+    .stickyShift{
+      left:var(--wClient);
+      width:var(--wShift);
+      min-width:var(--wShift);
+      max-width:var(--wShift);
+      text-align:center;
+    }
+    thead .stickyClient, thead .stickyShift{ z-index:50; }
 
     tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
@@ -209,7 +244,7 @@
       white-space:nowrap;
       vertical-align:middle;
     }
-    tbody tr{ height:var(--rowH); }
+
     .row-m td{ background-color: var(--mRow); }
     .row-t td{ background-color: var(--tRow); }
 
@@ -266,7 +301,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Correção aplicada: cabeçalho fixo + colunas Cliente/Turno congeladas (sticky left) no mesmo scroll do grid.</div>
+        <div class="sub">Hard fix: header + colunas congeladas + table-layout fixed para eliminar drift e descasamento.</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" title="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -382,13 +417,13 @@ function buildLegend(){
     JC:getComputedStyle(document.documentElement).getPropertyValue("--jc").trim(),
     AL:getComputedStyle(document.documentElement).getPropertyValue("--al").trim()
   };
-
   ["DO","GE","JC","AL"].forEach(code=>{
     const b=document.createElement("button");
     b.className="chipBtn";
     b.type="button";
     b.setAttribute("data-code", code);
     b.setAttribute("aria-pressed","false");
+    b.title = `${code} = ${RESOURCE_NAMES[code]}`;
 
     const dot=document.createElement("span");
     dot.className="dot";
@@ -402,7 +437,6 @@ function buildLegend(){
     caret.className="caret";
     caret.textContent="✓";
 
-    b.title = `${code} = ${RESOURCE_NAMES[code]}`;
     b.append(dot, codeEl, caret);
 
     b.addEventListener("click",(ev)=>{
@@ -418,7 +452,6 @@ function buildLegend(){
       syncLegendUI();
       rerender();
     });
-
     lg.appendChild(b);
   });
   syncLegendUI();
@@ -550,19 +583,11 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   const cellB=(row[first+1]||"").trim();
 
   let client=cellA, shift="";
-  if(cellA.includes("•")){
-    const parts=cellA.split("•").map(x=>x.trim());
-    client=parts[0]||cellA;
-    shift=normalizeShift(parts[1]||"");
-  }else{
-    shift=normalizeShift(cellB);
-    const solo=normalizeShift(cellA);
-    if(solo && lastClient){ client=lastClient; shift=solo; }
-  }
-  if(!shift){
-    const solo=normalizeShift(cellA);
-    if(solo && lastClient){ client=lastClient; shift=solo; }
-  }
+  shift=normalizeShift(cellB);
+  const solo=normalizeShift(cellA);
+  if(solo && lastClient){ client=lastClient; shift=solo; }
+  if(!shift && solo && lastClient){ client=lastClient; shift=solo; }
+
   client = client || lastClient || "—";
   const alloc=row.slice(dateIdxStart).map(c=>parseCellCodes(c));
   return { client, shift, alloc };
@@ -594,21 +619,21 @@ function render(cache){
   const body=$("body");
   headDow.innerHTML=""; headDt.innerHTML=""; body.innerHTML="";
 
-  // Headers com 2 colunas sticky à esquerda
-  const thClient1=document.createElement("th");
-  thClient1.className="stickyClient";
-  thClient1.textContent="Cliente";
-  thClient1.rowSpan=2;
+  // THs sticky esquerda
+  const thClient=document.createElement("th");
+  thClient.className="stickyClient";
+  thClient.textContent="Cliente";
+  thClient.rowSpan=2;
 
-  const thShift1=document.createElement("th");
-  thShift1.className="stickyShift";
-  thShift1.textContent="Turno";
-  thShift1.rowSpan=2;
+  const thShift=document.createElement("th");
+  thShift.className="stickyShift";
+  thShift.textContent="Turno";
+  thShift.rowSpan=2;
 
-  headDow.appendChild(thClient1);
-  headDow.appendChild(thShift1);
+  headDow.appendChild(thClient);
+  headDow.appendChild(thShift);
 
-  // Completa o header de datas
+  // header dias
   fDates.forEach((d,i)=>{
     const th=document.createElement("th");
     th.textContent=(fDows[i]||"—").toUpperCase();
@@ -616,6 +641,7 @@ function render(cache){
     headDow.appendChild(th);
   });
 
+  // header datas
   fDates.forEach((d,i)=>{
     const th=document.createElement("th");
     th.textContent=d;
@@ -623,7 +649,7 @@ function render(cache){
     headDt.appendChild(th);
   });
 
-  // Normalize items
+  // parse linhas
   let lastClient="";
   const items=[];
   for(const r of rawRows){
@@ -633,7 +659,7 @@ function render(cache){
     items.push(parsed);
   }
 
-  // Group by client (M/T)
+  // group client M/T
   const groups=[];
   const map=new Map();
   for(const it of items){
@@ -659,7 +685,7 @@ function render(cache){
 
     if(!hasAnyActive(winM,activeCodes) && !hasAnyActive(winT,activeCodes)) continue;
 
-    // Linha MANHÃ
+    // MANHÃ
     const trM=document.createElement("tr");
     trM.className="row-m";
 
@@ -689,7 +715,7 @@ function render(cache){
       trM.appendChild(td);
     }
 
-    // Linha TARDE
+    // TARDE
     const trT=document.createElement("tr");
     trT.className="row-t";
 
@@ -711,7 +737,7 @@ function render(cache){
 
     body.appendChild(trM);
     body.appendChild(trT);
-    lines += 2;
+    lines+=2;
   }
 
   $("kpiRows").textContent = lines.toLocaleString("pt-BR");
