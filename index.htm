@@ -50,8 +50,7 @@
     }
     header.collapsed .toolbar,
     header.collapsed .legendWrap,
-    header.collapsed .cards,
-    header.collapsed .diagRow{ display:none !important; }
+    header.collapsed .cards{ display:none !important; }
 
     .wrap{max-width:1500px; margin:0 auto; padding:0 12px;}
     .title{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
@@ -159,35 +158,6 @@
     }
     .kpi{font-size:11px; color:var(--muted)}
     .val{margin-top:4px; font-size:16px; font-weight:900}
-
-    /* Diagnóstico */
-    .diagRow{
-      margin-top:8px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(15,26,48,.55);
-      border-radius:14px;
-      padding:8px 10px;
-      font-size:11px;
-      color:var(--muted);
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-    }
-    .diagText{
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      max-width:1200px;
-    }
-    .diagPill{
-      font-size:10px;
-      padding:4px 8px;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:999px;
-      color:var(--text);
-      background:rgba(21,38,74,.60);
-    }
 
     main{
       height: calc(100vh - var(--hdrH));
@@ -385,10 +355,10 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Agora com cache-busting + diagnóstico do header para garantir aderência total ao Google Sheets publicado.</div>
+        <div class="sub">Padrão operacional: múltiplos recursos na mesma célula separados por “-” (ex.: <b>AL - GE</b>). Dashboard renderiza ambos com cores e filtros.</div>
       </div>
       <div class="titleRight">
-        <button class="iconBtn" id="btnToggleFilters" data-tip="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
+        <button class="iconBtn" id="btnToggleFilters" title="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
         <button class="btn" id="btnReload">Recarregar</button>
       </div>
     </div>
@@ -411,14 +381,9 @@
       <span class="hintline">Hover: DO=Dôra, GE=Geovana, JC=João Custódio, AL=Aline</span>
     </div>
 
-    <div class="diagRow">
-      <div class="diagText" id="diagHeader">Diagnóstico: aguardando carga…</div>
-      <div class="diagPill" id="diagVer">CSV: —</div>
-    </div>
-
     <div class="cards">
       <div class="card"><div class="kpi">Linhas (turnos)</div><div class="val" id="kpiRows">—</div></div>
-      <div class="card"><div class="kpi">Colunas carregadas</div><div class="val" id="kpiCols">—</div></div>
+      <div class="card"><div class="kpi">Colunas</div><div class="val" id="kpiCols">—</div></div>
       <div class="card"><div class="kpi">Chips exibidos</div><div class="val" id="kpiFilled">—</div></div>
       <div class="card"><div class="kpi">Hoje</div><div class="val" id="kpiToday">—</div></div>
     </div>
@@ -499,17 +464,32 @@ function isWeekendDOW(dowStr){
   return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM") || s.startsWith("SÁBADO") || s.startsWith("DOMINGO");
 }
 
+/* ===== PARSER PADRÃO: suporta "AL - GE" =====
+   Regra: se houver "-", a célula pode conter múltiplos recursos.
+   Também aceita: vírgula, barra, quebra de linha, ponto e vírgula.
+*/
 function parseCellCodes(cellRaw){
-  const s = String(cellRaw || "").toUpperCase();
-  if (!s.trim()) return [];
-  const matches = s.match(/[A-Z]{2}/g) || [];
+  const raw = String(cellRaw || "").trim();
+  if (!raw) return [];
+
+  // normaliza separadores para espaço
+  const normalized = raw
+    .toUpperCase()
+    .replace(/\u00A0/g, " ")
+    .replace(/[\n\r\t]/g, " ")
+    .replace(/[\/,;|]/g, " ")
+    .replace(/\s*-\s*/g, " "); // o seu padrão oficial
+
+  const parts = normalized.split(/\s+/).filter(Boolean);
+
   const out = [];
   const seen = new Set();
-  for (const m of matches){
-    if (!VALID_CODES.has(m)) continue;
-    if (seen.has(m)) continue;
-    seen.add(m);
-    out.push(m);
+  for (const p of parts){
+    const code = p.replace(/[^A-Z]/g,"").slice(0,2);
+    if (!VALID_CODES.has(code)) continue;
+    if (seen.has(code)) continue;
+    seen.add(code);
+    out.push(code);
   }
   return out;
 }
@@ -517,7 +497,13 @@ function parseCellCodes(cellRaw){
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
-  const COLOR = { "DO":"var(--do)","GE":"var(--ge)","JC":"var(--jc)","AL":"var(--al)" };
+  const COLOR = {
+    DO:getComputedStyle(document.documentElement).getPropertyValue("--do").trim(),
+    GE:getComputedStyle(document.documentElement).getPropertyValue("--ge").trim(),
+    JC:getComputedStyle(document.documentElement).getPropertyValue("--jc").trim(),
+    AL:getComputedStyle(document.documentElement).getPropertyValue("--al").trim()
+  };
+
   ["DO","GE","JC","AL"].forEach(code => {
     const b = document.createElement("button");
     b.type = "button";
@@ -528,7 +514,7 @@ function buildLegend(){
 
     const dot = document.createElement("span");
     dot.className = "dot";
-    dot.style.background = `var(${COLOR[code].replace("var(","").replace(")","")})`;
+    dot.style.background = COLOR[code];
 
     const codeEl = document.createElement("span");
     codeEl.className = "code";
@@ -576,6 +562,7 @@ $("btnClear").addEventListener("click", () => {
   syncLegendUI();
   rerender();
 });
+
 function getActiveCodes(){
   const dd = $("resource").value.trim().toUpperCase();
   if (dd) return new Set([dd]);
@@ -604,7 +591,6 @@ function parseCSV(text){
 async function fetchCSV(){
   const ts = Date.now();
   const url = ENDPOINT_PUBLISHED_CSV(SHEET_GID, ts);
-  $("diagVer").textContent = `CSV: gid=${SHEET_GID} ts=${ts}`;
   const res = await fetch(url, { cache:"no-store" });
   if (!res.ok) throw new Error(`Falha ao carregar CSV publicado. HTTP ${res.status}.`);
   const text = await res.text();
@@ -710,7 +696,7 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   }
 
   client = client || lastClient || "—";
-  const alloc = row.slice(dateIdxStart).map(c => parseCellCodes(c));
+  const alloc = row.slice(dateIdxStart).map(c => parseCellCodes(c)); // agora entende "AL - GE"
   return { client, shift, alloc };
 }
 
@@ -779,14 +765,6 @@ function render(cache){
   const activeCodes = getActiveCodes();
   const today = todayLabel();
 
-  // Diagnóstico de header (últimas 30 colunas)
-  const last = Math.min(filteredDates.length, 30);
-  const diagPairs = [];
-  for (let i=Math.max(0, filteredDates.length-last); i<filteredDates.length; i++){
-    diagPairs.push(`${(filteredDows[i]||"—").toUpperCase()} ${filteredDates[i]}`);
-  }
-  $("diagHeader").textContent = `Diagnóstico (últimas ${last} colunas carregadas): ${diagPairs.join(" | ")}`;
-
   const headDow = $("rightHeadDow");
   const headDt  = $("rightHeadDt");
   headDow.innerHTML = "";
@@ -804,6 +782,7 @@ function render(cache){
     th2.textContent = d;
 
     if (isWeekendDOW(filteredDows[i])) { th1.classList.add("weekend-col"); th2.classList.add("weekend-col"); }
+
     headDow.appendChild(th1);
     headDt.appendChild(th2);
   });
@@ -929,8 +908,6 @@ function render(cache){
   const selTxt = sel.length ? ` • Filtro: ${sel.map(x=>`${x}=${RESOURCE_NAMES[x]}`).join(" | ")}` : "";
   $("status").textContent = `Status: carregado com sucesso (SSOT operacional).${selTxt}`;
   $("footRight").textContent = `Atualizado em ${new Date().toLocaleString("pt-BR")} • gid=${SHEET_GID}`;
-
-  syncLegendUI();
 }
 
 async function load(){
