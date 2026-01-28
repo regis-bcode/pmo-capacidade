@@ -10,25 +10,23 @@
       --muted:#93a4c7;
       --text:#e8efff;
       --line:rgba(255,255,255,.10);
-      --card: rgba(15,26,48,.70);
 
       --do:#60a5fa; --ge:#34d399; --jc:#fbbf24; --al:#fb7185;
 
       --rowH: 18px;
       --headH1: 14px;
       --headH2: 14px;
+      --headTotal: calc(var(--headH1) + var(--headH2));
 
       --wClient: 160px;
       --wShift: 82px;
 
-      /* cores “linha” (opacas agora via gradient, sem alpha em sticky) */
-      --mStrip:#2b2a57;   /* manhã */
-      --tStrip:#0f3348;   /* tarde */
-
-      /* fundos sólidos (SEM rgba) */
       --solidBG: #0b1220;
       --solidHdr: #0a162e;
       --solidSticky: #0b1220;
+
+      --mStrip:#2b2a57;
+      --tStrip:#0f3348;
 
       --hdrH: 0px;
     }
@@ -42,7 +40,6 @@
       overflow:hidden;
     }
 
-    /* IMPORTANTE: sem backdrop-filter (blur) para não “parecer translúcido” */
     header{
       padding:10px 12px 8px;
       border-bottom:1px solid var(--line);
@@ -64,15 +61,14 @@
       display:inline-flex; align-items:center; justify-content:center;
       padding:8px 10px; border-radius:10px;
       border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(45,212,191,.22), rgba(15,26,48,.65));
+      background:rgba(15,26,48,.80);
       color:var(--text); cursor:pointer; user-select:none;
       font-weight:800; font-size:12px;
     }
-    .btn.secondary{ background:rgba(15,26,48,.70); }
     .iconBtn{
       width:42px; height:36px; border-radius:10px;
       border:1px solid var(--line);
-      background:rgba(15,26,48,.70);
+      background:rgba(15,26,48,.80);
       display:inline-flex; align-items:center; justify-content:center;
       cursor:pointer; user-select:none;
     }
@@ -99,7 +95,7 @@
       padding:7px 8px;
       border-radius:10px;
       border:1px solid var(--line);
-      background:#0f1a30; /* sólido */
+      background:#0f1a30;
       color:var(--text);
       outline:none;
       font-size:12px;
@@ -109,7 +105,7 @@
     .legend{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
     .chipBtn{
       display:inline-flex; align-items:center; gap:8px;
-      background:#14264a; /* sólido */
+      background:#14264a;
       border:1px solid var(--line);
       padding:4px 10px; border-radius:999px;
       font-size:11px; color:var(--text);
@@ -130,7 +126,7 @@
       gap:8px;
     }
     .card{
-      background:#0f1a30; /* sólido */
+      background:#0f1a30;
       border:1px solid var(--line);
       border-radius:14px;
       padding:10px;
@@ -148,7 +144,7 @@
       max-width:1500px;
       height:100%;
       margin:0 auto;
-      background:#0f1a30; /* sólido */
+      background:#0f1a30;
       border:1px solid var(--line);
       border-radius:16px;
       overflow:hidden;
@@ -161,16 +157,87 @@
       border-bottom:1px solid var(--line);
       flex:0 0 auto;
       background: var(--solidBG);
+      z-index:5;
     }
     .gridhead .hint{color:var(--muted); font-size:11px}
 
-    .tableScroll{
+    /* ====== NOVA ARQUITETURA: HEADER DO GRID SEPARADO (NUNCA SOME) ====== */
+    .gridHeaderBar{
+      position:sticky;
+      top:0; /* topo do scroller interno */
+      z-index:20;
+      background: var(--solidHdr);
+      border-bottom:1px solid rgba(255,255,255,.16);
+      display:flex;
+      width:100%;
+    }
+
+    .hdrLeft{
+      flex:0 0 auto;
+      display:flex;
+      width: calc(var(--wClient) + var(--wShift));
+      border-right:1px solid rgba(255,255,255,.14);
+      background: var(--solidHdr);
+    }
+    .hdrCell{
+      height: var(--headTotal);
+      line-height: var(--headTotal);
+      font-size:11px;
+      font-weight:900;
+      color:var(--muted);
+      padding:0 10px;
+      white-space:nowrap;
+      display:flex;
+      align-items:center;
+    }
+    .hdrClient{ width:var(--wClient); border-right:1px solid rgba(255,255,255,.10); }
+    .hdrTurno{ width:var(--wShift); justify-content:center; }
+
+    .hdrRightWrap{
+      flex:1 1 auto;
+      overflow:hidden; /* scroll sincronizado por JS */
+      background: var(--solidHdr);
+    }
+    .hdrRight{
+      width:max-content;
+      display:flex;
+      flex-direction:column;
+    }
+    .hdrRow{
+      display:flex;
+      height: var(--headH1);
+      line-height: var(--headH1);
+    }
+    .hdrRow.dates{
+      height: var(--headH2);
+      line-height: var(--headH2);
+      border-top:1px solid rgba(255,255,255,.10);
+    }
+    .hdrCol{
+      width:64px; /* largura fixa por coluna de data */
+      min-width:64px;
+      max-width:64px;
+      text-align:center;
+      font-size:10px;
+      font-weight:800;
+      color:var(--muted);
+      border-right:1px solid rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 4px;
+    }
+    .hdrCol.weekend{
+      background:#2a2618;
+    }
+
+    /* BODY SCROLLER (único) */
+    .bodyScroll{
       position:relative;
       flex:1 1 auto;
       min-height:0;
       overflow:auto;
       background: var(--solidBG);
-      overscroll-behavior: contain;
     }
 
     table{
@@ -180,51 +247,14 @@
       table-layout:fixed;
     }
 
-    thead tr{ height: var(--headH1); }
-    thead tr:nth-child(2){ height: var(--headH2); }
     tbody tr{ height: var(--rowH); }
 
-    thead th{
-      position:sticky;
-      background: var(--solidHdr);  /* SÓLIDO */
-      border-bottom:1px solid rgba(255,255,255,.16);
-      color:var(--muted);
-      padding:0 6px;
-      white-space:nowrap;
-      text-align:center;
-      z-index:10;
-    }
-    thead tr:nth-child(1) th{
-      top:0;
-      height:var(--headH1);
-      line-height:var(--headH1);
-      font-size:10px; font-weight:800;
-      z-index:12;
-    }
-    thead tr:nth-child(2) th{
-      top:var(--headH1);
-      height:var(--headH2);
-      line-height:var(--headH2);
-      font-size:10px; font-weight:800;
-      z-index:11;
-    }
-
-    /* TH rowSpan=2 (Cliente/Turno) totalmente sólido */
-    thead th.stickyClient,
-    thead th.stickyShift{
-      top:0 !important;
-      height: calc(var(--headH1) + var(--headH2));
-      line-height: calc(var(--headH1) + var(--headH2));
-      z-index:60;
-      background: var(--solidHdr) !important; /* igual ao header */
-    }
-
-    /* colunas sticky (header+body) sempre sólidas */
+    /* sticky left no BODY */
     .stickyClient, .stickyShift{
       position:sticky;
-      z-index:30;
-      border-right:1px solid rgba(255,255,255,.14);
+      z-index:10;
       background: var(--solidSticky) !important;
+      border-right:1px solid rgba(255,255,255,.14);
     }
     .stickyClient{
       left:0;
@@ -249,24 +279,16 @@
       font-size:11px;
       white-space:nowrap;
       vertical-align:middle;
-      background: var(--solidBG); /* base sólida para células */
+      background: var(--solidBG);
     }
-
-    /* “cor da linha” agora é faixa sólida (não alpha) */
     .row-m td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
     .row-t td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
-
-    /* sticky NÃO recebe gradient: fica sólido */
     .row-m td.stickyClient, .row-m td.stickyShift,
     .row-t td.stickyClient, .row-t td.stickyShift{
       background: var(--solidSticky) !important;
     }
 
-    .weekend-col{ background: #2a2618 !important; } /* sólido p/ fim de semana */
-    .today{
-      outline:2px solid rgba(45,212,191,.95);
-      box-shadow: inset 0 0 0 1px rgba(45,212,191,.28);
-    }
+    .weekend-col{ background:#2a2618 !important; }
 
     .clientText{
       display:block;
@@ -287,7 +309,7 @@
       min-width:22px; height:14px; padding:0 5px;
       border-radius:5px;
       border:1px solid rgba(255,255,255,.10);
-      background:#14264a; /* sólido */
+      background:#14264a;
       font-weight:950; color:var(--text);
       font-size:10px; line-height:14px;
     }
@@ -313,7 +335,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Fix definitivo: headers + colunas sticky 100% sólidos (sem translucidez em scroll H/V).</div>
+        <div class="sub">Fix definitivo: header do grid separado e sincronizado. Cliente/Turno nunca somem.</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" title="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -335,7 +357,7 @@
 
     <div class="legendWrap">
       <div class="legend" id="legend"></div>
-      <button class="btn secondary" id="btnClear" style="padding:6px 10px; border-radius:999px;">Limpar</button>
+      <button class="btn" id="btnClear" style="padding:6px 10px; border-radius:999px;">Limpar</button>
       <span class="hintline">Hover: DO=Dôra, GE=Geovana, JC=João Custódio, AL=Aline</span>
     </div>
 
@@ -355,12 +377,23 @@
       <div class="hint" id="status">Status: aguardando carga…</div>
     </div>
 
-    <div class="tableScroll" id="tableScroll">
+    <!-- HEADER FIXO DO GRID (NUNCA SOME) -->
+    <div class="gridHeaderBar" id="gridHeaderBar">
+      <div class="hdrLeft">
+        <div class="hdrCell hdrClient">Cliente</div>
+        <div class="hdrCell hdrTurno">Turno</div>
+      </div>
+      <div class="hdrRightWrap" id="hdrRightWrap">
+        <div class="hdrRight" id="hdrRight">
+          <div class="hdrRow" id="hdrDow"></div>
+          <div class="hdrRow dates" id="hdrDates"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CORPO COM SCROLL -->
+    <div class="bodyScroll" id="bodyScroll">
       <table id="gridTable">
-        <thead>
-          <tr id="headDow"></tr>
-          <tr id="headDt"></tr>
-        </thead>
         <tbody id="body"></tbody>
       </table>
     </div>
@@ -399,6 +432,7 @@ function isWeekendDOW(dowStr){
   const s = (dowStr || "").toUpperCase().trim();
   return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM");
 }
+
 function parseCellCodes(cellRaw){
   const raw = String(cellRaw || "").trim();
   if (!raw) return [];
@@ -534,6 +568,7 @@ function inWindow(label, start, end){
   const b=end?idx(end):Infinity;
   return v>=a && v<=b;
 }
+
 function chipEl(code){
   const v=(code||"").trim().toUpperCase();
   const sp=document.createElement("span");
@@ -589,6 +624,13 @@ function hasAnyActive(allocWin, activeCodes){
   if(activeCodes.size===0) return true;
   return allocWin.some(arr=>arr.some(code=>activeCodes.has(code)));
 }
+
+function syncHeaderScroll(){
+  const bodyScroll = $("bodyScroll");
+  const hdrWrap = $("hdrRightWrap");
+  hdrWrap.scrollLeft = bodyScroll.scrollLeft;
+}
+
 function rerender(){ if(state.cache) render(state.cache); }
 
 function render(cache){
@@ -605,36 +647,26 @@ function render(cache){
   const activeCodes=getActiveCodes();
   const today=todayLabel();
 
-  const headDow=$("headDow");
-  const headDt=$("headDt");
+  // render header externo (2 linhas)
+  const hdrDow = $("hdrDow");
+  const hdrDates = $("hdrDates");
+  hdrDow.innerHTML=""; hdrDates.innerHTML="";
+
+  fDates.forEach((d,i)=>{
+    const c=document.createElement("div");
+    c.className="hdrCol"+(isWeekendDOW(fDows[i]) ? " weekend":"");
+    c.textContent=(fDows[i]||"—").toUpperCase();
+    hdrDow.appendChild(c);
+  });
+  fDates.forEach((d,i)=>{
+    const c=document.createElement("div");
+    c.className="hdrCol"+(isWeekendDOW(fDows[i]) ? " weekend":"");
+    c.textContent=d;
+    hdrDates.appendChild(c);
+  });
+
   const body=$("body");
-  headDow.innerHTML=""; headDt.innerHTML=""; body.innerHTML="";
-
-  const thClient=document.createElement("th");
-  thClient.className="stickyClient";
-  thClient.textContent="Cliente";
-  thClient.rowSpan=2;
-
-  const thShift=document.createElement("th");
-  thShift.className="stickyShift";
-  thShift.textContent="Turno";
-  thShift.rowSpan=2;
-
-  headDow.appendChild(thClient);
-  headDow.appendChild(thShift);
-
-  fDates.forEach((d,i)=>{
-    const th=document.createElement("th");
-    th.textContent=(fDows[i]||"—").toUpperCase();
-    if(isWeekendDOW(fDows[i])) th.classList.add("weekend-col");
-    headDow.appendChild(th);
-  });
-  fDates.forEach((d,i)=>{
-    const th=document.createElement("th");
-    th.textContent=d;
-    if(isWeekendDOW(fDows[i])) th.classList.add("weekend-col");
-    headDt.appendChild(th);
-  });
+  body.innerHTML="";
 
   let lastClient="";
   const items=[];
@@ -690,11 +722,11 @@ function render(cache){
 
     for(let i=0;i<fDates.length;i++){
       const td=document.createElement("td");
+      td.style.width="64px"; td.style.minWidth="64px"; td.style.maxWidth="64px";
       const codes=Array.isArray(winM[i])?winM[i]:[];
       const r=renderCellChips(codes, activeCodes);
       td.appendChild(r.box);
       shown+=r.shownCount;
-      if(fDates[i]===today) td.classList.add("today");
       if(isWeekendDOW(fDows[i])) td.classList.add("weekend-col");
       trM.appendChild(td);
     }
@@ -709,11 +741,11 @@ function render(cache){
 
     for(let i=0;i<fDates.length;i++){
       const td=document.createElement("td");
+      td.style.width="64px"; td.style.minWidth="64px"; td.style.maxWidth="64px";
       const codes=Array.isArray(winT[i])?winT[i]:[];
       const r=renderCellChips(codes, activeCodes);
       td.appendChild(r.box);
       shown+=r.shownCount;
-      if(fDates[i]===today) td.classList.add("today");
       if(isWeekendDOW(fDows[i])) td.classList.add("weekend-col");
       trT.appendChild(td);
     }
@@ -732,6 +764,9 @@ function render(cache){
   const selTxt=sel.length ? ` • Filtro: ${sel.map(x=>`${x}=${RESOURCE_NAMES[x]}`).join(" | ")}` : "";
   $("status").textContent = `Status: carregado com sucesso (SSOT operacional).${selTxt}`;
   $("footRight").textContent = `Atualizado em ${new Date().toLocaleString("pt-BR")} • gid=${SHEET_GID}`;
+
+  // garantir sync do header horizontal após re-render
+  syncHeaderScroll();
 }
 
 async function load(){
@@ -777,6 +812,8 @@ function wire(){
       $("footRight").textContent=err.message;
     });
   });
+
+  $("bodyScroll").addEventListener("scroll", syncHeaderScroll, {passive:true});
 
   load().catch(err=>{
     console.error(err);
