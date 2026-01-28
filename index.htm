@@ -24,6 +24,10 @@
       --mRow: rgba(167,139,250,.14);
       --tRow: rgba(56,189,248,.10);
 
+      /* NOVO: fundo opaco para colunas congeladas */
+      --stickyBg: #0b1220;          /* sólido */
+      --stickyBg2:#0a162e;          /* leve variação (opcional) */
+
       --hdrH: 0px;
     }
 
@@ -190,9 +194,8 @@
       z-index:10;
       backface-visibility:hidden;
       transform: translateZ(0);
+      background-clip: padding-box;
     }
-
-    /* 2 linhas do header de datas */
     thead tr:nth-child(1) th{
       top:0;
       height:var(--headH1);
@@ -208,22 +211,25 @@
       z-index:11;
     }
 
-    /* === FIX: TH rowSpan=2 (Cliente/Turno) também precisa ser sticky vertical === */
+    /* TH rowSpan=2 */
     thead th.stickyClient,
     thead th.stickyShift{
       top:0 !important;
       height: calc(var(--headH1) + var(--headH2));
       line-height: calc(var(--headH1) + var(--headH2));
-      z-index:60; /* acima de tudo no header */
+      z-index:60;
+      background: var(--stickyBg) !important; /* OPACO */
     }
 
+    /* ===== Colunas congeladas (BODY + HEADER) com fundo opaco ===== */
     .stickyClient, .stickyShift{
       position:sticky;
-      background:rgba(11,18,32,.97);
       z-index:30;
       border-right:1px solid rgba(255,255,255,.10);
       backface-visibility:hidden;
       transform: translateZ(0);
+      background: var(--stickyBg) !important;
+      background-clip: padding-box;
     }
     .stickyClient{
       left:0;
@@ -238,6 +244,12 @@
       min-width:var(--wShift);
       max-width:var(--wShift);
       text-align:center;
+    }
+
+    /* ===== Impede a cor da linha (row-m/row-t) de “vazar” nas colunas sticky ===== */
+    .row-m td.stickyClient, .row-m td.stickyShift,
+    .row-t td.stickyClient, .row-t td.stickyShift{
+      background: var(--stickyBg) !important;
     }
 
     tbody td{
@@ -272,10 +284,7 @@
       color:var(--text);
     }
 
-    .cellChips{
-      display:flex; align-items:center; justify-content:center;
-      gap:2px; width:100%;
-    }
+    .cellChips{display:flex; align-items:center; justify-content:center; gap:2px; width:100%;}
     .chip{
       display:inline-flex; align-items:center; justify-content:center;
       min-width:22px; height:14px; padding:0 5px;
@@ -306,7 +315,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Correção aplicada: Cliente/Turno (rowSpan=2) agora é sticky vertical + horizontal no header.</div>
+        <div class="sub">Fix: colunas congeladas agora com fundo 100% opaco (sem transparência ao rolar).</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" title="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -392,12 +401,10 @@ function isWeekendDOW(dowStr){
   const s = (dowStr || "").toUpperCase().trim();
   return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM");
 }
-
 function parseCellCodes(cellRaw){
   const raw = String(cellRaw || "").trim();
   if (!raw) return [];
-  const normalized = raw
-    .toUpperCase()
+  const normalized = raw.toUpperCase()
     .replace(/\u00A0/g, " ")
     .replace(/[\n\r\t]/g, " ")
     .replace(/[\/,;|]/g, " ")
@@ -424,8 +431,7 @@ function buildLegend(){
   };
   ["DO","GE","JC","AL"].forEach(code=>{
     const b=document.createElement("button");
-    b.className="chipBtn";
-    b.type="button";
+    b.className="chipBtn"; b.type="button";
     b.setAttribute("data-code", code);
     b.setAttribute("aria-pressed","false");
     b.title = `${code} = ${RESOURCE_NAMES[code]}`;
@@ -461,7 +467,6 @@ function buildLegend(){
   });
   syncLegendUI();
 }
-
 function syncLegendUI(){
   const any = state.selected.size>0;
   document.querySelectorAll(".chipBtn[data-code]").forEach(btn=>{
@@ -473,14 +478,10 @@ function syncLegendUI(){
     if (caret) caret.style.display = on ? "inline":"none";
   });
 }
-
 $("btnClear").addEventListener("click", ()=>{
-  state.selected.clear();
-  $("resource").value="";
-  syncLegendUI();
-  rerender();
+  state.selected.clear(); $("resource").value="";
+  syncLegendUI(); rerender();
 });
-
 function getActiveCodes(){
   const dd = $("resource").value.trim().toUpperCase();
   if (dd) return new Set([dd]);
@@ -504,7 +505,6 @@ function parseCSV(text){
   if (cur.length || row.length){ row.push(cur); rows.push(row); }
   return rows.map(r=>r.map(c=>(c??"").trim()));
 }
-
 async function fetchCSV(){
   const ts=Date.now();
   const url=ENDPOINT_PUBLISHED_CSV(SHEET_GID, ts);
@@ -514,7 +514,6 @@ async function fetchCSV(){
   if(!text || text.length<10) throw new Error("CSV vazio");
   return text;
 }
-
 function normalizeDateLabel(s){
   if (!s) return "";
   const m=s.match(/^(\d{1,2})\/(\d{1,2})(?:\/\d{2,4})?$/);
@@ -537,7 +536,6 @@ function inWindow(label, start, end){
   const b=end?idx(end):Infinity;
   return v>=a && v<=b;
 }
-
 function chipEl(code){
   const v=(code||"").trim().toUpperCase();
   const sp=document.createElement("span");
@@ -558,7 +556,6 @@ function chipEl(code){
   }
   return sp;
 }
-
 function renderCellChips(codes, activeCodes){
   const box=document.createElement("div");
   box.className="cellChips";
@@ -572,35 +569,28 @@ function renderCellChips(codes, activeCodes){
   for(const c of filtered) box.appendChild(chipEl(c));
   return { box, shownCount:filtered.length };
 }
-
 function normalizeShift(s){
   const v=(s||"").toUpperCase().trim();
   if(v==="M"||v==="MANHÃ"||v==="MANHA") return "M";
   if(v==="T"||v==="TARDE") return "T";
   return "";
 }
-
 function getClientAndShift(row, dateIdxStart, lastClient){
   const first=row.findIndex(c=>c && c!=="");
   if(first===-1) return null;
-
   const cellA=(row[first]||"").trim();
   const cellB=(row[first+1]||"").trim();
-
   let client=cellA, shift=normalizeShift(cellB);
   const solo=normalizeShift(cellA);
   if(solo && lastClient){ client=lastClient; shift=solo; }
-
   client = client || lastClient || "—";
   const alloc=row.slice(dateIdxStart).map(c=>parseCellCodes(c));
   return { client, shift, alloc };
 }
-
 function hasAnyActive(allocWin, activeCodes){
   if(activeCodes.size===0) return true;
   return allocWin.some(arr=>arr.some(code=>activeCodes.has(code)));
 }
-
 function rerender(){ if(state.cache) render(state.cache); }
 
 function render(cache){
@@ -777,9 +767,7 @@ function wire(){
   });
 
   $("resource").addEventListener("change", ()=>{
-    state.selected.clear();
-    syncLegendUI();
-    rerun();
+    state.selected.clear(); syncLegendUI(); rerun();
   });
 
   $("btnReload").addEventListener("click", ()=>{
