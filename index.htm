@@ -50,7 +50,8 @@
     }
     header.collapsed .toolbar,
     header.collapsed .legendWrap,
-    header.collapsed .cards{ display:none !important; }
+    header.collapsed .cards,
+    header.collapsed .diagRow{ display:none !important; }
 
     .wrap{max-width:1500px; margin:0 auto; padding:0 12px;}
     .title{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
@@ -101,21 +102,6 @@
                   0 10px 0 rgba(232,239,255,.92);
     }
     .funnel:after{ width:9px; height:3px; top:13px; }
-    .iconBtn[data-tip]:hover::after{
-      content: attr(data-tip);
-      position:absolute;
-      right:0;
-      top:calc(100% + 8px);
-      white-space:nowrap;
-      background:rgba(0,0,0,.82);
-      border:1px solid rgba(255,255,255,.18);
-      color:var(--text);
-      padding:6px 10px;
-      border-radius:10px;
-      font-size:12px;
-      z-index:999;
-      pointer-events:none;
-    }
 
     .toolbar{
       margin-top:8px;
@@ -156,23 +142,6 @@
     .chipBtn .caret{display:none; font-weight:900; margin-left:2px}
     .chipBtn[aria-pressed="true"]{ border-color: rgba(255,255,255,.38); }
     .chipBtn[aria-pressed="true"] .caret{display:inline}
-
-    .chipBtn[data-tip]:hover::after{
-      content: attr(data-tip);
-      position:absolute;
-      left:50%;
-      transform:translateX(-50%);
-      top:calc(100% + 8px);
-      white-space:nowrap;
-      background:rgba(0,0,0,.82);
-      border:1px solid rgba(255,255,255,.18);
-      color:var(--text);
-      padding:6px 10px;
-      border-radius:10px;
-      font-size:12px;
-      z-index:999;
-      pointer-events:none;
-    }
     .hintline{ color:var(--muted); font-size:10px; opacity:.9; }
 
     .cards{
@@ -190,6 +159,35 @@
     }
     .kpi{font-size:11px; color:var(--muted)}
     .val{margin-top:4px; font-size:16px; font-weight:900}
+
+    /* Diagnóstico */
+    .diagRow{
+      margin-top:8px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(15,26,48,.55);
+      border-radius:14px;
+      padding:8px 10px;
+      font-size:11px;
+      color:var(--muted);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .diagText{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width:1200px;
+    }
+    .diagPill{
+      font-size:10px;
+      padding:4px 8px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      color:var(--text);
+      background:rgba(21,38,74,.60);
+    }
 
     main{
       height: calc(100vh - var(--hdrH));
@@ -387,7 +385,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Suporta colunas repetidas no mesmo dia (subcolunas) para representar 2 recursos no mesmo cliente/turno/data.</div>
+        <div class="sub">Agora com cache-busting + diagnóstico do header para garantir aderência total ao Google Sheets publicado.</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" data-tip="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -413,9 +411,14 @@
       <span class="hintline">Hover: DO=Dôra, GE=Geovana, JC=João Custódio, AL=Aline</span>
     </div>
 
+    <div class="diagRow">
+      <div class="diagText" id="diagHeader">Diagnóstico: aguardando carga…</div>
+      <div class="diagPill" id="diagVer">CSV: —</div>
+    </div>
+
     <div class="cards">
       <div class="card"><div class="kpi">Linhas (turnos)</div><div class="val" id="kpiRows">—</div></div>
-      <div class="card"><div class="kpi">Colunas (inclui repetidas)</div><div class="val" id="kpiCols">—</div></div>
+      <div class="card"><div class="kpi">Colunas carregadas</div><div class="val" id="kpiCols">—</div></div>
       <div class="card"><div class="kpi">Chips exibidos</div><div class="val" id="kpiFilled">—</div></div>
       <div class="card"><div class="kpi">Hoje</div><div class="val" id="kpiToday">—</div></div>
     </div>
@@ -471,16 +474,14 @@
 const PUBLISHED_BASE =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub";
 const SHEET_GID = "0";
-const ENDPOINT_PUBLISHED_CSV = (gid) => `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}`;
+const ENDPOINT_PUBLISHED_CSV = (gid, ts) =>
+  `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}&ts=${encodeURIComponent(ts)}`;
 
 const RESOURCE_NAMES = { "DO":"Dôra", "GE":"Geovana", "JC":"João Custódio", "AL":"Aline" };
 const VALID_CODES = new Set(["DO","GE","JC","AL"]);
 
 const state = { selected: new Set(), cache: null };
 const $ = (id) => document.getElementById(id);
-
-function getCSS(varName){ return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
-const COLOR = { "DO":getCSS("--do"), "GE":getCSS("--ge"), "JC":getCSS("--jc"), "AL":getCSS("--al") };
 
 function syncHeaderHeight(){
   const h = Math.ceil($("hdr").getBoundingClientRect().height);
@@ -498,7 +499,6 @@ function isWeekendDOW(dowStr){
   return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM") || s.startsWith("SÁBADO") || s.startsWith("DOMINGO");
 }
 
-/* Multi-codes por célula (continua compatível) */
 function parseCellCodes(cellRaw){
   const s = String(cellRaw || "").toUpperCase();
   if (!s.trim()) return [];
@@ -517,6 +517,7 @@ function parseCellCodes(cellRaw){
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
+  const COLOR = { "DO":"var(--do)","GE":"var(--ge)","JC":"var(--jc)","AL":"var(--al)" };
   ["DO","GE","JC","AL"].forEach(code => {
     const b = document.createElement("button");
     b.type = "button";
@@ -527,7 +528,7 @@ function buildLegend(){
 
     const dot = document.createElement("span");
     dot.className = "dot";
-    dot.style.background = COLOR[code];
+    dot.style.background = `var(${COLOR[code].replace("var(","").replace(")","")})`;
 
     const codeEl = document.createElement("span");
     codeEl.className = "code";
@@ -575,14 +576,12 @@ $("btnClear").addEventListener("click", () => {
   syncLegendUI();
   rerender();
 });
-
 function getActiveCodes(){
   const dd = $("resource").value.trim().toUpperCase();
   if (dd) return new Set([dd]);
   return new Set(Array.from(state.selected).map(x => String(x).toUpperCase()));
 }
 
-/* CSV */
 function parseCSV(text){
   const rows = [];
   let row = [], cur = "", inQ = false;
@@ -601,14 +600,18 @@ function parseCSV(text){
   if (cur.length || row.length){ row.push(cur); rows.push(row); }
   return rows.map(r => r.map(c => (c ?? "").trim()));
 }
+
 async function fetchCSV(){
-  const url = ENDPOINT_PUBLISHED_CSV(SHEET_GID);
+  const ts = Date.now();
+  const url = ENDPOINT_PUBLISHED_CSV(SHEET_GID, ts);
+  $("diagVer").textContent = `CSV: gid=${SHEET_GID} ts=${ts}`;
   const res = await fetch(url, { cache:"no-store" });
-  if (!res.ok) throw new Error(`Falha ao carregar CSV publicado. HTTP ${res.status}. URL: ${url}`);
+  if (!res.ok) throw new Error(`Falha ao carregar CSV publicado. HTTP ${res.status}.`);
   const text = await res.text();
   if (!text || text.length < 10) throw new Error(`CSV vazio. Verifique gid (${SHEET_GID}).`);
   return text;
 }
+
 function normalizeDateLabel(s){
   if (!s) return "";
   const m = s.match(/^(\d{1,2})\/(\d{1,2})(?:\/\d{2,4})?$/);
@@ -619,9 +622,6 @@ function todayLabel(){
   const d = new Date();
   return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
 }
-
-/* janela de datas precisa respeitar repetição:
-   se dd/mm repetiu, todas as colunas daquela data entram/saem juntas */
 function inWindow(label, start, end){
   if (!start && !end) return true;
   const idx = (x)=> {
@@ -641,7 +641,13 @@ function chipEl(code){
   sp.className = "chip" + (!v ? " empty" : "");
   sp.textContent = v || "—";
   if (v && RESOURCE_NAMES[v]) sp.title = `${v} = ${RESOURCE_NAMES[v]}`;
-  const colors = { DO:getCSS("--do"), GE:getCSS("--ge"), JC:getCSS("--jc"), AL:getCSS("--al") };
+
+  const colors = {
+    DO:getComputedStyle(document.documentElement).getPropertyValue("--do").trim(),
+    GE:getComputedStyle(document.documentElement).getPropertyValue("--ge").trim(),
+    JC:getComputedStyle(document.documentElement).getPropertyValue("--jc").trim(),
+    AL:getComputedStyle(document.documentElement).getPropertyValue("--al").trim(),
+  };
   if (colors[v]){
     sp.style.color = "#0b1220";
     sp.style.background = colors[v];
@@ -649,6 +655,7 @@ function chipEl(code){
   }
   return sp;
 }
+
 function renderCellChips(codes, activeCodes){
   const box = document.createElement("div");
   box.className = "cellChips";
@@ -672,7 +679,6 @@ function normalizeShift(s){
   return "";
 }
 
-/* mapping */
 function getClientAndShift(row, dateIdxStart, lastClient){
   const firstNonEmpty = row.findIndex(c => c && c !== "");
   if (firstNonEmpty === -1) return null;
@@ -713,7 +719,6 @@ function hasAnyActiveMulti(allocWin, activeCodes){
   return allocWin.some(arr => arr.some(code => activeCodes.has(code)));
 }
 
-/* scroll sync */
 function bindScrollSync(){
   const left = $("leftScroll");
   const right = $("rightScroll");
@@ -754,12 +759,12 @@ function syncHScrollWidth(){
   inner.style.width = tbl.scrollWidth + "px";
 }
 
-/* render */
 function rerender(){
   if (!state.cache) return;
   render(state.cache);
   syncHScrollWidth();
 }
+
 function render(cache){
   const { rawRows, dateIdxStart, dates, dows } = cache;
 
@@ -767,7 +772,6 @@ function render(cache){
   const start = normalizeDateLabel($("start").value.trim());
   const end   = normalizeDateLabel($("end").value.trim());
 
-  // IMPORTANTE: máscara por coluna (inclui repetidas) usando dd/mm
   const dateMask = dates.map(d => inWindow(d, start, end));
   const filteredDates = dates.filter((_,i)=>dateMask[i]);
   const filteredDows  = dows.filter((_,i)=>dateMask[i]);
@@ -775,7 +779,14 @@ function render(cache){
   const activeCodes = getActiveCodes();
   const today = todayLabel();
 
-  // Cabeçalho 2 linhas com colunas repetidas preservadas
+  // Diagnóstico de header (últimas 30 colunas)
+  const last = Math.min(filteredDates.length, 30);
+  const diagPairs = [];
+  for (let i=Math.max(0, filteredDates.length-last); i<filteredDates.length; i++){
+    diagPairs.push(`${(filteredDows[i]||"—").toUpperCase()} ${filteredDates[i]}`);
+  }
+  $("diagHeader").textContent = `Diagnóstico (últimas ${last} colunas carregadas): ${diagPairs.join(" | ")}`;
+
   const headDow = $("rightHeadDow");
   const headDt  = $("rightHeadDt");
   headDow.innerHTML = "";
@@ -793,12 +804,10 @@ function render(cache){
     th2.textContent = d;
 
     if (isWeekendDOW(filteredDows[i])) { th1.classList.add("weekend-col"); th2.classList.add("weekend-col"); }
-
     headDow.appendChild(th1);
     headDt.appendChild(th2);
   });
 
-  // normalize items
   let lastClient = "";
   const items = [];
   for (const r of rawRows){
@@ -808,7 +817,6 @@ function render(cache){
     items.push(parsed);
   }
 
-  // group by client M/T
   const groups = [];
   const map = new Map();
   for (const it of items){
@@ -868,7 +876,6 @@ function render(cache){
 
     const allocM = (g.M && g.M.alloc) ? g.M.alloc : [];
     const allocT = (g.T && g.T.alloc) ? g.T.alloc : [];
-
     const winM = allocM.filter((_,i)=>dateMask[i]);
     const winT = allocT.filter((_,i)=>dateMask[i]);
 
@@ -898,7 +905,6 @@ function render(cache){
 
     rightBody.appendChild(trR1);
     rightBody.appendChild(trR2);
-
     lines += 2;
   }
 
@@ -911,7 +917,6 @@ function render(cache){
     const winT = allocT.filter((_,i)=>dateMask[i]);
 
     if (!hasAnyActiveMulti(winM, activeCodes) && !hasAnyActiveMulti(winT, activeCodes)) continue;
-
     appendRowsForClient(g);
   }
 
