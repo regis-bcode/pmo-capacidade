@@ -14,12 +14,10 @@
 
       --do:#60a5fa; --ge:#34d399; --jc:#fbbf24; --al:#fb7185;
 
-      /* ALTURAS FIXAS */
       --rowH: 18px;
       --headH1: 14px;
       --headH2: 14px;
 
-      /* LARGURAS FIXAS (SEM SUBPIXEL) */
       --wClient: 160px;
       --wShift: 82px;
 
@@ -159,7 +157,6 @@
     }
     .gridhead .hint{color:var(--muted); font-size:11px}
 
-    /* SCROLL ÚNICO, COM GPU HINT PARA NÃO JITTER */
     .tableScroll{
       position:relative;
       flex:1 1 auto;
@@ -175,10 +172,9 @@
       border-collapse:separate;
       border-spacing:0;
       width:max-content;
-      table-layout:fixed;             /* CRÍTICO: evita recalculo / subpixel */
+      table-layout:fixed;
     }
 
-    /* fixa alturas de tr para não variar */
     thead tr{ height: var(--headH1); }
     thead tr:nth-child(2){ height: var(--headH2); }
     tbody tr{ height: var(--rowH); }
@@ -195,6 +191,8 @@
       backface-visibility:hidden;
       transform: translateZ(0);
     }
+
+    /* 2 linhas do header de datas */
     thead tr:nth-child(1) th{
       top:0;
       height:var(--headH1);
@@ -210,7 +208,15 @@
       z-index:11;
     }
 
-    /* COLUNAS CONGELADAS */
+    /* === FIX: TH rowSpan=2 (Cliente/Turno) também precisa ser sticky vertical === */
+    thead th.stickyClient,
+    thead th.stickyShift{
+      top:0 !important;
+      height: calc(var(--headH1) + var(--headH2));
+      line-height: calc(var(--headH1) + var(--headH2));
+      z-index:60; /* acima de tudo no header */
+    }
+
     .stickyClient, .stickyShift{
       position:sticky;
       background:rgba(11,18,32,.97);
@@ -233,7 +239,6 @@
       max-width:var(--wShift);
       text-align:center;
     }
-    thead .stickyClient, thead .stickyShift{ z-index:50; }
 
     tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
@@ -301,7 +306,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Hard fix: header + colunas congeladas + table-layout fixed para eliminar drift e descasamento.</div>
+        <div class="sub">Correção aplicada: Cliente/Turno (rowSpan=2) agora é sticky vertical + horizontal no header.</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" title="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -582,11 +587,9 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   const cellA=(row[first]||"").trim();
   const cellB=(row[first+1]||"").trim();
 
-  let client=cellA, shift="";
-  shift=normalizeShift(cellB);
+  let client=cellA, shift=normalizeShift(cellB);
   const solo=normalizeShift(cellA);
   if(solo && lastClient){ client=lastClient; shift=solo; }
-  if(!shift && solo && lastClient){ client=lastClient; shift=solo; }
 
   client = client || lastClient || "—";
   const alloc=row.slice(dateIdxStart).map(c=>parseCellCodes(c));
@@ -619,7 +622,6 @@ function render(cache){
   const body=$("body");
   headDow.innerHTML=""; headDt.innerHTML=""; body.innerHTML="";
 
-  // THs sticky esquerda
   const thClient=document.createElement("th");
   thClient.className="stickyClient";
   thClient.textContent="Cliente";
@@ -633,7 +635,6 @@ function render(cache){
   headDow.appendChild(thClient);
   headDow.appendChild(thShift);
 
-  // header dias
   fDates.forEach((d,i)=>{
     const th=document.createElement("th");
     th.textContent=(fDows[i]||"—").toUpperCase();
@@ -641,7 +642,6 @@ function render(cache){
     headDow.appendChild(th);
   });
 
-  // header datas
   fDates.forEach((d,i)=>{
     const th=document.createElement("th");
     th.textContent=d;
@@ -649,7 +649,6 @@ function render(cache){
     headDt.appendChild(th);
   });
 
-  // parse linhas
   let lastClient="";
   const items=[];
   for(const r of rawRows){
@@ -659,7 +658,6 @@ function render(cache){
     items.push(parsed);
   }
 
-  // group client M/T
   const groups=[];
   const map=new Map();
   for(const it of items){
@@ -685,7 +683,6 @@ function render(cache){
 
     if(!hasAnyActive(winM,activeCodes) && !hasAnyActive(winT,activeCodes)) continue;
 
-    // MANHÃ
     const trM=document.createElement("tr");
     trM.className="row-m";
 
@@ -715,7 +712,6 @@ function render(cache){
       trM.appendChild(td);
     }
 
-    // TARDE
     const trT=document.createElement("tr");
     trT.className="row-t";
 
