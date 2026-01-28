@@ -19,12 +19,11 @@
       --al:#fb7185;
 
       /* Ultra denso estilo Excel */
-      --rowH: 18px;          /* <<< MAIS COMPACTO */
-      --headH: 26px;         /* altura do header da tabela */
+      --rowH: 18px;
+      --headH: 26px;  /* ALTURA ÚNICA PARA TODOS OS HEADERS */
       --wClient: 150px;
       --wShift: 74px;
 
-      /* Faixas turno */
       --mRow: rgba(167,139,250,.14);
       --tRow: rgba(56,189,248,.10);
 
@@ -40,7 +39,7 @@
       overflow:hidden;
     }
 
-    /* ================= HEADER ================= */
+    /* HEADER */
     header{
       padding:10px 12px 8px;
       border-bottom:1px solid var(--line);
@@ -56,17 +55,12 @@
     }
 
     .wrap{max-width:1500px; margin:0 auto; padding:0 12px;}
-    .title{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-    }
+    .title{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
     .titleLeft{display:flex; flex-direction:column; gap:6px;}
     h1{margin:0; font-size:14px; font-weight:900; letter-spacing:.2px;}
     .sub{margin:0; color:var(--muted); font-size:11px; line-height:1.2;}
-
     .titleRight{display:flex; align-items:center; gap:8px;}
+
     .btn{
       display:inline-flex; align-items:center; justify-content:center;
       padding:8px 10px;
@@ -83,7 +77,6 @@
     .btn:active{transform:translateY(1px)}
     .btn.secondary{ background:rgba(15,26,48,.70); }
 
-    /* Botão funil */
     .iconBtn{
       width:42px; height:36px;
       border-radius:10px;
@@ -145,14 +138,7 @@
       font-size:12px;
     }
 
-    /* Chips filtro */
-    .legendWrap{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-top:8px;
-      flex-wrap:wrap;
-    }
+    .legendWrap{display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap;}
     .legend{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
     .chipBtn{
       display:inline-flex; align-items:center; gap:8px;
@@ -190,7 +176,6 @@
     }
     .hintline{ color:var(--muted); font-size:10px; opacity:.9; }
 
-    /* KPI cards compactos */
     .cards{
       padding:8px 0 6px;
       display:grid;
@@ -207,7 +192,6 @@
     .kpi{font-size:11px; color:var(--muted)}
     .val{margin-top:4px; font-size:16px; font-weight:900}
 
-    /* ================= MAIN / GRID ================= */
     main{
       height: calc(100vh - var(--hdrH));
       padding:0 12px 0;
@@ -232,13 +216,8 @@
     }
     .gridhead .hint{color:var(--muted); font-size:11px}
 
-    .gridBody{
-      display:flex;
-      flex:1 1 auto;
-      min-height:0;
-    }
+    .gridBody{display:flex; flex:1 1 auto; min-height:0;}
 
-    /* LEFT frozen */
     .leftPane{
       width: calc(var(--wClient) + var(--wShift));
       border-right:1px solid rgba(255,255,255,.08);
@@ -256,7 +235,6 @@
     .leftScroll::-webkit-scrollbar{ width:0px; height:0px; }
     .leftScroll{ scrollbar-width:none; }
 
-    /* RIGHT dates */
     .rightPaneWrap{
       flex:1 1 auto;
       min-width:0;
@@ -266,7 +244,7 @@
     }
     .rightScroll{
       overflow-y:auto;
-      overflow-x:hidden; /* horizontal via barra fixa */
+      overflow-x:hidden;
       flex:1 1 auto;
       min-height:0;
     }
@@ -277,7 +255,7 @@
       width:max-content;
     }
 
-    /* HEADER DAS TABELAS: altura fixa para não descasar */
+    /* HEADER: remove variação, sem <br>, com flex alinhado */
     .leftTable thead th,
     .rightTable thead th{
       position:sticky;
@@ -285,39 +263,44 @@
       z-index:10;
       background:rgba(11,18,32,.95);
       border-bottom:1px solid var(--line);
-      font-size:10px;
       color:var(--muted);
-      padding:0 6px;          /* <<< zera vertical */
-      height: var(--headH);   /* <<< fixa */
-      line-height: var(--headH);
+      padding:0 6px;
+      height: var(--headH);
+      line-height: 1;
       white-space:nowrap;
+      vertical-align:middle;
     }
     .leftTable thead th{ z-index:15; }
 
-    /* LINHAS: garante altura idêntica em left/right */
-    .leftTable tr,
-    .rightTable tr{
-      height: var(--rowH);
+    .thBox{
+      height: var(--headH);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      font-size:10px;
     }
+    .thBox .dow{opacity:.95; font-weight:700;}
+    .thBox .dt{opacity:.9; font-weight:700;}
+
+    /* CORPO: altura fixa, sem variação */
     .leftTable tbody td,
     .rightTable tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
-      padding:0 4px;          /* <<< zera vertical */
-      height: var(--rowH);    /* <<< fixa */
-      line-height: var(--rowH);
+      padding:0 4px;
+      height:var(--rowH);
+      line-height:var(--rowH);
       font-size:11px;
       white-space:nowrap;
       vertical-align:middle;
     }
+    .leftTable tr, .rightTable tr{ height:var(--rowH); }
 
-    /* Faixas */
     .row-m td{ background-color: var(--mRow); }
     .row-t td{ background-color: var(--tRow); }
 
-    /* Weekend */
     .weekend-col{ background: rgba(251,191,36,.16) !important; }
 
-    /* Colunas fixas */
     .col-client{
       min-width:var(--wClient);
       max-width:var(--wClient);
@@ -331,12 +314,10 @@
       font-weight:950;
       letter-spacing:.2px;
     }
-
-    /* Cliente FLAT (sem “card alto” que estoura a linha) */
     .clientText{
       display:block;
       width:100%;
-      padding:0 6px;          /* sem vertical */
+      padding:0 6px;
       overflow:hidden;
       text-overflow:ellipsis;
       white-space:nowrap;
@@ -345,7 +326,6 @@
       text-transform:uppercase;
     }
 
-    /* Chip dentro da grade ultra compacto */
     .chip{
       display:inline-flex;
       align-items:center;
@@ -367,7 +347,6 @@
       box-shadow: inset 0 0 0 1px rgba(45,212,191,.28);
     }
 
-    /* Barra horizontal fixa só do grid de datas */
     .hscrollBar{
       height:12px;
       overflow-x:auto;
@@ -394,12 +373,6 @@
       font-size:11px;
       flex:0 0 auto;
     }
-
-    @media (max-width:1100px){
-      .toolbar{grid-template-columns: 1fr 1fr;}
-      .cards{grid-template-columns: 1fr 1fr;}
-      :root{ --wClient: 130px; --wShift: 70px; --rowH: 18px; }
-    }
   </style>
 </head>
 
@@ -409,16 +382,10 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">
-          Estilo Excel (ultra-denso). Cliente/Turno congelados. Barra horizontal sempre visível apenas para datas/alocações.
-          Funil: maximizar/minimizar filtros.
-        </div>
+        <div class="sub">Correção de alinhamento: header de datas agora é 1 linha (sem &lt;br&gt;), com altura fixa igual ao header da esquerda.</div>
       </div>
-
       <div class="titleRight">
-        <button class="iconBtn" id="btnToggleFilters" data-tip="Maximizar/Minimizar filtros">
-          <span class="funnel"></span>
-        </button>
+        <button class="iconBtn" id="btnToggleFilters" data-tip="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
         <button class="btn" id="btnReload">Recarregar</button>
       </div>
     </div>
@@ -455,22 +422,10 @@
     </div>
 
     <div class="cards">
-      <div class="card">
-        <div class="kpi">Linhas (turnos)</div>
-        <div class="val" id="kpiRows">—</div>
-      </div>
-      <div class="card">
-        <div class="kpi">Janela de datas</div>
-        <div class="val" id="kpiCols">—</div>
-      </div>
-      <div class="card">
-        <div class="kpi">Células preenchidas</div>
-        <div class="val" id="kpiFilled">—</div>
-      </div>
-      <div class="card">
-        <div class="kpi">Hoje</div>
-        <div class="val" id="kpiToday">—</div>
-      </div>
+      <div class="card"><div class="kpi">Linhas (turnos)</div><div class="val" id="kpiRows">—</div></div>
+      <div class="card"><div class="kpi">Janela de datas</div><div class="val" id="kpiCols">—</div></div>
+      <div class="card"><div class="kpi">Células preenchidas</div><div class="val" id="kpiFilled">—</div></div>
+      <div class="card"><div class="kpi">Hoje</div><div class="val" id="kpiToday">—</div></div>
     </div>
   </div>
 </header>
@@ -483,14 +438,13 @@
     </div>
 
     <div class="gridBody">
-      <!-- LEFT -->
       <div class="leftPane">
         <div class="leftScroll" id="leftScroll">
           <table class="leftTable" id="leftTable">
             <thead>
               <tr>
-                <th style="min-width:var(--wClient);max-width:var(--wClient);">Cliente</th>
-                <th style="min-width:var(--wShift);max-width:var(--wShift);text-align:center;">Turno</th>
+                <th><div class="thBox" style="justify-content:flex-start"><span class="dow">Cliente</span></div></th>
+                <th><div class="thBox"><span class="dow">Turno</span></div></th>
               </tr>
             </thead>
             <tbody id="leftBody"></tbody>
@@ -498,20 +452,15 @@
         </div>
       </div>
 
-      <!-- RIGHT -->
       <div class="rightPaneWrap">
         <div class="rightScroll" id="rightScroll">
           <table class="rightTable" id="rightTable">
-            <thead>
-              <tr id="rightHead"></tr>
-            </thead>
+            <thead><tr id="rightHead"></tr></thead>
             <tbody id="rightBody"></tbody>
           </table>
         </div>
 
-        <div class="hscrollBar" id="hscrollBar">
-          <div class="hscrollInner" id="hscrollInner"></div>
-        </div>
+        <div class="hscrollBar" id="hscrollBar"><div class="hscrollInner" id="hscrollInner"></div></div>
       </div>
     </div>
 
@@ -523,7 +472,6 @@
 </main>
 
 <script>
-/* ===== CONFIG ===== */
 const PUBLISHED_BASE =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub";
 const SHEET_GID = "0";
@@ -552,7 +500,6 @@ function isWeekendDOW(dowStr){
   return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM") || s.startsWith("SÁBADO") || s.startsWith("DOMINGO");
 }
 
-/* ===== chips filtro ===== */
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
@@ -575,6 +522,7 @@ function buildLegend(){
     const caret = document.createElement("span");
     caret.className = "caret";
     caret.textContent = "✓";
+    caret.style.display = "none";
 
     b.appendChild(dot); b.appendChild(codeEl); b.appendChild(caret);
 
@@ -597,6 +545,7 @@ function buildLegend(){
   });
   syncLegendUI();
 }
+
 function syncLegendUI(){
   const any = state.selected.size > 0;
   document.querySelectorAll(".chipBtn[data-code]").forEach(btn => {
@@ -604,8 +553,11 @@ function syncLegendUI(){
     const on = state.selected.has(code);
     btn.setAttribute("aria-pressed", on ? "true" : "false");
     btn.style.opacity = (!any || on) ? "1" : ".55";
+    const caret = btn.querySelector(".caret");
+    if (caret) caret.style.display = on ? "inline" : "none";
   });
 }
+
 $("btnClear").addEventListener("click", () => {
   state.selected.clear();
   $("resource").value = "";
@@ -613,14 +565,12 @@ $("btnClear").addEventListener("click", () => {
   rerender();
 });
 
-/* ===== filtro ativo ===== */
 function getActiveCodes(){
   const dd = $("resource").value.trim().toUpperCase();
   if (dd) return new Set([dd]);
   return new Set(Array.from(state.selected).map(x => String(x).toUpperCase()));
 }
 
-/* ===== CSV ===== */
 function parseCSV(text){
   const rows = [];
   let row = [], cur = "", inQ = false;
@@ -639,6 +589,7 @@ function parseCSV(text){
   if (cur.length || row.length){ row.push(cur); rows.push(row); }
   return rows.map(r => r.map(c => (c ?? "").trim()));
 }
+
 async function fetchCSV(){
   const url = ENDPOINT_PUBLISHED_CSV(SHEET_GID);
   const res = await fetch(url, { cache:"no-store" });
@@ -647,6 +598,7 @@ async function fetchCSV(){
   if (!text || text.length < 10) throw new Error(`CSV vazio. Verifique gid (${SHEET_GID}).`);
   return text;
 }
+
 function normalizeDateLabel(s){
   if (!s) return "";
   const m = s.match(/^(\d{1,2})\/(\d{1,2})(?:\/\d{2,4})?$/);
@@ -669,13 +621,13 @@ function inWindow(label, start, end){
   const b = end ? idx(end) : Infinity;
   return (v >= a && v <= b);
 }
+
 function chip(value){
   const v = (value || "").trim().toUpperCase();
   const sp = document.createElement("span");
   sp.className = "chip" + (!v ? " empty" : "");
   sp.textContent = v || "—";
   if (v && RESOURCE_NAMES[v]) sp.title = `${v} = ${RESOURCE_NAMES[v]}`;
-
   const colors = { DO:getCSS("--do"), GE:getCSS("--ge"), JC:getCSS("--jc"), AL:getCSS("--al") };
   if (colors[v]){
     sp.style.color = "#0b1220";
@@ -684,6 +636,7 @@ function chip(value){
   }
   return sp;
 }
+
 function normalizeShift(s){
   const v = (s || "").toUpperCase().trim();
   if (v === "M" || v === "MANHÃ" || v === "MANHA") return "M";
@@ -691,7 +644,6 @@ function normalizeShift(s){
   return "";
 }
 
-/* ===== mapping ===== */
 function getClientAndShift(row, dateIdxStart, lastClient){
   const firstNonEmpty = row.findIndex(c => c && c !== "");
   if (firstNonEmpty === -1) return null;
@@ -726,12 +678,12 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   const alloc = row.slice(dateIdxStart).map(c => (c || "").trim().toUpperCase());
   return { client, shift, alloc };
 }
+
 function hasAnyActive(allocWin, activeCodes){
   if (activeCodes.size === 0) return true;
   return allocWin.some(v => activeCodes.has(v));
 }
 
-/* ===== scroll sync ===== */
 function bindScrollSync(){
   const left = $("leftScroll");
   const right = $("rightScroll");
@@ -765,6 +717,7 @@ function bindScrollSync(){
     requestAnimationFrame(()=>lockH=false);
   });
 }
+
 function syncHScrollWidth(){
   const tbl = $("rightTable");
   const inner = $("hscrollInner");
@@ -772,12 +725,12 @@ function syncHScrollWidth(){
   inner.style.width = tbl.scrollWidth + "px";
 }
 
-/* ===== render ===== */
 function rerender(){
   if (!state.cache) return;
   render(state.cache);
   syncHScrollWidth();
 }
+
 function render(cache){
   const { rawRows, dateIdxStart, dates, dows } = cache;
 
@@ -792,12 +745,23 @@ function render(cache){
   const activeCodes = getActiveCodes();
   const today = todayLabel();
 
-  // RIGHT HEAD
+  // RIGHT HEAD: 1 linha (dow + date)
   const rightHead = $("rightHead");
   rightHead.innerHTML = "";
   filteredDates.forEach((d, i) => {
     const th = document.createElement("th");
-    th.innerHTML = `${filteredDows[i] ? filteredDows[i] + "<br/>" : ""}${d}`;
+    const box = document.createElement("div");
+    box.className = "thBox";
+    const dow = document.createElement("span");
+    dow.className = "dow";
+    dow.textContent = (filteredDows[i] || "").toUpperCase();
+    const dt = document.createElement("span");
+    dt.className = "dt";
+    dt.textContent = d;
+    box.appendChild(dow);
+    box.appendChild(dt);
+    th.appendChild(box);
+
     if (isWeekendDOW(filteredDows[i])) th.classList.add("weekend-col");
     rightHead.appendChild(th);
   });
@@ -935,7 +899,6 @@ function render(cache){
   syncLegendUI();
 }
 
-/* ===== load ===== */
 async function load(){
   $("status").textContent = "Status: carregando…";
 
@@ -966,7 +929,6 @@ async function load(){
   syncHScrollWidth();
 }
 
-/* ===== events ===== */
 function wire(){
   buildLegend();
   bindScrollSync();
