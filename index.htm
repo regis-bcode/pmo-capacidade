@@ -15,22 +15,33 @@
 
       /* Ultra-denso */
       --rowH: 18px;
-      --headH1: 14px;  /* linha DIA DA SEMANA */
-      --headH2: 14px;  /* linha DATA */
+      --headH1: 14px;  /* DIA DA SEMANA */
+      --headH2: 14px;  /* DATA */
       --headTotal: calc(var(--headH1) + var(--headH2));
 
-      /* Larguras fixas (sem subpixel) */
+      /* Larguras fixas */
       --wClient: 170px;
       --wTurno: 86px;
+      --wDateCol: 64px;
 
-      /* Fundos sólidos (SEM transparência) */
+      /* Fundos sólidos */
       --solidBG: #0b1220;
       --solidHdr: #0a162e;
       --solidSticky: #0b1220;
 
-      /* Faixas (sólidas) para manhã/tarde */
+      /* Faixas manhã/tarde */
       --mStrip:#2b2a57;
       --tStrip:#0f3348;
+
+      /* Highlights */
+      --conflictBg:#3b0b12;
+      --conflictBorder:#ff2d55;
+      --conflictChip:#ff2d55;
+
+      --idleBg:#0b3b1c;
+      --idleBorder:#22c55e;
+
+      --panelBg:#0f1a30;
     }
 
     *{box-sizing:border-box}
@@ -42,10 +53,158 @@
       overflow:hidden;
     }
 
-    /* === CONTÊINER DO GRID COM SCROLL (VERTICAL + HORIZONTAL) === */
+    /* ======= TOP BAR (leve) ======= */
+    header{
+      padding:10px 12px 8px;
+      border-bottom:1px solid var(--line);
+      position:sticky; top:0;
+      background: var(--solidBG);
+      z-index:50;
+    }
+    .wrap{max-width:1500px; margin:0 auto; padding:0 12px;}
+    .title{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+    .titleLeft{display:flex; flex-direction:column; gap:6px;}
+    h1{margin:0; font-size:14px; font-weight:900;}
+    .sub{margin:0; color:var(--muted); font-size:11px; line-height:1.2;}
+    .titleRight{display:flex; align-items:center; gap:8px;}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:8px 10px; border-radius:10px;
+      border:1px solid var(--line);
+      background:rgba(15,26,48,.80);
+      color:var(--text); cursor:pointer; user-select:none;
+      font-weight:800; font-size:12px;
+    }
+
+    .toolbar{
+      margin-top:8px;
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr;
+      gap:8px; align-items:end;
+    }
+    .field label{display:block; font-size:10px; color:var(--muted); margin:0 0 4px;}
+    .field input, .field select{
+      width:100%;
+      padding:7px 8px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:#0f1a30;
+      color:var(--text);
+      outline:none;
+      font-size:12px;
+    }
+
+    /* ======= CHIPS (recursos + modos) ======= */
+    .legendWrap{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; flex-wrap:wrap;}
+    .legendLeft{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+    .legend{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+    .chipBtn{
+      display:inline-flex; align-items:center; gap:8px;
+      background:#14264a;
+      border:1px solid var(--line);
+      padding:4px 10px; border-radius:999px;
+      font-size:11px; color:var(--text);
+      cursor:pointer; user-select:none;
+      transition: opacity .15s ease;
+      white-space:nowrap;
+    }
+    .chipBtn .dot{width:9px; height:9px; border-radius:50%}
+    .chipBtn .code{font-weight:950;}
+    .chipBtn .caret{display:none; font-weight:900; margin-left:2px}
+    .chipBtn[aria-pressed="true"]{ border-color: rgba(255,255,255,.38); }
+    .chipBtn[aria-pressed="true"] .caret{display:inline}
+
+    .modeBtn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#0f1a30;
+      cursor:pointer;
+      font-size:11px;
+      font-weight:900;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .modeBtn[aria-pressed="true"]{
+      border-color: rgba(255,255,255,.45);
+      background:#14264a;
+    }
+    .hintline{ color:var(--muted); font-size:10px; opacity:.9; }
+
+    /* ======= KPI / painéis ======= */
+    .cards{
+      padding:8px 0 6px;
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:8px;
+    }
+    .card{
+      background:#0f1a30;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      min-height:56px;
+    }
+    .kpi{font-size:11px; color:var(--muted)}
+    .val{margin-top:4px; font-size:16px; font-weight:900}
+
+    /* Painel de análises */
+    .analysisPanel{
+      margin-top:8px;
+      background: var(--panelBg);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      display:none; /* aparece quando modo ativo */
+      gap:10px;
+    }
+    .analysisPanel.active{ display:grid; }
+    .analysisPanel.grid2{ grid-template-columns: 1fr 1fr; }
+    .panelTitle{
+      font-weight:900;
+      font-size:12px;
+      margin:0 0 8px 0;
+    }
+    .mini{
+      font-size:11px; color:var(--muted); margin:0 0 6px 0;
+    }
+    .list{
+      max-height:160px;
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:10px;
+      padding:8px;
+      background:#0b1220;
+      font-size:11px;
+    }
+    .rowLine{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:4px 0;
+      border-bottom:1px dashed rgba(255,255,255,.08);
+    }
+    .rowLine:last-child{ border-bottom:none; }
+    .pill{
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      font-weight:900;
+      font-size:10px;
+      white-space:nowrap;
+    }
+    .pill.red{ background: rgba(255,45,85,.18); border-color: rgba(255,45,85,.5); }
+    .pill.green{ background: rgba(34,197,94,.14); border-color: rgba(34,197,94,.5); }
+
+    /* ======= GRID ======= */
+    main{
+      height: calc(100vh - 220px);
+      padding:0 12px 12px;
+      overflow:hidden;
+    }
     .gridWrap{
-      height: 100vh;
-      padding:12px;
+      height: 100%;
     }
     .gridCard{
       height: 100%;
@@ -62,12 +221,17 @@
       border-bottom:1px solid var(--line);
       font-weight:900;
       background: var(--solidBG);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
     }
+    .gridTitle small{ color:var(--muted); font-weight:700; }
 
     .tableScroll{
       flex:1 1 auto;
       min-height:0;
-      overflow:auto;           /* a rolagem acontece aqui */
+      overflow:auto;
       background: var(--solidBG);
       overscroll-behavior: contain;
     }
@@ -95,16 +259,14 @@
       white-space:nowrap;
       font-size:10px;
       font-weight:900;
-      z-index: 10; /* base */
+      z-index: 10;
     }
-    /* linha 1 do header (DOW) fica no topo */
     thead tr:nth-child(1) th{
       top: 0;
       height: var(--headH1);
       line-height: var(--headH1);
       z-index: 20;
     }
-    /* linha 2 do header (DATA) fica logo abaixo */
     thead tr:nth-child(2) th{
       top: var(--headH1);
       height: var(--headH2);
@@ -112,12 +274,7 @@
       z-index: 19;
     }
 
-    /* =========================
-       FIX DEFINITIVO:
-       CABEÇALHO "CLIENTE" e "TURNO" NÃO PODE SUMIR
-       -> sticky TOP + LEFT (4-way sticky)
-       -> z-index acima de tudo
-       ========================= */
+    /* Header Cliente/Turno fixo (top + left) */
     thead th.thClient{
       left: 0;
       width: var(--wClient);
@@ -125,7 +282,7 @@
       max-width: var(--wClient);
       text-align:left;
       padding-left:10px;
-      z-index: 1000;            /* acima do resto */
+      z-index: 1000;
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
@@ -134,12 +291,11 @@
       width: var(--wTurno);
       min-width: var(--wTurno);
       max-width: var(--wTurno);
-      z-index: 999;             /* logo abaixo do Cliente */
+      z-index: 999;
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
 
-    /* Corpo */
     tbody td{
       height: var(--rowH);
       line-height: var(--rowH);
@@ -152,7 +308,7 @@
       vertical-align:middle;
     }
 
-    /* Colunas fixas do corpo (Cliente/Turno) - não andam no scroll horizontal */
+    /* Colunas fixas corpo (left) */
     tbody td.tdClient{
       position: sticky;
       left: 0;
@@ -160,7 +316,7 @@
       min-width: var(--wClient);
       max-width: var(--wClient);
       z-index: 50;
-      background: var(--solidSticky);
+      background: var(--solidSticky) !important;
       border-right:1px solid rgba(255,255,255,.14);
     }
     tbody td.tdTurno{
@@ -170,7 +326,7 @@
       min-width: var(--wTurno);
       max-width: var(--wTurno);
       z-index: 49;
-      background: var(--solidSticky);
+      background: var(--solidSticky) !important;
       border-right:1px solid rgba(255,255,255,.14);
       text-align:center;
       font-weight:900;
@@ -185,10 +341,9 @@
       text-transform:uppercase;
     }
 
-    /* faixas manhã/tarde (no BODY todo) */
+    /* Faixas */
     tr.rowM td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
     tr.rowT td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
-    /* mas as colunas fixas continuam sólidas */
     tr.rowM td.tdClient, tr.rowM td.tdTurno,
     tr.rowT td.tdClient, tr.rowT td.tdTurno{
       background: var(--solidSticky) !important;
@@ -212,13 +367,128 @@
     }
     .empty{opacity:.25}
 
+    /* ======= ANALYTICS OVERLAYS ======= */
+    td.conflictCell{
+      background: var(--conflictBg) !important;
+      box-shadow: inset 0 0 0 2px rgba(255,45,85,.85);
+    }
+    td.idleTeamCell{
+      background: var(--idleBg) !important;
+      box-shadow: inset 0 0 0 2px rgba(34,197,94,.70);
+    }
+    .chip.conflictChip{
+      background: var(--conflictChip) !important;
+      color:#0b1220 !important;
+      border-color: rgba(255,45,85,.9) !important;
+    }
+
+    /* Toggle interno do modo */
+    .modeToggles{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .miniToggle{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#0f1a30;
+      cursor:pointer;
+      font-size:11px;
+      font-weight:900;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .miniToggle[aria-pressed="true"]{
+      border-color: rgba(255,255,255,.45);
+      background:#14264a;
+    }
+
+    /* Responsivo */
+    @media (max-width: 1100px){
+      main{ height: calc(100vh - 260px); }
+      .cards{ grid-template-columns: repeat(2, 1fr); }
+      .analysisPanel.grid2{ grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 
 <body>
-  <div class="gridWrap">
+<header>
+  <div class="wrap">
+    <div class="title">
+      <div class="titleLeft">
+        <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
+        <div class="sub">Menu especial: Capacidade vs. Demandas (conflitos) e Taxa de Ociosidade (períodos livres do time).</div>
+      </div>
+      <div class="titleRight">
+        <button class="btn" id="btnReload">Recarregar</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="field"><label>Busca (cliente)</label><input id="q" placeholder="Ex.: HS MATEUS, ABBR, MEDILAR..." /></div>
+      <div class="field">
+        <label>Filtro por recurso (dropdown)</label>
+        <select id="resource">
+          <option value="">Todos</option><option value="DO">DO</option><option value="GE">GE</option><option value="JC">JC</option><option value="AL">AL</option>
+        </select>
+      </div>
+      <div class="field"><label>Data início (dd/mm)</label><input id="start" placeholder="Ex.: 24/01" /></div>
+      <div class="field"><label>Data fim (dd/mm)</label><input id="end" placeholder="Ex.: 29/04" /></div>
+    </div>
+
+    <div class="legendWrap">
+      <div class="legendLeft">
+        <div class="legend" id="legend"></div>
+
+        <button class="modeBtn" id="modeCap" aria-pressed="false" title="Destaca conflitos (superalocação) por período">
+          Capacidade vs. Demandas
+        </button>
+        <button class="modeBtn" id="modeIdle" aria-pressed="false" title="Destaca períodos 100% livres do time e lista ociosidade por colaborador">
+          Taxa de Ociosidade
+        </button>
+
+        <button class="btn" id="btnClear" style="padding:6px 10px; border-radius:999px;">Limpar</button>
+      </div>
+      <span class="hintline">DO=Dôra • GE=Geovana • JC=João Custódio • AL=Aline • Multi-seleção: CTRL/⌘</span>
+    </div>
+
+    <div class="cards">
+      <div class="card"><div class="kpi">Linhas exibidas</div><div class="val" id="kpiRows">—</div></div>
+      <div class="card"><div class="kpi">Colunas (janela)</div><div class="val" id="kpiCols">—</div></div>
+      <div class="card"><div class="kpi">Chips exibidos</div><div class="val" id="kpiFilled">—</div></div>
+      <div class="card"><div class="kpi">Modo</div><div class="val" id="kpiMode">—</div></div>
+    </div>
+
+    <!-- Painel de análise (dinâmico) -->
+    <div class="analysisPanel grid2" id="analysisPanel">
+      <div>
+        <div class="panelTitle" id="panelLeftTitle">—</div>
+        <div class="mini" id="panelLeftMini">—</div>
+        <div class="list" id="panelLeftList">—</div>
+      </div>
+      <div>
+        <div class="panelTitle" id="panelRightTitle">—</div>
+        <div class="mini" id="panelRightMini">—</div>
+        <div class="list" id="panelRightList">—</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap gridWrap">
     <div class="gridCard">
-      <div class="gridTitle">Grade de Alocação</div>
+      <div class="gridTitle">
+        <div>Grade de Alocação <small id="status">Status: aguardando carga…</small></div>
+        <div class="modeToggles" id="modeToggles" style="display:none;">
+          <button class="miniToggle" id="onlyFindings" aria-pressed="true">Mostrar só achados</button>
+        </div>
+      </div>
 
       <div class="tableScroll" id="tableScroll">
         <table id="gridTable">
@@ -231,6 +501,7 @@
       </div>
     </div>
   </div>
+</main>
 
 <script>
 /* ===== CONFIG ===== */
@@ -238,6 +509,16 @@ const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojE
 const RESOURCE_NAMES = { DO:"Dôra", GE:"Geovana", JC:"João Custódio", AL:"Aline" };
 const VALID = new Set(["DO","GE","JC","AL"]);
 
+const state = {
+  selected: new Set(),      // chips (DO/GE/JC/AL)
+  cache: null,              // dados do CSV parseados
+  mode: "none",             // none | cap | idle
+  onlyFindings: true,       // no modo, filtrar só achados
+};
+
+const $ = (id) => document.getElementById(id);
+
+/* ===== CSV PARSER ===== */
 function parseCSV(text){
   const rows=[];
   let row=[], cur="", inQ=false;
@@ -261,10 +542,21 @@ function normalizeDateLabel(s){
   if(!m) return String(s||"").trim();
   return `${String(m[1]).padStart(2,"0")}/${String(m[2]).padStart(2,"0")}`;
 }
-
 function isWeekend(dow){
   const x=String(dow||"").toUpperCase();
   return x.startsWith("SAB") || x.startsWith("SÁB") || x.startsWith("DOM");
+}
+function inWindow(label, start, end){
+  if(!start && !end) return true;
+  const idx=(x)=>{
+    const m=String(x||"").match(/^(\d{2})\/(\d{2})$/);
+    if(!m) return -1;
+    return parseInt(m[2],10)*100 + parseInt(m[1],10);
+  };
+  const v=idx(label);
+  const a=start?idx(start):-Infinity;
+  const b=end?idx(end):Infinity;
+  return v>=a && v<=b;
 }
 
 function parseCellCodes(cellRaw){
@@ -286,6 +578,223 @@ function parseCellCodes(cellRaw){
   return out;
 }
 
+/* ===== UI: legend de recursos ===== */
+function buildLegend(){
+  const lg = $("legend");
+  lg.innerHTML = "";
+  const css=getComputedStyle(document.documentElement);
+  const colors={ DO:css.getPropertyValue("--do").trim(), GE:css.getPropertyValue("--ge").trim(), JC:css.getPropertyValue("--jc").trim(), AL:css.getPropertyValue("--al").trim() };
+
+  ["DO","GE","JC","AL"].forEach(code=>{
+    const b=document.createElement("button");
+    b.className="chipBtn";
+    b.type="button";
+    b.setAttribute("data-code", code);
+    b.setAttribute("aria-pressed","false");
+    b.title = `${code} = ${RESOURCE_NAMES[code]}`;
+
+    const dot=document.createElement("span");
+    dot.className="dot";
+    dot.style.background=colors[code];
+
+    const codeEl=document.createElement("span");
+    codeEl.className="code";
+    codeEl.textContent=code;
+
+    const caret=document.createElement("span");
+    caret.className="caret";
+    caret.textContent="✓";
+
+    b.append(dot, codeEl, caret);
+
+    b.addEventListener("click",(ev)=>{
+      const multi = ev.ctrlKey || ev.metaKey;
+      if (multi){
+        if (state.selected.has(code)) state.selected.delete(code);
+        else state.selected.add(code);
+      } else {
+        const onlyThis = state.selected.size===1 && state.selected.has(code);
+        state.selected.clear();
+        if (!onlyThis) state.selected.add(code);
+      }
+      $("resource").value="";
+      syncLegendUI();
+      rerender();
+    });
+
+    lg.appendChild(b);
+  });
+
+  syncLegendUI();
+}
+
+function syncLegendUI(){
+  const any = state.selected.size>0;
+  document.querySelectorAll(".chipBtn[data-code]").forEach(btn=>{
+    const code=btn.getAttribute("data-code");
+    const on=state.selected.has(code);
+    btn.setAttribute("aria-pressed", on ? "true":"false");
+    btn.style.opacity = (!any || on) ? "1" : ".55";
+    const caret=btn.querySelector(".caret");
+    if (caret) caret.style.display = on ? "inline":"none";
+  });
+}
+
+function getActiveCodes(){
+  const dd = $("resource").value.trim().toUpperCase();
+  if (dd) return new Set([dd]);
+  return new Set(Array.from(state.selected));
+}
+
+function setMode(mode){
+  state.mode = mode; // none|cap|idle
+  $("modeCap").setAttribute("aria-pressed", mode==="cap" ? "true":"false");
+  $("modeIdle").setAttribute("aria-pressed", mode==="idle" ? "true":"false");
+
+  // mostra toggle "Mostrar só achados" quando um modo estiver ativo
+  const show = (mode==="cap" || mode==="idle");
+  $("modeToggles").style.display = show ? "flex" : "none";
+
+  // painel de análise
+  const panel = $("analysisPanel");
+  if(show){ panel.classList.add("active"); }
+  else { panel.classList.remove("active"); }
+
+  rerender();
+}
+
+function setOnlyFindings(on){
+  state.onlyFindings = on;
+  $("onlyFindings").setAttribute("aria-pressed", on ? "true":"false");
+  rerender();
+}
+
+/* ===== ANALYTICS =====
+   Vamos montar índices:
+   idx[date][period][code] => Set(clientes)
+   e presença do time:
+   teamAny[date][period] => true/false
+   presença por colaborador:
+   anyByPerson[date][period][code] => true/false
+*/
+function buildAnalyticsIndex(groups, dates, mask){
+  const idx = {};         // date -> period -> code -> Set(clients)
+  const teamAny = {};     // date -> period -> boolean
+  const anyByPerson = {}; // date -> period -> code -> boolean
+
+  function ensure(date, period){
+    idx[date] ??= {};
+    idx[date][period] ??= {};
+    teamAny[date] ??= {};
+    teamAny[date][period] ??= false;
+    anyByPerson[date] ??= {};
+    anyByPerson[date][period] ??= { DO:false, GE:false, JC:false, AL:false };
+  }
+
+  for(const g of groups){
+    // para cada cliente, temos duas linhas (M e T)
+    const m = g.M ? g.M.alloc : [];
+    const t = g.T ? g.T.alloc : [];
+
+    for(let i=0;i<dates.length;i++){
+      if(!mask[i]) continue;
+      const date = dates[i];
+
+      // manhã
+      ensure(date, "M");
+      const codesM = Array.isArray(m[i]) ? m[i] : [];
+      if(codesM.length){
+        teamAny[date]["M"] = true;
+        for(const c of codesM){
+          anyByPerson[date]["M"][c] = true;
+          idx[date]["M"][c] ??= new Set();
+          idx[date]["M"][c].add(g.client);
+        }
+      }
+
+      // tarde
+      ensure(date, "T");
+      const codesT = Array.isArray(t[i]) ? t[i] : [];
+      if(codesT.length){
+        teamAny[date]["T"] = true;
+        for(const c of codesT){
+          anyByPerson[date]["T"][c] = true;
+          idx[date]["T"][c] ??= new Set();
+          idx[date]["T"][c].add(g.client);
+        }
+      }
+    }
+  }
+  return { idx, teamAny, anyByPerson };
+}
+
+function computeConflicts(analytics){
+  // conflito: mesmo code em mais de 1 cliente no mesmo date+period
+  const conflicts = []; // {date, period, code, clients[]}
+  const { idx } = analytics;
+  for(const date of Object.keys(idx)){
+    for(const period of Object.keys(idx[date])){
+      for(const code of Object.keys(idx[date][period])){
+        const set = idx[date][period][code];
+        if(set && set.size > 1){
+          conflicts.push({ date, period, code, clients: Array.from(set).sort() });
+        }
+      }
+    }
+  }
+  return conflicts;
+}
+
+function computeIdleTeam(analytics){
+  // período livre do time: teamAny false
+  const idle = []; // {date, period}
+  const { teamAny } = analytics;
+  for(const date of Object.keys(teamAny)){
+    for(const period of ["M","T"]){
+      if(teamAny[date]?.[period] === false){
+        idle.push({ date, period });
+      }
+    }
+  }
+  return idle;
+}
+
+function computeIdleByPerson(analytics){
+  const out = []; // {date, period, code}
+  const { anyByPerson } = analytics;
+  for(const date of Object.keys(anyByPerson)){
+    for(const period of ["M","T"]){
+      const m = anyByPerson[date]?.[period];
+      if(!m) continue;
+      for(const code of ["DO","GE","JC","AL"]){
+        if(m[code] === false){
+          out.push({ date, period, code });
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function calcIdleRates(idleByPerson, totalDates){
+  // % por colaborador / período no range (datas dentro da janela)
+  // totalDates = número de datas na janela (únicas)
+  const base = { DO:{M:0,T:0}, GE:{M:0,T:0}, JC:{M:0,T:0}, AL:{M:0,T:0} };
+  for(const it of idleByPerson){
+    base[it.code][it.period] += 1;
+  }
+  // taxa = livres / totalDates
+  const rates = {};
+  for(const code of Object.keys(base)){
+    rates[code] = {
+      M: totalDates ? Math.round((base[code].M/totalDates)*100) : 0,
+      T: totalDates ? Math.round((base[code].T/totalDates)*100) : 0,
+    };
+  }
+  return rates;
+}
+
+/* ===== RENDER GRID ===== */
 function chipEl(code){
   const v=String(code||"").toUpperCase().trim();
   const sp=document.createElement("span");
@@ -301,26 +810,66 @@ function chipEl(code){
   return sp;
 }
 
-/* ===== RENDER ===== */
-async function load(){
-  const res=await fetch(CSV_URL, {cache:"no-store"});
-  if(!res.ok) throw new Error("Falha ao buscar CSV");
-  const csv=await res.text();
-  const rows=parseCSV(csv).filter(r=>r.some(c=>c && c!==""));
-  if(rows.length<3) return;
+function normalizeShift(s){
+  const v=String(s||"").toUpperCase().trim();
+  if(v==="M"||v==="MANHÃ"||v==="MANHA") return "M";
+  if(v==="T"||v==="TARDE") return "T";
+  return "";
+}
 
-  const dowRow=rows[0];
-  const dateRow=rows[1];
+function getClientAndShift(row, dateIdxStart, lastClient){
+  const first=row.findIndex(c=>c && c!=="");
+  if(first===-1) return null;
 
-  const dateIdxStart = dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
-  if(dateIdxStart<0) return;
+  let client=(row[first]||"").trim();
+  let shift=normalizeShift((row[first+1]||"").trim());
 
-  const dows = dowRow.slice(dateIdxStart);
-  const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
+  const solo=normalizeShift(client);
+  if((solo==="M" || solo==="T") && lastClient){
+    shift = solo;
+    client = lastClient;
+  }
 
-  // Header (linha 1 e 2) + CLIENTE/TURNO 4-way sticky
-  const headDow=document.getElementById("headDow");
-  const headDate=document.getElementById("headDate");
+  client = client || lastClient || "—";
+  const alloc=row.slice(dateIdxStart).map(c=>parseCellCodes(c));
+  return { client, shift, alloc };
+}
+
+function buildGroups(items){
+  const groups=[];
+  const map=new Map();
+  for(const it of items){
+    const key=it.client;
+    if(!map.has(key)){
+      const g={client:key, M:null, T:null};
+      map.set(key,g); groups.push(g);
+    }
+    const g=map.get(key);
+    if(it.shift==="M") g.M=it;
+    if(it.shift==="T") g.T=it;
+  }
+  return groups;
+}
+
+function render(){
+  const cache = state.cache;
+  if(!cache) return;
+
+  const { rawRows, dateIdxStart, dates, dows } = cache;
+
+  const q = $("q").value.trim().toLowerCase();
+  const start = normalizeDateLabel($("start").value.trim());
+  const end = normalizeDateLabel($("end").value.trim());
+
+  const mask = dates.map(d=>inWindow(d, start, end));
+  const fDates = dates.filter((_,i)=>mask[i]);
+  const fDows = dows.filter((_,i)=>mask[i]);
+
+  const activeCodes = getActiveCodes();
+
+  // Header
+  const headDow=$("headDow");
+  const headDate=$("headDate");
   headDow.innerHTML=""; headDate.innerHTML="";
 
   const thClient=document.createElement("th");
@@ -336,88 +885,456 @@ async function load(){
   headDow.appendChild(thClient);
   headDow.appendChild(thTurno);
 
-  for(let i=0;i<dates.length;i++){
+  for(let i=0;i<fDates.length;i++){
     const th=document.createElement("th");
-    th.textContent=(dows[i]||"").toUpperCase();
-    th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
-    if(isWeekend(dows[i])) th.classList.add("weekend");
+    th.textContent=(fDows[i]||"").toUpperCase();
+    th.style.width=getComputedStyle(document.documentElement).getPropertyValue("--wDateCol").trim();
+    th.style.minWidth=th.style.width; th.style.maxWidth=th.style.width;
+    if(isWeekend(fDows[i])) th.classList.add("weekend");
     headDow.appendChild(th);
   }
-  for(let i=0;i<dates.length;i++){
+  for(let i=0;i<fDates.length;i++){
     const th=document.createElement("th");
-    th.textContent=dates[i];
-    th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
-    if(isWeekend(dows[i])) th.classList.add("weekend");
+    th.textContent=fDates[i];
+    th.style.width=getComputedStyle(document.documentElement).getPropertyValue("--wDateCol").trim();
+    th.style.minWidth=th.style.width; th.style.maxWidth=th.style.width;
+    if(isWeekend(fDows[i])) th.classList.add("weekend");
     headDate.appendChild(th);
   }
 
-  // Body
-  const body=document.getElementById("body");
+  // Items/Groups
+  let lastClient="";
+  const items=[];
+  for(const r of rawRows){
+    const parsed=getClientAndShift(r, dateIdxStart, lastClient);
+    if(!parsed) continue;
+    if(parsed.client && parsed.client!=="—") lastClient=parsed.client;
+    items.push(parsed);
+  }
+  let groups = buildGroups(items);
+
+  // Analytics index (para os modos)
+  // Importante: usamos "dates" e "mask" (range total), não fDates (já filtrado), pra bater data por string
+  const analytics = buildAnalyticsIndex(groups, dates, mask);
+  const conflicts = computeConflicts(analytics);
+  const idleTeam = computeIdleTeam(analytics);
+  const idleByPerson = computeIdleByPerson(analytics);
+
+  // lookup rápido
+  const conflictMap = new Map(); // key: date|period|client -> Set(codes conflitantes nessa célula)
+  for(const c of conflicts){
+    for(const client of c.clients){
+      const k = `${c.date}|${c.period}|${client}`;
+      if(!conflictMap.has(k)) conflictMap.set(k, new Set());
+      conflictMap.get(k).add(c.code);
+    }
+  }
+
+  const idleTeamSet = new Set(idleTeam.map(x=>`${x.date}|${x.period}`));
+
+  // Filtragem por modo: "Mostrar só achados"
+  // - cap: mostrar só clientes que participam de conflito
+  // - idle: mostrar só datas/períodos livres do time (via highlight; grid continua, mas se onlyFindings ON, filtra para datas com idleTeam)
+  const mode = state.mode;
+  const onlyFindings = state.onlyFindings;
+
+  const idleDatesInWindow = new Set(idleTeam.map(x=>x.date)); // datas que têm algum período livre do time
+  const conflictClientsInWindow = new Set();
+  for(const c of conflicts){
+    for(const cl of c.clients) conflictClientsInWindow.add(cl);
+  }
+
+  // Busca por cliente (q)
+  if(q){
+    groups = groups.filter(g => (g.client||"").toLowerCase().includes(q));
+  }
+
+  if(mode==="cap" && onlyFindings){
+    groups = groups.filter(g => conflictClientsInWindow.has(g.client));
+  }
+
+  // Render body
+  const body=$("body");
   body.innerHTML="";
 
-  let lastClient="";
-  for(let r=2;r<rows.length;r++){
-    const row=rows[r];
+  let lines=0, shown=0;
 
-    // tentar identificar cliente e turno (M/T) no começo da linha
-    const first=row.findIndex(c=>c && c!=="");
-    if(first<0) continue;
+  for(const g of groups){
+    const m = g.M ? g.M.alloc : [];
+    const t = g.T ? g.T.alloc : [];
 
-    let client=(row[first]||"").trim();
-    let turno=(row[first+1]||"").trim();
+    // Se modo idle+onlyFindings: precisamos esconder colunas que não são “achado”.
+    // Mas como o cabeçalho é por data, a melhor prática é filtrar por colunas (datas) e não por linhas.
+    // Então: quando idle+onlyFindings, reduzimos a janela para somente datas que tenham algum período 100% livre do time.
+    // Implementação simples: se não existir nenhuma data idle, nada muda.
+  }
 
-    // Se vier linha só com "T" ou "M", reaproveita último cliente
-    const t=(x)=>String(x||"").toUpperCase().trim();
-    const isM = (x)=> (t(x)==="M" || t(x)==="MANHÃ" || t(x)==="MANHA");
-    const isT = (x)=> (t(x)==="T" || t(x)==="TARDE");
-
-    if(isM(client) || isT(client)){
-      turno = client;
-      client = lastClient || "—";
+  // Se modo idle e onlyFindings: refaz fDates/fDows para só datas relevantes
+  let fDates2 = fDates, fDows2 = fDows;
+  if(mode==="idle" && onlyFindings){
+    const keepIdx = [];
+    for(let i=0;i<fDates.length;i++){
+      if(idleDatesInWindow.has(fDates[i])) keepIdx.push(i);
     }
-    if(client && client!=="—") lastClient=client;
+    if(keepIdx.length){
+      fDates2 = keepIdx.map(i=>fDates[i]);
+      fDows2 = keepIdx.map(i=>fDows[i]);
+      // Re-render header com janela reduzida
+      headDow.innerHTML=""; headDate.innerHTML="";
+      headDow.appendChild(thClient);
+      headDow.appendChild(thTurno);
+      for(let j=0;j<fDates2.length;j++){
+        const th=document.createElement("th");
+        th.textContent=(fDows2[j]||"").toUpperCase();
+        th.style.width=getComputedStyle(document.documentElement).getPropertyValue("--wDateCol").trim();
+        th.style.minWidth=th.style.width; th.style.maxWidth=th.style.width;
+        if(isWeekend(fDows2[j])) th.classList.add("weekend");
+        headDow.appendChild(th);
+      }
+      for(let j=0;j<fDates2.length;j++){
+        const th=document.createElement("th");
+        th.textContent=fDates2[j];
+        th.style.width=getComputedStyle(document.documentElement).getPropertyValue("--wDateCol").trim();
+        th.style.minWidth=th.style.width; th.style.maxWidth=th.style.width;
+        if(isWeekend(fDows2[j])) th.classList.add("weekend");
+        headDate.appendChild(th);
+      }
+    }
+  }
 
-    const turnoNorm = isM(turno) ? "MANHÃ" : (isT(turno) ? "TARDE" : turno);
+  function renderRow(period, allocArr, className){
     const tr=document.createElement("tr");
-    tr.className = (turnoNorm==="MANHÃ") ? "rowM" : "rowT";
+    tr.className=className;
+
+    // sticky client (rowSpan no primeiro row do cliente)
+    return tr;
+  }
+
+  for(const g of groups){
+    const allocM = g.M ? g.M.alloc : [];
+    const allocT = g.T ? g.T.alloc : [];
+
+    // Se modo cap e onlyFindings: além de filtrar o cliente, precisamos garantir que exista conflito nesse cliente dentro da janela.
+    if(mode==="cap" && onlyFindings && !conflictClientsInWindow.has(g.client)){
+      continue;
+    }
+
+    const trM=document.createElement("tr");
+    trM.className="rowM";
 
     const tdClient=document.createElement("td");
     tdClient.className="tdClient";
+    tdClient.rowSpan=2;
     const span=document.createElement("span");
     span.className="clientText";
-    span.textContent=client;
+    span.textContent=g.client;
     tdClient.appendChild(span);
 
-    const tdTurno=document.createElement("td");
-    tdTurno.className="tdTurno";
-    tdTurno.textContent=turnoNorm || "—";
+    const tdTurnoM=document.createElement("td");
+    tdTurnoM.className="tdTurno";
+    tdTurnoM.textContent="MANHÃ";
 
-    tr.appendChild(tdClient);
-    tr.appendChild(tdTurno);
+    trM.appendChild(tdClient);
+    trM.appendChild(tdTurnoM);
 
-    const cells=row.slice(dateIdxStart);
-    for(let i=0;i<dates.length;i++){
+    for(let j=0;j<fDates2.length;j++){
+      const date = fDates2[j];
       const td=document.createElement("td");
-      td.style.width="64px"; td.style.minWidth="64px"; td.style.maxWidth="64px";
-      if(isWeekend(dows[i])) td.classList.add("weekend");
+      td.style.width=getComputedStyle(document.documentElement).getPropertyValue("--wDateCol").trim();
+      td.style.minWidth=td.style.width; td.style.maxWidth=td.style.width;
 
-      const codes=parseCellCodes(cells[i]||"");
+      if(isWeekend(fDows2[j])) td.classList.add("weekend");
+
+      // localizar índice original da data no vetor dates
+      const idxDate = dates.indexOf(date);
+      const codesRaw = Array.isArray(allocM[idxDate]) ? allocM[idxDate] : [];
+
+      // filtra por recursos selecionados (quando existir)
+      const filtered = (activeCodes.size) ? codesRaw.filter(c=>activeCodes.has(c)) : codesRaw.slice();
+
+      // overlay idle team (modo idle)
+      if(mode==="idle"){
+        if(idleTeamSet.has(`${date}|M`)){
+          td.classList.add("idleTeamCell");
+        }
+      }
+
       const box=document.createElement("div");
       box.className="cellChips";
-      if(!codes.length){
+
+      if(filtered.length===0){
         box.appendChild(chipEl(""));
-      }else{
-        for(const c of codes) box.appendChild(chipEl(c));
+      } else {
+        // conflito cell (modo cap)
+        const conflictCodes = conflictMap.get(`${date}|M|${g.client}`) || new Set();
+        for(const c of filtered){
+          const ch = chipEl(c);
+          if(mode==="cap" && conflictCodes.has(c)){
+            td.classList.add("conflictCell");
+            ch.classList.add("conflictChip");
+            ch.title = `CONFLITO: ${c} em mais de 1 cliente (MANHÃ ${date})`;
+          }
+          box.appendChild(ch);
+        }
+        shown += filtered.length;
       }
+
       td.appendChild(box);
-      tr.appendChild(td);
+      trM.appendChild(td);
     }
 
-    body.appendChild(tr);
+    const trT=document.createElement("tr");
+    trT.className="rowT";
+
+    const tdTurnoT=document.createElement("td");
+    tdTurnoT.className="tdTurno";
+    tdTurnoT.textContent="TARDE";
+    trT.appendChild(tdTurnoT);
+
+    for(let j=0;j<fDates2.length;j++){
+      const date = fDates2[j];
+      const td=document.createElement("td");
+      td.style.width=getComputedStyle(document.documentElement).getPropertyValue("--wDateCol").trim();
+      td.style.minWidth=td.style.width; td.style.maxWidth=td.style.width;
+
+      if(isWeekend(fDows2[j])) td.classList.add("weekend");
+
+      const idxDate = dates.indexOf(date);
+      const codesRaw = Array.isArray(allocT[idxDate]) ? allocT[idxDate] : [];
+      const filtered = (activeCodes.size) ? codesRaw.filter(c=>activeCodes.has(c)) : codesRaw.slice();
+
+      if(mode==="idle"){
+        if(idleTeamSet.has(`${date}|T`)){
+          td.classList.add("idleTeamCell");
+        }
+      }
+
+      const box=document.createElement("div");
+      box.className="cellChips";
+
+      if(filtered.length===0){
+        box.appendChild(chipEl(""));
+      } else {
+        const conflictCodes = conflictMap.get(`${date}|T|${g.client}`) || new Set();
+        for(const c of filtered){
+          const ch = chipEl(c);
+          if(mode==="cap" && conflictCodes.has(c)){
+            td.classList.add("conflictCell");
+            ch.classList.add("conflictChip");
+            ch.title = `CONFLITO: ${c} em mais de 1 cliente (TARDE ${date})`;
+          }
+          box.appendChild(ch);
+        }
+        shown += filtered.length;
+      }
+
+      td.appendChild(box);
+      trT.appendChild(td);
+    }
+
+    // Se modo cap + onlyFindings: manter só as linhas que contenham conflito (no cliente)
+    if(mode==="cap" && onlyFindings){
+      let hasAny = false;
+      for(const c of conflicts){
+        if(c.clients.includes(g.client)) { hasAny = true; break; }
+      }
+      if(!hasAny) continue;
+    }
+
+    body.appendChild(trM);
+    body.appendChild(trT);
+    lines += 2;
+  }
+
+  // KPIs
+  $("kpiRows").textContent = lines.toLocaleString("pt-BR");
+  $("kpiCols").textContent = fDates2.length.toLocaleString("pt-BR");
+  $("kpiFilled").textContent = shown.toLocaleString("pt-BR");
+  $("kpiMode").textContent = (mode==="cap" ? "Capacidade vs. Demandas" : (mode==="idle" ? "Taxa de Ociosidade" : "—"));
+
+  // Status e painéis
+  $("status").textContent = `Status: carregado • Modo=${$("kpiMode").textContent}`;
+
+  renderAnalysisPanel(mode, conflicts, idleTeam, idleByPerson, fDates.length);
+}
+
+function renderAnalysisPanel(mode, conflicts, idleTeam, idleByPerson, totalDatesInRange){
+  const panel = $("analysisPanel");
+
+  if(mode==="none"){
+    panel.classList.remove("active");
+    return;
+  }
+  panel.classList.add("active");
+
+  if(mode==="cap"){
+    $("panelLeftTitle").textContent = "Conflitos (superalocação) — por colaborador";
+    $("panelLeftMini").textContent = "Regra: mesmo colaborador em mais de 1 cliente no mesmo período do dia.";
+
+    // agrupar por colaborador
+    const by = { DO:0, GE:0, JC:0, AL:0 };
+    for(const c of conflicts) by[c.code] = (by[c.code]||0)+1;
+
+    const left = $("panelLeftList");
+    left.innerHTML = "";
+    for(const code of ["DO","GE","JC","AL"]){
+      const line=document.createElement("div");
+      line.className="rowLine";
+      line.innerHTML = `<div><b>${code}</b> — ${RESOURCE_NAMES[code]}</div><div class="pill red">${by[code]||0} conflitos</div>`;
+      left.appendChild(line);
+    }
+
+    $("panelRightTitle").textContent = "Lista de conflitos (data / período / clientes)";
+    $("panelRightMini").textContent = "Use isso para ação corretiva (replanejamento / reforço de equipe).";
+    const right = $("panelRightList");
+    right.innerHTML = "";
+
+    const sorted = conflicts
+      .slice()
+      .sort((a,b)=> (a.date.localeCompare(b.date) || a.period.localeCompare(b.period) || a.code.localeCompare(b.code)));
+
+    if(sorted.length===0){
+      right.innerHTML = `<div style="color:var(--muted)">Nenhum conflito detectado no período.</div>`;
+    } else {
+      for(const c of sorted.slice(0, 200)){
+        const per = c.period==="M" ? "MANHÃ" : "TARDE";
+        const clients = c.clients.join(", ");
+        const line=document.createElement("div");
+        line.className="rowLine";
+        line.innerHTML = `<div><b>${c.date}</b> • ${per} • <b>${c.code}</b> (${RESOURCE_NAMES[c.code]})</div><div class="pill red">${clients}</div>`;
+        right.appendChild(line);
+      }
+    }
+  }
+
+  if(mode==="idle"){
+    $("panelLeftTitle").textContent = "Períodos 100% livres do time";
+    $("panelLeftMini").textContent = "Regra: nenhum DO/GE/JC/AL alocado em nenhum cliente no período.";
+
+    const left = $("panelLeftList");
+    left.innerHTML = "";
+    const sorted = idleTeam.slice().sort((a,b)=> a.date.localeCompare(b.date) || a.period.localeCompare(b.period));
+    if(sorted.length===0){
+      left.innerHTML = `<div style="color:var(--muted)">Nenhum período 100% livre do time no range.</div>`;
+    } else {
+      for(const it of sorted.slice(0, 200)){
+        const per = it.period==="M" ? "MANHÃ" : "TARDE";
+        const line=document.createElement("div");
+        line.className="rowLine";
+        line.innerHTML = `<div><b>${it.date}</b> • ${per}</div><div class="pill green">TIME LIVRE</div>`;
+        left.appendChild(line);
+      }
+    }
+
+    $("panelRightTitle").textContent = "Ociosidade por colaborador (lista + taxa)";
+    $("panelRightMini").textContent = "Lista: períodos livres por colaborador. Taxa: % de períodos livres no range.";
+    const right = $("panelRightList");
+    right.innerHTML = "";
+
+    const rates = calcIdleRates(idleByPerson, totalDatesInRange);
+
+    // resumo taxas
+    for(const code of ["DO","GE","JC","AL"]){
+      const line=document.createElement("div");
+      line.className="rowLine";
+      line.innerHTML = `<div><b>${code}</b> — ${RESOURCE_NAMES[code]}</div>
+                        <div class="pill green">M ${rates[code].M}% • T ${rates[code].T}%</div>`;
+      right.appendChild(line);
+    }
+
+    right.appendChild(document.createElement("hr")).style.cssText="border:0;border-top:1px solid rgba(255,255,255,.08);margin:8px 0;";
+
+    const sortedP = idleByPerson.slice().sort((a,b)=> a.date.localeCompare(b.date) || a.period.localeCompare(b.period) || a.code.localeCompare(b.code));
+    for(const it of sortedP.slice(0, 200)){
+      const per = it.period==="M" ? "MANHÃ" : "TARDE";
+      const line=document.createElement("div");
+      line.className="rowLine";
+      line.innerHTML = `<div><b>${it.date}</b> • ${per} • <b>${it.code}</b> (${RESOURCE_NAMES[it.code]})</div><div class="pill green">LIVRE</div>`;
+      right.appendChild(line);
+    }
   }
 }
 
-load().catch(console.error);
+function calcIdleRates(idleByPerson, totalDates){
+  const base = { DO:{M:0,T:0}, GE:{M:0,T:0}, JC:{M:0,T:0}, AL:{M:0,T:0} };
+  for(const it of idleByPerson){
+    base[it.code][it.period] += 1;
+  }
+  const rates = {};
+  for(const code of Object.keys(base)){
+    rates[code] = {
+      M: totalDates ? Math.round((base[code].M/totalDates)*100) : 0,
+      T: totalDates ? Math.round((base[code].T/totalDates)*100) : 0,
+    };
+  }
+  return rates;
+}
+
+/* ===== LOAD / CACHE ===== */
+async function load(){
+  $("status").textContent="Status: carregando…";
+  const res=await fetch(CSV_URL, {cache:"no-store"});
+  if(!res.ok) throw new Error("Falha ao buscar CSV");
+  const csv=await res.text();
+  const rows=parseCSV(csv).filter(r=>r.some(c=>c && c!==""));
+  if(rows.length<3) return;
+
+  const dowRow=rows[0];
+  const dateRow=rows[1];
+  const dateIdxStart = dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
+  if(dateIdxStart<0) return;
+
+  const rawRows = rows.slice(2);
+  const dows = dowRow.slice(dateIdxStart);
+  const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
+
+  state.cache = { rawRows, dateIdxStart, dates, dows };
+  render();
+}
+
+function rerender(){ if(state.cache) render(); }
+
+function wire(){
+  buildLegend();
+
+  $("btnReload").addEventListener("click", ()=>load().catch(console.error));
+
+  $("btnClear").addEventListener("click", ()=>{
+    state.selected.clear();
+    $("resource").value="";
+    $("q").value="";
+    $("start").value="";
+    $("end").value="";
+    syncLegendUI();
+    setMode("none");
+    rerender();
+  });
+
+  $("q").addEventListener("input", rerender);
+  $("start").addEventListener("input", rerender);
+  $("end").addEventListener("input", rerender);
+
+  $("resource").addEventListener("change", ()=>{
+    state.selected.clear();
+    syncLegendUI();
+    rerender();
+  });
+
+  $("modeCap").addEventListener("click", ()=>{
+    setMode(state.mode==="cap" ? "none" : "cap");
+  });
+  $("modeIdle").addEventListener("click", ()=>{
+    setMode(state.mode==="idle" ? "none" : "idle");
+  });
+
+  $("onlyFindings").addEventListener("click", ()=>{
+    setOnlyFindings(!(state.onlyFindings));
+  });
+
+  load().catch(console.error);
+}
+
+wire();
 </script>
 </body>
 </html>
