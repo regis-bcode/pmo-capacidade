@@ -15,20 +15,20 @@
 
       /* Ultra-denso */
       --rowH: 18px;
-      --headH1: 14px;  /* DIA DA SEMANA */
-      --headH2: 14px;  /* DATA */
+      --headH1: 14px;  /* linha DIA DA SEMANA */
+      --headH2: 14px;  /* linha DATA */
+      --headTotal: calc(var(--headH1) + var(--headH2));
 
-      /* Larguras fixas */
+      /* Larguras fixas (sem subpixel) */
       --wClient: 170px;
       --wTurno: 86px;
-      --wDateCol: 64px;
 
-      /* Fundos sólidos (sem transparência) */
+      /* Fundos sólidos (SEM transparência) */
       --solidBG: #0b1220;
       --solidHdr: #0a162e;
       --solidSticky: #0b1220;
 
-      /* Faixas */
+      /* Faixas (sólidas) para manhã/tarde */
       --mStrip:#2b2a57;
       --tStrip:#0f3348;
     }
@@ -42,6 +42,7 @@
       overflow:hidden;
     }
 
+    /* === CONTÊINER DO GRID COM SCROLL (VERTICAL + HORIZONTAL) === */
     .gridWrap{
       height: 100vh;
       padding:12px;
@@ -61,16 +62,12 @@
       border-bottom:1px solid var(--line);
       font-weight:900;
       background: var(--solidBG);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
     }
-    .gridTitle small{ color:var(--muted); font-weight:700; }
 
     .tableScroll{
       flex:1 1 auto;
       min-height:0;
-      overflow:auto;
+      overflow:auto;           /* a rolagem acontece aqui */
       background: var(--solidBG);
       overscroll-behavior: contain;
     }
@@ -98,14 +95,16 @@
       white-space:nowrap;
       font-size:10px;
       font-weight:900;
-      z-index: 10;
+      z-index: 10; /* base */
     }
+    /* linha 1 do header (DOW) fica no topo */
     thead tr:nth-child(1) th{
       top: 0;
       height: var(--headH1);
       line-height: var(--headH1);
       z-index: 20;
     }
+    /* linha 2 do header (DATA) fica logo abaixo */
     thead tr:nth-child(2) th{
       top: var(--headH1);
       height: var(--headH2);
@@ -113,7 +112,12 @@
       z-index: 19;
     }
 
-    /* HEADER fixo (top + left) */
+    /* =========================
+       FIX DEFINITIVO:
+       CABEÇALHO "CLIENTE" e "TURNO" NÃO PODE SUMIR
+       -> sticky TOP + LEFT (4-way sticky)
+       -> z-index acima de tudo
+       ========================= */
     thead th.thClient{
       left: 0;
       width: var(--wClient);
@@ -121,7 +125,7 @@
       max-width: var(--wClient);
       text-align:left;
       padding-left:10px;
-      z-index: 1000;
+      z-index: 1000;            /* acima do resto */
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
@@ -130,11 +134,12 @@
       width: var(--wTurno);
       min-width: var(--wTurno);
       max-width: var(--wTurno);
-      z-index: 999;
+      z-index: 999;             /* logo abaixo do Cliente */
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
 
+    /* Corpo */
     tbody td{
       height: var(--rowH);
       line-height: var(--rowH);
@@ -147,7 +152,7 @@
       vertical-align:middle;
     }
 
-    /* COLUNAS fixas (left) — SEM transparência ao rolar */
+    /* Colunas fixas do corpo (Cliente/Turno) - não andam no scroll horizontal */
     tbody td.tdClient{
       position: sticky;
       left: 0;
@@ -155,7 +160,7 @@
       min-width: var(--wClient);
       max-width: var(--wClient);
       z-index: 50;
-      background: var(--solidSticky) !important;
+      background: var(--solidSticky);
       border-right:1px solid rgba(255,255,255,.14);
     }
     tbody td.tdTurno{
@@ -165,7 +170,7 @@
       min-width: var(--wTurno);
       max-width: var(--wTurno);
       z-index: 49;
-      background: var(--solidSticky) !important;
+      background: var(--solidSticky);
       border-right:1px solid rgba(255,255,255,.14);
       text-align:center;
       font-weight:900;
@@ -180,15 +185,16 @@
       text-transform:uppercase;
     }
 
-    /* Faixas manhã/tarde */
+    /* faixas manhã/tarde (no BODY todo) */
     tr.rowM td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
     tr.rowT td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
+    /* mas as colunas fixas continuam sólidas */
     tr.rowM td.tdClient, tr.rowM td.tdTurno,
     tr.rowT td.tdClient, tr.rowT td.tdTurno{
       background: var(--solidSticky) !important;
     }
 
-    /* Weekend */
+    /* Fim de semana */
     .weekend{ background:#2a2618 !important; }
 
     /* Chips */
@@ -205,16 +211,14 @@
       color:var(--text);
     }
     .empty{opacity:.25}
+
   </style>
 </head>
 
 <body>
   <div class="gridWrap">
     <div class="gridCard">
-      <div class="gridTitle">
-        <div>Grade de Alocação</div>
-        <small id="status">Status: carregando…</small>
-      </div>
+      <div class="gridTitle">Grade de Alocação</div>
 
       <div class="tableScroll" id="tableScroll">
         <table id="gridTable">
@@ -297,126 +301,123 @@ function chipEl(code){
   return sp;
 }
 
+/* ===== RENDER ===== */
 async function load(){
-  const statusEl = document.getElementById("status");
-  try{
-    const res=await fetch(CSV_URL, {cache:"no-store"});
-    if(!res.ok) throw new Error("Falha ao buscar CSV");
-    const csv=await res.text();
-    const rows=parseCSV(csv).filter(r=>r.some(c=>c && c!==""));
-    if(rows.length<3) { statusEl.textContent="Status: CSV vazio/curto"; return; }
+  const res=await fetch(CSV_URL, {cache:"no-store"});
+  if(!res.ok) throw new Error("Falha ao buscar CSV");
+  const csv=await res.text();
+  const rows=parseCSV(csv).filter(r=>r.some(c=>c && c!==""));
+  if(rows.length<3) return;
 
-    const dowRow=rows[0];
-    const dateRow=rows[1];
-    const dateIdxStart = dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
-    if(dateIdxStart<0) { statusEl.textContent="Status: não achei linha de datas"; return; }
+  const dowRow=rows[0];
+  const dateRow=rows[1];
 
-    const dows = dowRow.slice(dateIdxStart);
-    const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
+  const dateIdxStart = dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
+  if(dateIdxStart<0) return;
 
-    // Header
-    const headDow=document.getElementById("headDow");
-    const headDate=document.getElementById("headDate");
-    headDow.innerHTML=""; headDate.innerHTML="";
+  const dows = dowRow.slice(dateIdxStart);
+  const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
 
-    const thClient=document.createElement("th");
-    thClient.className="thClient";
-    thClient.textContent="Cliente";
-    thClient.rowSpan=2;
+  // Header (linha 1 e 2) + CLIENTE/TURNO 4-way sticky
+  const headDow=document.getElementById("headDow");
+  const headDate=document.getElementById("headDate");
+  headDow.innerHTML=""; headDate.innerHTML="";
 
-    const thTurno=document.createElement("th");
-    thTurno.className="thTurno";
-    thTurno.textContent="Turno";
-    thTurno.rowSpan=2;
+  const thClient=document.createElement("th");
+  thClient.className="thClient";
+  thClient.textContent="Cliente";
+  thClient.rowSpan=2;
 
-    headDow.appendChild(thClient);
-    headDow.appendChild(thTurno);
+  const thTurno=document.createElement("th");
+  thTurno.className="thTurno";
+  thTurno.textContent="Turno";
+  thTurno.rowSpan=2;
 
+  headDow.appendChild(thClient);
+  headDow.appendChild(thTurno);
+
+  for(let i=0;i<dates.length;i++){
+    const th=document.createElement("th");
+    th.textContent=(dows[i]||"").toUpperCase();
+    th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
+    if(isWeekend(dows[i])) th.classList.add("weekend");
+    headDow.appendChild(th);
+  }
+  for(let i=0;i<dates.length;i++){
+    const th=document.createElement("th");
+    th.textContent=dates[i];
+    th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
+    if(isWeekend(dows[i])) th.classList.add("weekend");
+    headDate.appendChild(th);
+  }
+
+  // Body
+  const body=document.getElementById("body");
+  body.innerHTML="";
+
+  let lastClient="";
+  for(let r=2;r<rows.length;r++){
+    const row=rows[r];
+
+    // tentar identificar cliente e turno (M/T) no começo da linha
+    const first=row.findIndex(c=>c && c!=="");
+    if(first<0) continue;
+
+    let client=(row[first]||"").trim();
+    let turno=(row[first+1]||"").trim();
+
+    // Se vier linha só com "T" ou "M", reaproveita último cliente
+    const t=(x)=>String(x||"").toUpperCase().trim();
+    const isM = (x)=> (t(x)==="M" || t(x)==="MANHÃ" || t(x)==="MANHA");
+    const isT = (x)=> (t(x)==="T" || t(x)==="TARDE");
+
+    if(isM(client) || isT(client)){
+      turno = client;
+      client = lastClient || "—";
+    }
+    if(client && client!=="—") lastClient=client;
+
+    const turnoNorm = isM(turno) ? "MANHÃ" : (isT(turno) ? "TARDE" : turno);
+    const tr=document.createElement("tr");
+    tr.className = (turnoNorm==="MANHÃ") ? "rowM" : "rowT";
+
+    const tdClient=document.createElement("td");
+    tdClient.className="tdClient";
+    const span=document.createElement("span");
+    span.className="clientText";
+    span.textContent=client;
+    tdClient.appendChild(span);
+
+    const tdTurno=document.createElement("td");
+    tdTurno.className="tdTurno";
+    tdTurno.textContent=turnoNorm || "—";
+
+    tr.appendChild(tdClient);
+    tr.appendChild(tdTurno);
+
+    const cells=row.slice(dateIdxStart);
     for(let i=0;i<dates.length;i++){
-      const th=document.createElement("th");
-      th.textContent=(dows[i]||"").toUpperCase();
-      th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
-      if(isWeekend(dows[i])) th.classList.add("weekend");
-      headDow.appendChild(th);
-    }
-    for(let i=0;i<dates.length;i++){
-      const th=document.createElement("th");
-      th.textContent=dates[i];
-      th.style.width="64px"; th.style.minWidth="64px"; th.style.maxWidth="64px";
-      if(isWeekend(dows[i])) th.classList.add("weekend");
-      headDate.appendChild(th);
-    }
+      const td=document.createElement("td");
+      td.style.width="64px"; td.style.minWidth="64px"; td.style.maxWidth="64px";
+      if(isWeekend(dows[i])) td.classList.add("weekend");
 
-    // Body
-    const body=document.getElementById("body");
-    body.innerHTML="";
-
-    let lastClient="";
-    for(let r=2;r<rows.length;r++){
-      const row=rows[r];
-      const first=row.findIndex(c=>c && c!=="");
-      if(first<0) continue;
-
-      let client=(row[first]||"").trim();
-      let turno=(row[first+1]||"").trim();
-
-      const t=(x)=>String(x||"").toUpperCase().trim();
-      const isM = (x)=> (t(x)==="M" || t(x)==="MANHÃ" || t(x)==="MANHA");
-      const isT = (x)=> (t(x)==="T" || t(x)==="TARDE");
-
-      if(isM(client) || isT(client)){
-        turno = client;
-        client = lastClient || "—";
+      const codes=parseCellCodes(cells[i]||"");
+      const box=document.createElement("div");
+      box.className="cellChips";
+      if(!codes.length){
+        box.appendChild(chipEl(""));
+      }else{
+        for(const c of codes) box.appendChild(chipEl(c));
       }
-      if(client && client!=="—") lastClient=client;
-
-      const turnoNorm = isM(turno) ? "MANHÃ" : (isT(turno) ? "TARDE" : turno);
-      const tr=document.createElement("tr");
-      tr.className = (turnoNorm==="MANHÃ") ? "rowM" : "rowT";
-
-      const tdClient=document.createElement("td");
-      tdClient.className="tdClient";
-      const span=document.createElement("span");
-      span.className="clientText";
-      span.textContent=client;
-      tdClient.appendChild(span);
-
-      const tdTurno=document.createElement("td");
-      tdTurno.className="tdTurno";
-      tdTurno.textContent=turnoNorm || "—";
-
-      tr.appendChild(tdClient);
-      tr.appendChild(tdTurno);
-
-      const cells=row.slice(dateIdxStart);
-      for(let i=0;i<dates.length;i++){
-        const td=document.createElement("td");
-        td.style.width="64px"; td.style.minWidth="64px"; td.style.maxWidth="64px";
-        if(isWeekend(dows[i])) td.classList.add("weekend");
-
-        const codes=parseCellCodes(cells[i]||"");
-        const box=document.createElement("div");
-        box.className="cellChips";
-        if(!codes.length){
-          box.appendChild(chipEl(""));
-        }else{
-          for(const c of codes) box.appendChild(chipEl(c));
-        }
-        td.appendChild(box);
-        tr.appendChild(td);
-      }
-
-      body.appendChild(tr);
+      td.appendChild(box);
+      tr.appendChild(td);
     }
 
-    statusEl.textContent = "Status: carregado com sucesso";
-  }catch(e){
-    document.getElementById("status").textContent = "Status: erro ao carregar CSV";
-    console.error(e);
+    body.appendChild(tr);
   }
 }
 
-load();
+load().catch(console.error);
 </script>
 </body>
 </html>
