@@ -22,8 +22,8 @@
       --rowH: 18px;
 
       /* Header em 2 linhas (DOW + Data) */
-      --headH1: 14px;  /* linha 1 (DOW) */
-      --headH2: 14px;  /* linha 2 (DATA) */
+      --headH1: 14px;
+      --headH2: 14px;
 
       --wClient: 150px;
       --wShift: 74px;
@@ -258,7 +258,6 @@
       width:max-content;
     }
 
-    /* HEADER 2 LINHAS: altura fixa por linha */
     .leftTable thead th,
     .rightTable thead th{
       position:sticky;
@@ -277,7 +276,6 @@
     .thDow{ height: var(--headH1); line-height: var(--headH1); font-size:10px; font-weight:800; }
     .thDt { height: var(--headH2); line-height: var(--headH2); font-size:10px; font-weight:800; opacity:.95; }
 
-    /* Faz o Cliente/Turno ocupar as 2 linhas (casa com DOW+DATA) */
     .thLeftSpan{
       height: calc(var(--headH1) + var(--headH2));
       line-height: calc(var(--headH1) + var(--headH2));
@@ -287,7 +285,6 @@
     }
     .thLeftSpan.center{ text-align:center; }
 
-    /* CORPO: altura fixa */
     .leftTable tbody td,
     .rightTable tbody td{
       border-bottom:1px solid rgba(255,255,255,.06);
@@ -328,6 +325,15 @@
       font-size:11px;
       font-weight:900;
       text-transform:uppercase;
+    }
+
+    /* MULTI-CHIPS por célula */
+    .cellChips{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:2px;
+      width:100%;
     }
 
     .chip{
@@ -386,7 +392,7 @@
     <div class="title">
       <div class="titleLeft">
         <h1>Painel PMO — Gestão de Capacidade (Folha)</h1>
-        <div class="sub">Correção: header Cliente/Turno agora casa com as 2 linhas do header de datas (DOW + DATA).</div>
+        <div class="sub">Agora suporta múltiplos recursos na mesma célula (ex.: GE + AL no mesmo dia/período).</div>
       </div>
       <div class="titleRight">
         <button class="iconBtn" id="btnToggleFilters" data-tip="Maximizar/Minimizar filtros"><span class="funnel"></span></button>
@@ -415,7 +421,7 @@
     <div class="cards">
       <div class="card"><div class="kpi">Linhas (turnos)</div><div class="val" id="kpiRows">—</div></div>
       <div class="card"><div class="kpi">Janela de datas</div><div class="val" id="kpiCols">—</div></div>
-      <div class="card"><div class="kpi">Células preenchidas</div><div class="val" id="kpiFilled">—</div></div>
+      <div class="card"><div class="kpi">Chips exibidos</div><div class="val" id="kpiFilled">—</div></div>
       <div class="card"><div class="kpi">Hoje</div><div class="val" id="kpiToday">—</div></div>
     </div>
   </div>
@@ -437,7 +443,7 @@
                 <th class="thLeftSpan" rowspan="2">Cliente</th>
                 <th class="thLeftSpan center" rowspan="2">Turno</th>
               </tr>
-              <tr><!-- linha 2 vazia (casamento com datas) --></tr>
+              <tr></tr>
             </thead>
             <tbody id="leftBody"></tbody>
           </table>
@@ -473,6 +479,8 @@ const SHEET_GID = "0";
 const ENDPOINT_PUBLISHED_CSV = (gid) => `${PUBLISHED_BASE}?output=csv&single=true&gid=${encodeURIComponent(gid)}`;
 
 const RESOURCE_NAMES = { "DO":"Dôra", "GE":"Geovana", "JC":"João Custódio", "AL":"Aline" };
+const VALID_CODES = new Set(["DO","GE","JC","AL"]);
+
 const state = { selected: new Set(), cache: null };
 const $ = (id) => document.getElementById(id);
 
@@ -495,7 +503,26 @@ function isWeekendDOW(dowStr){
   return s.startsWith("SÁB") || s.startsWith("SAB") || s.startsWith("DOM") || s.startsWith("SÁBADO") || s.startsWith("DOMINGO");
 }
 
-/* Chips */
+/* ===== EXTRAÇÃO MULTI-CÓDIGOS POR CÉLULA =====
+   Suporta: "GE", "GE AL", "GE/AL", "GE,AL", "GE\nAL", etc.
+*/
+function parseCellCodes(cellRaw){
+  const s = String(cellRaw || "").toUpperCase();
+  if (!s.trim()) return [];
+  // Extrai tokens 2 letras (DO, GE, JC, AL)
+  const matches = s.match(/[A-Z]{2}/g) || [];
+  const out = [];
+  const seen = new Set();
+  for (const m of matches){
+    if (!VALID_CODES.has(m)) continue;
+    if (seen.has(m)) continue;
+    seen.add(m);
+    out.push(m);
+  }
+  return out;
+}
+
+/* Chips filtro */
 function buildLegend(){
   const lg = $("legend");
   lg.innerHTML = "";
@@ -613,8 +640,10 @@ function inWindow(label, start, end){
   const b = end ? idx(end) : Infinity;
   return (v >= a && v <= b);
 }
-function chip(value){
-  const v = (value || "").trim().toUpperCase();
+
+/* chip visual */
+function chipEl(code){
+  const v = (code || "").trim().toUpperCase();
   const sp = document.createElement("span");
   sp.className = "chip" + (!v ? " empty" : "");
   sp.textContent = v || "—";
@@ -627,6 +656,27 @@ function chip(value){
   }
   return sp;
 }
+
+/* Renderiza 0..N chips em uma célula (com filtro interno) */
+function renderCellChips(codes, activeCodes){
+  const box = document.createElement("div");
+  box.className = "cellChips";
+
+  const filtered = (activeCodes && activeCodes.size)
+    ? codes.filter(c => activeCodes.has(c))
+    : codes.slice();
+
+  if (filtered.length === 0){
+    box.appendChild(chipEl("")); // vazio
+    return { box, shownCount: 0 };
+  }
+
+  for (const c of filtered){
+    box.appendChild(chipEl(c));
+  }
+  return { box, shownCount: filtered.length };
+}
+
 function normalizeShift(s){
   const v = (s || "").toUpperCase().trim();
   if (v === "M" || v === "MANHÃ" || v === "MANHA") return "M";
@@ -666,12 +716,15 @@ function getClientAndShift(row, dateIdxStart, lastClient){
   }
 
   client = client || lastClient || "—";
-  const alloc = row.slice(dateIdxStart).map(c => (c || "").trim().toUpperCase());
+
+  // IMPORTANTE: agora cada célula vira array de códigos
+  const alloc = row.slice(dateIdxStart).map(c => parseCellCodes(c));
   return { client, shift, alloc };
 }
-function hasAnyActive(allocWin, activeCodes){
+
+function hasAnyActiveMulti(allocWin, activeCodes){
   if (activeCodes.size === 0) return true;
-  return allocWin.some(v => activeCodes.has(v));
+  return allocWin.some(arr => arr.some(code => activeCodes.has(code)));
 }
 
 /* scroll sync */
@@ -715,12 +768,12 @@ function syncHScrollWidth(){
   inner.style.width = tbl.scrollWidth + "px";
 }
 
-/* render */
 function rerender(){
   if (!state.cache) return;
   render(state.cache);
   syncHScrollWidth();
 }
+
 function render(cache){
   const { rawRows, dateIdxStart, dates, dows } = cache;
 
@@ -787,7 +840,8 @@ function render(cache){
   leftBody.innerHTML = "";
   rightBody.innerHTML = "";
 
-  let lines = 0, filled = 0;
+  let lines = 0;
+  let shownChips = 0;
 
   function appendRowsForClient(g){
     // LEFT
@@ -835,23 +889,22 @@ function render(cache){
     for (let i=0;i<filteredDates.length;i++){
       const weekend = isWeekendDOW(filteredDows[i]);
 
-      const rawM = (winM[i] || "").toUpperCase();
-      const rawT = (winT[i] || "").toUpperCase();
-
-      const shownM = (activeCodes.size === 0 || activeCodes.has(rawM)) ? rawM : "";
-      const shownT = (activeCodes.size === 0 || activeCodes.has(rawT)) ? rawT : "";
+      const codesM = Array.isArray(winM[i]) ? winM[i] : [];
+      const codesT = Array.isArray(winT[i]) ? winT[i] : [];
 
       const tdM = document.createElement("td");
-      tdM.appendChild(chip(shownM));
+      const rM = renderCellChips(codesM, activeCodes);
+      tdM.appendChild(rM.box);
+      shownChips += rM.shownCount;
       if (filteredDates[i] === today) tdM.classList.add("today");
       if (weekend) tdM.classList.add("weekend-col");
-      if (shownM) filled++;
 
       const tdT = document.createElement("td");
-      tdT.appendChild(chip(shownT));
+      const rT = renderCellChips(codesT, activeCodes);
+      tdT.appendChild(rT.box);
+      shownChips += rT.shownCount;
       if (filteredDates[i] === today) tdT.classList.add("today");
       if (weekend) tdT.classList.add("weekend-col");
-      if (shownT) filled++;
 
       trR1.appendChild(tdM);
       trR2.appendChild(tdT);
@@ -868,18 +921,17 @@ function render(cache){
 
     const allocM = (g.M && g.M.alloc) ? g.M.alloc : [];
     const allocT = (g.T && g.T.alloc) ? g.T.alloc : [];
-
     const winM = allocM.filter((_,i)=>dateMask[i]);
     const winT = allocT.filter((_,i)=>dateMask[i]);
 
-    if (!hasAnyActive(winM, activeCodes) && !hasAnyActive(winT, activeCodes)) continue;
+    if (!hasAnyActiveMulti(winM, activeCodes) && !hasAnyActiveMulti(winT, activeCodes)) continue;
 
     appendRowsForClient(g);
   }
 
   $("kpiRows").textContent = lines.toLocaleString("pt-BR");
   $("kpiCols").textContent = filteredDates.length.toLocaleString("pt-BR");
-  $("kpiFilled").textContent = filled.toLocaleString("pt-BR");
+  $("kpiFilled").textContent = shownChips.toLocaleString("pt-BR");
   $("kpiToday").textContent = today;
 
   const sel = Array.from(activeCodes);
