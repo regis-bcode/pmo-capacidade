@@ -42,85 +42,9 @@
       overflow:hidden;
     }
 
-    /* ====== TOP BAR (chips + botões) ====== */
-    .topBar{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px 0;
-    }
-
-    .chipBar{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .chipBtn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#0f1a30;
-      cursor:pointer;
-      user-select:none;
-      font-size:11px;
-      font-weight:900;
-      color:#fff;
-    }
-    .chipBtn .dot{
-      width:9px;height:9px;border-radius:50%;
-    }
-
-    /* Botões de modo (FONTE AMARELA SEMPRE) */
-    .modeBtns{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-left:10px;
-      flex-wrap:wrap;
-    }
-
-    .modeBtn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 14px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#0f1a30;
-      cursor:pointer;
-      user-select:none;
-      font-size:12px;
-      font-weight:900;
-
-      color:#fbbf24; /* <<< AMARELO SEMPRE */
-    }
-    .modeBtn[aria-pressed="true"]{
-      background:#14264a;
-      border-color: rgba(255,255,255,.45);
-      color:#fbbf24; /* mantém amarelo quando ativo */
-    }
-
-    .btnClear{
-      margin-left:auto;
-      padding:8px 14px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.55);
-      background:transparent;
-      color:#fff;
-      cursor:pointer;
-      font-size:12px;
-      font-weight:900;
-      user-select:none;
-    }
-
     /* === CONTÊINER DO GRID COM SCROLL (VERTICAL + HORIZONTAL) === */
     .gridWrap{
-      height: calc(100vh - 58px);
+      height: 100vh;
       padding:12px;
     }
     .gridCard{
@@ -188,7 +112,12 @@
       z-index: 19;
     }
 
-    /* FIX DEFINITIVO: header Cliente/Turno */
+    /* =========================
+       FIX DEFINITIVO:
+       CABEÇALHO "CLIENTE" e "TURNO" NÃO PODE SUMIR
+       -> sticky TOP + LEFT (4-way sticky)
+       -> z-index acima de tudo
+       ========================= */
     thead th.thClient{
       left: 0;
       width: var(--wClient);
@@ -196,7 +125,7 @@
       max-width: var(--wClient);
       text-align:left;
       padding-left:10px;
-      z-index: 1000;
+      z-index: 1000;            /* acima do resto */
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
@@ -205,7 +134,7 @@
       width: var(--wTurno);
       min-width: var(--wTurno);
       max-width: var(--wTurno);
-      z-index: 999;
+      z-index: 999;             /* logo abaixo do Cliente */
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
@@ -223,7 +152,7 @@
       vertical-align:middle;
     }
 
-    /* Colunas fixas do corpo (Cliente/Turno) */
+    /* Colunas fixas do corpo (Cliente/Turno) - não andam no scroll horizontal */
     tbody td.tdClient{
       position: sticky;
       left: 0;
@@ -256,9 +185,10 @@
       text-transform:uppercase;
     }
 
-    /* faixas manhã/tarde */
+    /* faixas manhã/tarde (no BODY todo) */
     tr.rowM td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
     tr.rowT td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
+    /* mas as colunas fixas continuam sólidas */
     tr.rowM td.tdClient, tr.rowM td.tdTurno,
     tr.rowT td.tdClient, tr.rowT td.tdTurno{
       background: var(--solidSticky) !important;
@@ -267,7 +197,7 @@
     /* Fim de semana */
     .weekend{ background:#2a2618 !important; }
 
-    /* Chips (dentro da célula) */
+    /* Chips */
     .cellChips{display:flex; align-items:center; justify-content:center; gap:2px;}
     .chip{
       display:inline-flex; align-items:center; justify-content:center;
@@ -285,19 +215,6 @@
 </head>
 
 <body>
-
-  <!-- Barra superior: chips + modos + limpar -->
-  <div class="topBar">
-    <div class="chipBar" id="chipBar"></div>
-
-    <div class="modeBtns">
-      <button class="modeBtn" id="btnCap" aria-pressed="false">Capacidade vs. Demandas</button>
-      <button class="modeBtn" id="btnIdle" aria-pressed="false">Taxa de Ociosidade</button>
-    </div>
-
-    <button class="btnClear" id="btnClear">Limpar</button>
-  </div>
-
   <div class="gridWrap">
     <div class="gridCard">
       <div class="gridTitle">Grade de Alocação</div>
@@ -383,62 +300,7 @@ function chipEl(code){
   return sp;
 }
 
-/* ===== TOP CHIPS (visual) ===== */
-function buildTopChips(){
-  const bar = document.getElementById("chipBar");
-  bar.innerHTML = "";
-
-  const css = getComputedStyle(document.documentElement);
-  const colors = {
-    DO: css.getPropertyValue("--do").trim(),
-    GE: css.getPropertyValue("--ge").trim(),
-    JC: css.getPropertyValue("--jc").trim(),
-    AL: css.getPropertyValue("--al").trim(),
-  };
-
-  for(const code of ["DO","GE","JC","AL"]){
-    const btn = document.createElement("button");
-    btn.className = "chipBtn";
-    btn.type = "button";
-    btn.title = `${code} = ${RESOURCE_NAMES[code]}`;
-
-    const dot = document.createElement("span");
-    dot.className = "dot";
-    dot.style.background = colors[code];
-
-    const txt = document.createElement("span");
-    txt.textContent = code;
-
-    btn.append(dot, txt);
-    bar.appendChild(btn);
-  }
-}
-
-/* ===== MENU MODOS (somente visual por enquanto) ===== */
-function wireModeMenu(){
-  const cap = document.getElementById("btnCap");
-  const idle = document.getElementById("btnIdle");
-  const clear = document.getElementById("btnClear");
-
-  cap.addEventListener("click", ()=>{
-    const on = cap.getAttribute("aria-pressed")==="true";
-    cap.setAttribute("aria-pressed", on ? "false":"true");
-    idle.setAttribute("aria-pressed","false");
-  });
-
-  idle.addEventListener("click", ()=>{
-    const on = idle.getAttribute("aria-pressed")==="true";
-    idle.setAttribute("aria-pressed", on ? "false":"true");
-    cap.setAttribute("aria-pressed","false");
-  });
-
-  clear.addEventListener("click", ()=>{
-    cap.setAttribute("aria-pressed","false");
-    idle.setAttribute("aria-pressed","false");
-  });
-}
-
-/* ===== RENDER GRID ===== */
+/* ===== RENDER ===== */
 async function load(){
   const res=await fetch(CSV_URL, {cache:"no-store"});
   if(!res.ok) throw new Error("Falha ao buscar CSV");
@@ -455,7 +317,7 @@ async function load(){
   const dows = dowRow.slice(dateIdxStart);
   const dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
 
-  // Header
+  // Header (linha 1 e 2) + CLIENTE/TURNO 4-way sticky
   const headDow=document.getElementById("headDow");
   const headDate=document.getElementById("headDate");
   headDow.innerHTML=""; headDate.innerHTML="";
@@ -496,12 +358,14 @@ async function load(){
   for(let r=2;r<rows.length;r++){
     const row=rows[r];
 
+    // tentar identificar cliente e turno (M/T) no começo da linha
     const first=row.findIndex(c=>c && c!=="");
     if(first<0) continue;
 
     let client=(row[first]||"").trim();
     let turno=(row[first+1]||"").trim();
 
+    // Se vier linha só com "T" ou "M", reaproveita último cliente
     const t=(x)=>String(x||"").toUpperCase().trim();
     const isM = (x)=> (t(x)==="M" || t(x)==="MANHÃ" || t(x)==="MANHA");
     const isT = (x)=> (t(x)==="T" || t(x)==="TARDE");
@@ -552,8 +416,6 @@ async function load(){
   }
 }
 
-buildTopChips();
-wireModeMenu();
 load().catch(console.error);
 </script>
 </body>
