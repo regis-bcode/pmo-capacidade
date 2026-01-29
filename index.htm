@@ -268,6 +268,62 @@
     .bMuted{ background: rgba(255,255,255,.06); color:#cbd5e1; }
     .mono{ font-variant-numeric: tabular-nums; }
 
+    /* ====== Controles do Card 2 (expand/export) ====== */
+    .toolsRow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin:6px 0 10px;
+    }
+    .miniBtn{
+      border:1px solid rgba(255,255,255,.18);
+      background:#0a162e;
+      color:#fff;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+      font-size:11px;
+      white-space:nowrap;
+    }
+    .miniBtn:hover{ border-color: rgba(255,255,255,.35); }
+    .miniInput{
+      flex:1 1 160px;
+      min-width:160px;
+      background:#0a162e;
+      border:1px solid rgba(255,255,255,.18);
+      color:#fff;
+      border-radius:999px;
+      padding:6px 10px;
+      font-weight:850;
+      outline:none;
+      font-size:11px;
+    }
+    details.idleGroup{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      margin:8px 0;
+      background: rgba(255,255,255,.03);
+      overflow:hidden;
+    }
+    details.idleGroup > summary{
+      cursor:pointer;
+      user-select:none;
+      padding:8px 10px;
+      font-weight:950;
+      font-size:11px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      list-style:none;
+    }
+    details.idleGroup > summary::-webkit-details-marker{ display:none; }
+    .groupMeta{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .groupList{ padding:6px 10px 10px; }
+
     .exceptions-min .panelsBody{ display:none !important; }
 
     .gridCard{
@@ -547,10 +603,12 @@
           <h3>1) Colaborador Super Alocado (Conflitos)</h3>
           <div class="content" id="listConflicts"></div>
         </div>
+
         <div class="card">
           <h3>2) Ociosidade (Colaborador e Time) — gaps por consultor</h3>
           <div class="content" id="listFree"></div>
         </div>
+
         <div class="card">
           <h3>3) Saldo de horas por colaborador (mês)</h3>
           <div class="content" id="listHours"></div>
@@ -609,6 +667,11 @@ let idleTurno = new Set();    // `${col}|${turnoKey}`
 let idleCols = new Set();     // col
 let idleCount = 0;
 
+/* export/list controls */
+let lastIdleListAll = []; // lista completa (sem truncar)
+let lastIdleSearch = "";  // filtro do card 2
+let lastIdleExpandAll = true;
+
 /* ===================== UTILS ===================== */
 function setStatus(msg){ document.getElementById("status").textContent = msg; }
 
@@ -646,29 +709,22 @@ function isWeekend(dow){
   return norm.startsWith("SAB") || norm.startsWith("DOM");
 }
 
-/* ========= PARSER STRICT (CORREÇÃO): só reconhece DO|GE|JC|AL como token isolado ========= */
+/* STRICT token parsing: DO|GE|JC|AL como token isolado */
 function parseCellCodes(cellRaw){
   const raw = String(cellRaw || "").toUpperCase();
-
   const normalized = raw
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/\u00A0/g, " ")
     .replace(/[\n\r\t]/g, " ")
     .replace(/[\/,;|]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-
   if(!normalized) return [];
-
   const matches = normalized.match(/\b(DO|GE|JC|AL)\b/g) || [];
-
   const out = [];
   const seen = new Set();
   for(const m of matches){
-    if(!seen.has(m)){
-      seen.add(m);
-      out.push(m);
-    }
+    if(!seen.has(m)){ seen.add(m); out.push(m); }
   }
   return out;
 }
@@ -712,7 +768,6 @@ function chipEl(code, opts={}){
   sp.className="chip"+(!v?" empty":"");
   sp.textContent=v || "—";
   if(v && RESOURCE_NAMES[v]) sp.title = `${v} = ${RESOURCE_NAMES[v]}`;
-
   if(opts.conflict) sp.classList.add("conflict");
 
   const colors={ DO:cssVar("--do"), GE:cssVar("--ge"), JC:cssVar("--jc"), AL:cssVar("--al") };
@@ -720,9 +775,7 @@ function chipEl(code, opts={}){
     sp.style.background = colors[v];
     sp.style.color = "#0b1220";
   }
-  if(opts.conflict){
-    sp.style.color="#0b1220";
-  }
+  if(opts.conflict){ sp.style.color="#0b1220"; }
   return sp;
 }
 
@@ -779,7 +832,10 @@ function buildDataByClient(rows){
   });
 }
 
-/* ===================== PRESENÇA CONSOLIDADA ===================== */
+/* ===================== PRESENÇA CONSOLIDADA (VARREDURA COMPLETA NA BASE) =====================
+   Regra: sempre consolidar por dia/turno a partir de TODOS os clientes carregados,
+   respeitando apenas a janela (from..to) definida no filtro de datas.
+*/
 function computePresence(){
   presentM = Array.from({length: dates.length}, ()=>new Set());
   presentT = Array.from({length: dates.length}, ()=>new Set());
@@ -850,7 +906,7 @@ function computeIdleByPerson(){
         idleTurno.add(`${col}|M`);
         idleCols.add(col);
       }else if(!hasM && !hasT){
-        // dia inteiro sem alocação => duas linhas
+        // dia inteiro sem alocação => duas ocorrências (MANHÃ e TARDE)
         idleByPerson.add(`${code}|${col}|M`);
         idleByPerson.add(`${code}|${col}|T`);
         idleTurno.add(`${col}|M`);
@@ -871,11 +927,8 @@ function getActiveSet(){
   let active = null;
   if(selectedCodes.size>0) active = new Set([...selectedCodes]);
   if(ddSet){
-    if(active){
-      active = new Set([...active].filter(x=>ddSet.has(x)));
-    }else{
-      active = ddSet;
-    }
+    if(active) active = new Set([...active].filter(x=>ddSet.has(x)));
+    else active = ddSet;
   }
   return active;
 }
@@ -986,30 +1039,156 @@ function renderConflictsList(items){
   }).join("");
 }
 
-function renderIdleByPersonList(items){
+/* ===== Export CSV (Excel) ===== */
+function downloadCSV(filename, rows){
+  const esc = (v)=> {
+    const s = String(v ?? "");
+    if(/[",\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+    return s;
+  };
+  const csv = rows.map(r => r.map(esc).join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* ===== Card 2: agora SEM truncar por "slice 140".
+   Para evitar que DO "domine" o topo e esconda GE/AL/JC, agrupamos por consultor. */
+function renderIdleByPersonListGrouped(items){
   const el = document.getElementById("listFree");
+
+  // persist para export
+  lastIdleListAll = items;
+
   if(!items.length){
     el.innerHTML = `<div class="badge bMuted">Sem gaps de jornada (dias úteis) na janela</div>`;
     return;
   }
 
-  const header = `<div class="badge bOk">Gaps de jornada por consultor (dias úteis)</div>`;
-  const list = items.slice(0,140).map(x=>`
-    <div class="listItem">
-      <div>
-        <div>
-          <span class="badge bMuted">${x.code}</span>
-          <b>${x.name}</b>
-          • <span class="mono">${x.dow} ${x.date}</span>
-          • <b>${x.turno}</b>
-        </div>
-      </div>
-      <div class="badge bOk">Ocioso</div>
-    </div>
-  `).join("");
+  // filtro textual (no card)
+  const q = (lastIdleSearch || "").trim().toUpperCase();
 
-  const more = items.length>140 ? `<div style="margin-top:8px;color:var(--muted)">+ ${items.length-140} itens…</div>` : "";
-  el.innerHTML = header + list + more;
+  // contagem por consultor
+  const counts = { DO:0, GE:0, JC:0, AL:0 };
+  for(const it of items) counts[it.code] = (counts[it.code]||0) + 1;
+
+  // header + ferramentas
+  let html = `
+    <div class="badge bOk">Gaps de jornada por consultor (dias úteis)</div>
+
+    <div class="toolsRow">
+      <input class="miniInput" id="idleSearch" placeholder="Filtrar (ex.: 09/02, TARDE, GE, Quinta...)" value="${(lastIdleSearch||"").replace(/"/g,"&quot;")}" />
+      <button class="miniBtn" id="btnIdleExpandAll">${lastIdleExpandAll ? "Recolher tudo" : "Expandir tudo"}</button>
+      <button class="miniBtn" id="btnIdleExport">Exportar Excel (CSV)</button>
+    </div>
+
+    <div class="toolsRow">
+      <span class="badge bMuted">Total: ${items.length}</span>
+      <span class="badge bMuted">DO: ${counts.DO||0}</span>
+      <span class="badge bMuted">GE: ${counts.GE||0}</span>
+      <span class="badge bMuted">JC: ${counts.JC||0}</span>
+      <span class="badge bMuted">AL: ${counts.AL||0}</span>
+    </div>
+  `;
+
+  // agrupa por consultor
+  const by = { DO:[], GE:[], JC:[], AL:[] };
+  for(const it of items) by[it.code].push(it);
+
+  const order = ["DO","GE","JC","AL"];
+
+  for(const code of order){
+    const list = by[code] || [];
+    if(!list.length) continue;
+
+    // aplica filtro no grupo (sem perder varredura completa)
+    const filtered = q
+      ? list.filter(x => {
+          const line = `${x.code} ${x.name} ${x.dow} ${x.date} ${x.turno}`.toUpperCase();
+          return line.includes(q);
+        })
+      : list;
+
+    // se filtro eliminar tudo, ainda renderiza o grupo com meta
+    const openAttr = lastIdleExpandAll ? "open" : "";
+    const name = RESOURCE_NAMES[code] || code;
+
+    html += `
+      <details class="idleGroup" data-code="${code}" ${openAttr}>
+        <summary>
+          <span class="groupMeta">
+            <span class="badge bMuted">${code}</span>
+            <b>${name}</b>
+            <span class="badge bMuted">Itens: ${list.length}</span>
+            ${q ? `<span class="badge bMuted">Match: ${filtered.length}</span>` : ``}
+          </span>
+          <span class="badge bOk">Ocioso</span>
+        </summary>
+        <div class="groupList">
+          ${filtered.length ? filtered.map(x=>`
+            <div class="listItem">
+              <div>
+                <div>
+                  <span class="badge bMuted">${x.code}</span>
+                  <b>${x.name}</b>
+                  • <span class="mono">${x.dow} ${x.date}</span>
+                  • <b>${x.turno}</b>
+                </div>
+              </div>
+              <div class="badge bOk">Ocioso</div>
+            </div>
+          `).join("") : `<div class="badge bMuted">Sem itens para o filtro atual</div>`}
+        </div>
+      </details>
+    `;
+  }
+
+  el.innerHTML = html;
+
+  // bind tools
+  const inp = document.getElementById("idleSearch");
+  if(inp){
+    inp.addEventListener("input", ()=>{
+      lastIdleSearch = inp.value || "";
+      // re-render usando a mesma lista completa
+      renderIdleByPersonListGrouped(lastIdleListAll);
+    });
+  }
+
+  const btnExp = document.getElementById("btnIdleExpandAll");
+  if(btnExp){
+    btnExp.addEventListener("click", ()=>{
+      lastIdleExpandAll = !lastIdleExpandAll;
+      renderIdleByPersonListGrouped(lastIdleListAll);
+    });
+  }
+
+  const btnCsv = document.getElementById("btnIdleExport");
+  if(btnCsv){
+    btnCsv.addEventListener("click", ()=>{
+      const rows = [["Consultor","Nome","DiaSemana","Data","Periodo","Status"]];
+      // exporta respeitando o filtro do card
+      const q2 = (lastIdleSearch || "").trim().toUpperCase();
+      const exp = q2
+        ? lastIdleListAll.filter(x => (`${x.code} ${x.name} ${x.dow} ${x.date} ${x.turno}`.toUpperCase().includes(q2)))
+        : lastIdleListAll;
+
+      for(const x of exp){
+        rows.push([x.code, x.name, x.dow, x.date, x.turno, "Ocioso"]);
+      }
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2,"0");
+      const mm = String(now.getMonth()+1).padStart(2,"0");
+      const yyyy = String(now.getFullYear());
+      downloadCSV(`ociosidade_${dd}-${mm}-${yyyy}.csv`, rows);
+    });
+  }
 }
 
 function renderHoursList(monthStats){
@@ -1061,7 +1240,9 @@ function buildInsights(){
     if(a.turno!==b.turno) return a.turno.localeCompare(b.turno);
     return a.code.localeCompare(b.code);
   });
+  renderConflictsList(conflictsList);
 
+  // Idle list completo (todos os consultores)
   const idleList = [];
   for(const k of idleByPerson){
     const [code, colStr, turnoMissing] = k.split("|");
@@ -1082,10 +1263,9 @@ function buildInsights(){
     return a.code.localeCompare(b.code);
   });
 
-  const monthStats = computeHoursByMonth(from,to);
+  renderIdleByPersonListGrouped(idleList);
 
-  renderConflictsList(conflictsList);
-  renderIdleByPersonList(idleList);
+  const monthStats = computeHoursByMonth(from,to);
   renderHoursList(monthStats);
 
   document.getElementById("insightsStatus").textContent =
@@ -1124,8 +1304,8 @@ function render(){
   const {from,to} = getWindowRange();
 
   computeConflicts();
-  computePresence();
-  computeIdleByPerson();
+  computePresence();     // varredura completa na base para consolidar presença
+  computeIdleByPerson(); // gaps por consultor
 
   let colVisible = new Array(dates.length).fill(true);
   for(let col=0; col<dates.length; col++){
