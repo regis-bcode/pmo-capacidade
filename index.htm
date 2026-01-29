@@ -7,40 +7,17 @@
 
   <style>
     :root{
-      --bg:#0b1220;
-      --panel:#0f1a30;
-      --text:#e8efff;
-      --muted:#93a4c7;
-      --line:rgba(255,255,255,.10);
+      --bg:#0b1220; --panel:#0f1a30; --text:#e8efff; --muted:#93a4c7; --line:rgba(255,255,255,.10);
+      --do:#60a5fa; --ge:#34d399; --jc:#fbbf24; --al:#fb7185;
+      --danger:#ef4444; --ok:#22c55e;
 
-      --do:#60a5fa;
-      --ge:#34d399;
-      --jc:#fbbf24;
-      --al:#fb7185;
+      --rowH:18px; --headH1:14px; --headH2:14px;
+      --wClient:170px; --wTurno:86px; --wDate:64px;
 
-      --danger:#ef4444;
-      --ok:#22c55e;
-
-      --rowH:18px;
-      --headH1:14px;
-      --headH2:14px;
-
-      --wClient:170px;
-      --wTurno:86px;
-      --wDate:64px;
-
-      --solidBG:#0b1220;
-      --solidHdr:#0a162e;
-      --solidSticky:#0b1220;
-
-      --mStrip:#2b2a57;
-      --tStrip:#0f3348;
-
+      --solidBG:#0b1220; --solidHdr:#0a162e; --solidSticky:#0b1220;
+      --mStrip:#2b2a57; --tStrip:#0f3348;
       --weekend:#2a2618;
-
-      --freeCell:#133322;
-      --freeHdr:#17462c;
-
+      --freeCell:#133322; --freeHdr:#17462c;
       --confHdr:#3a1212;
     }
 
@@ -58,16 +35,10 @@
       border-bottom:1px solid var(--line);
       padding:10px 12px 10px;
     }
-    .topRow1{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      margin-bottom:10px;
-    }
+    .topRow1{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;}
     .titleBlock{min-width:0;}
     .title{font-weight:950; font-size:16px; line-height:1.1;}
-    .subtitle{
-      color:var(--muted); font-size:12px; font-weight:750; margin-top:4px;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
+    .subtitle{color:var(--muted); font-size:12px; font-weight:750; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
     .topActions{display:flex; gap:10px; align-items:center;}
     .btn{
       border:1px solid rgba(255,255,255,.45);
@@ -80,11 +51,7 @@
       user-select:none;
       white-space:nowrap;
     }
-    .btnSoft{
-      border:1px solid var(--line);
-      background:#0f1a30;
-      color:#fff;
-    }
+    .btnSoft{border:1px solid var(--line); background:#0f1a30; color:#fff;}
 
     .filters{
       display:grid;
@@ -92,10 +59,7 @@
       gap:10px;
       align-items:end;
     }
-    .field label{
-      display:block; font-size:11px; color:var(--muted); font-weight:850;
-      margin:0 0 6px;
-    }
+    .field label{display:block; font-size:11px; color:var(--muted); font-weight:850; margin:0 0 6px;}
     .field input,.field select{
       width:100%;
       background:#0f1a30;
@@ -107,14 +71,7 @@
       outline:none;
     }
 
-    .chipRow{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-
+    .chipRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px;}
     .chipBtn{
       display:inline-flex; align-items:center; gap:8px;
       padding:8px 12px;
@@ -128,18 +85,11 @@
       color:#fff;
     }
     .chipBtn .dot{ width:10px;height:10px;border-radius:50%; }
-    .chipBtn[aria-pressed="true"]{
-      background:#14264a;
-      border-color: rgba(255,255,255,.55);
-    }
+    .chipBtn[aria-pressed="true"]{background:#14264a; border-color: rgba(255,255,255,.55);}
 
-    .modeBtns{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin-left:8px;
-    }
+    .modeBtns{display:flex; gap:10px; flex-wrap:wrap; margin-left:8px;}
     .modeBtn{
-      display:inline-flex;
-      align-items:center;
+      display:inline-flex; align-items:center;
       padding:8px 14px;
       border-radius:999px;
       border:1px solid var(--line);
@@ -150,50 +100,22 @@
       font-weight:950;
       color:#fbbf24;
     }
-    .modeBtn[aria-pressed="true"]{
-      background:#14264a;
-      border-color: rgba(255,255,255,.45);
-    }
+    .modeBtn[aria-pressed="true"]{background:#14264a; border-color: rgba(255,255,255,.45);}
 
-    .kpis{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0,1fr));
-      gap:10px;
-      margin-top:10px;
-    }
-    .kpi{
-      background:#0f1a30;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-    }
+    .kpis{display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px; margin-top:10px;}
+    .kpi{background:#0f1a30; border:1px solid var(--line); border-radius:14px; padding:10px 12px;}
     .kpi .k{ color:var(--muted); font-size:11px; font-weight:850; }
     .kpi .v{ font-size:18px; font-weight:950; margin-top:6px; }
 
     body.compact-mode .filters,
     body.compact-mode .chipRow,
     body.compact-mode .kpis,
-    body.compact-mode #panels{
-      display:none !important;
-    }
-    body.compact-mode .gridWrap{
-      height: calc(100vh - 84px) !important;
-    }
+    body.compact-mode #panels{ display:none !important; }
+    body.compact-mode .gridWrap{ height: calc(100vh - 84px) !important; }
 
-    .gridWrap{
-      height: calc(100vh - 250px);
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
+    .gridWrap{height: calc(100vh - 250px); padding:12px; display:flex; flex-direction:column; gap:10px;}
 
-    .panels{
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:var(--panel);
-      overflow:hidden;
-    }
+    .panels{border:1px solid var(--line); border-radius:14px; background:var(--panel); overflow:hidden;}
     .panelsHeader{
       display:flex; align-items:center; justify-content:space-between;
       padding:10px 12px;
@@ -201,7 +123,7 @@
       background: var(--solidBG);
       font-weight:950;
     }
-
+    .status{color:var(--muted); font-size:12px; font-weight:850; white-space:nowrap;}
     .iconBtn{
       border:1px solid rgba(255,255,255,.18);
       background:#0f1a30;
@@ -215,12 +137,7 @@
     }
     .iconBtn:hover{ border-color: rgba(255,255,255,.35); }
 
-    .panelsBody{
-      padding:10px 12px 12px;
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap:10px;
-    }
+    .panelsBody{padding:10px 12px 12px; display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:10px;}
     .card{
       border:1px solid var(--line);
       border-radius:14px;
@@ -239,43 +156,25 @@
       color:#fff;
       background:#0a162e;
     }
+    /* IMPORTANT: sempre com rolagem */
     .card .content{
       padding:10px 12px;
       overflow:auto;
       font-size:11px;
       color:var(--text);
+      max-height: 320px;
     }
 
-    .listItem{
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
-      padding:6px 0;
-      border-bottom:1px dashed rgba(255,255,255,.10);
-    }
+    .listItem{display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px dashed rgba(255,255,255,.10);}
     .listItem:last-child{ border-bottom:0; }
-    .badge{
-      display:inline-flex; align-items:center; justify-content:center;
-      padding:2px 8px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      font-weight:950;
-      font-size:10px;
-      white-space:nowrap;
-    }
+    .badge{display:inline-flex; align-items:center; justify-content:center; padding:2px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.12); font-weight:950; font-size:10px; white-space:nowrap;}
     .bDanger{ background: rgba(239,68,68,.18); color:#fecaca; border-color: rgba(239,68,68,.35); }
     .bOk{ background: rgba(34,197,94,.16); color:#bbf7d0; border-color: rgba(34,197,94,.35); }
     .bMuted{ background: rgba(255,255,255,.06); color:#cbd5e1; }
     .mono{ font-variant-numeric: tabular-nums; }
 
-    /* ====== Controles do Card 2 (expand/export) ====== */
-    .toolsRow{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin:6px 0 10px;
-    }
+    /* Card 2 tools + grouping */
+    .toolsRow{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:6px 0 10px;}
     .miniBtn{
       border:1px solid rgba(255,255,255,.18);
       background:#0a162e;
@@ -290,8 +189,8 @@
     }
     .miniBtn:hover{ border-color: rgba(255,255,255,.35); }
     .miniInput{
-      flex:1 1 160px;
-      min-width:160px;
+      flex:1 1 180px;
+      min-width:180px;
       background:#0a162e;
       border:1px solid rgba(255,255,255,.18);
       color:#fff;
@@ -346,48 +245,14 @@
       gap:10px;
       align-items:center;
     }
-    .status{
-      color:var(--muted);
-      font-size:12px;
-      font-weight:850;
-      white-space:nowrap;
-    }
 
-    .tableY{
-      flex:1 1 auto;
-      min-height:0;
-      overflow-y:auto;
-      overflow-x:hidden;
-      background:var(--solidBG);
-      overscroll-behavior: contain;
-    }
-
-    .xBar{
-      height:16px;
-      overflow-x:auto;
-      overflow-y:hidden;
-      background: var(--solidBG);
-      border-top:1px solid rgba(255,255,255,.06);
-    }
+    .tableY{flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; background:var(--solidBG); overscroll-behavior: contain;}
+    .xBar{height:16px; overflow-x:auto; overflow-y:hidden; background: var(--solidBG); border-top:1px solid rgba(255,255,255,.06);}
     .xBarInner{ height:1px; }
+    .xPane{overflow-x:auto; overflow-y:hidden; background:var(--solidBG);}
 
-    .xPane{
-      overflow-x:auto;
-      overflow-y:hidden;
-      background:var(--solidBG);
-    }
-
-    table{
-      border-collapse:separate;
-      border-spacing:0;
-      table-layout:fixed;
-      width:max-content;
-      min-width:100%;
-    }
-
-    thead tr{ height: var(--headH1); }
-    thead tr:nth-child(2){ height: var(--headH2); }
-    tbody tr{ height: var(--rowH); }
+    table{border-collapse:separate; border-spacing:0; table-layout:fixed; width:max-content; min-width:100%;}
+    thead tr{ height: var(--headH1); } thead tr:nth-child(2){ height: var(--headH2); } tbody tr{ height: var(--rowH); }
 
     thead th{
       position: sticky;
@@ -402,122 +267,60 @@
       font-weight:950;
       z-index: 10;
     }
-    thead tr:nth-child(1) th{
-      top: 0;
-      height: var(--headH1);
-      line-height: var(--headH1);
-      z-index: 20;
-    }
-    thead tr:nth-child(2) th{
-      top: var(--headH1);
-      height: var(--headH2);
-      line-height: var(--headH2);
-      z-index: 19;
-    }
+    thead tr:nth-child(1) th{ top: 0; height: var(--headH1); line-height: var(--headH1); z-index: 20; }
+    thead tr:nth-child(2) th{ top: var(--headH1); height: var(--headH2); line-height: var(--headH2); z-index: 19; }
 
     thead th.thClient{
-      left:0;
-      width:var(--wClient);
-      min-width:var(--wClient);
-      max-width:var(--wClient);
-      text-align:left;
-      padding-left:10px;
-      z-index:1000;
-      background: var(--solidHdr);
+      left:0; width:var(--wClient); min-width:var(--wClient); max-width:var(--wClient);
+      text-align:left; padding-left:10px; z-index:1000; background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
     thead th.thTurno{
-      left:var(--wClient);
-      width:var(--wTurno);
-      min-width:var(--wTurno);
-      max-width:var(--wTurno);
-      z-index:999;
-      background: var(--solidHdr);
+      left:var(--wClient); width:var(--wTurno); min-width:var(--wTurno); max-width:var(--wTurno);
+      z-index:999; background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
 
     tbody td{
-      height:var(--rowH);
-      line-height:var(--rowH);
-      font-size:11px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      border-right:1px solid rgba(255,255,255,.04);
-      padding:0 4px;
-      white-space:nowrap;
-      background:var(--solidBG);
-      vertical-align:middle;
+      height:var(--rowH); line-height:var(--rowH); font-size:11px;
+      border-bottom:1px solid rgba(255,255,255,.06); border-right:1px solid rgba(255,255,255,.04);
+      padding:0 4px; white-space:nowrap; background:var(--solidBG); vertical-align:middle;
     }
-
     tbody td.tdClient{
-      position:sticky;
-      left:0;
-      width:var(--wClient);
-      min-width:var(--wClient);
-      max-width:var(--wClient);
-      z-index:50;
-      background: var(--solidSticky) !important;
-      border-right:1px solid rgba(255,255,255,.14);
+      position:sticky; left:0; width:var(--wClient); min-width:var(--wClient); max-width:var(--wClient);
+      z-index:50; background: var(--solidSticky) !important; border-right:1px solid rgba(255,255,255,.14);
     }
     tbody td.tdTurno{
-      position:sticky;
-      left:var(--wClient);
-      width:var(--wTurno);
-      min-width:var(--wTurno);
-      max-width:var(--wTurno);
-      z-index:49;
-      background: var(--solidSticky) !important;
-      border-right:1px solid rgba(255,255,255,.14);
-      text-align:center;
-      font-weight:950;
+      position:sticky; left:var(--wClient); width:var(--wTurno); min-width:var(--wTurno); max-width:var(--wTurno);
+      z-index:49; background: var(--solidSticky) !important; border-right:1px solid rgba(255,255,255,.14);
+      text-align:center; font-weight:950;
     }
 
     .clientCell{
-      display:flex;
-      align-items:center;
-      justify-content:flex-start;
-      padding:0 6px;
-      height:100%;
-      font-weight:950;
-      text-transform:uppercase;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+      display:flex; align-items:center; justify-content:flex-start; padding:0 6px; height:100%;
+      font-weight:950; text-transform:uppercase; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
 
     tr.rowM td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
     tr.rowT td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
     tr.rowM td.tdClient, tr.rowM td.tdTurno,
-    tr.rowT td.tdClient, tr.rowT td.tdTurno{
-      background: var(--solidSticky) !important;
-    }
+    tr.rowT td.tdClient, tr.rowT td.tdTurno{ background: var(--solidSticky) !important; }
 
     .weekend{ background: var(--weekend) !important; }
-
     .colHidden{ display:none; }
-
     .freeHdr{ background: var(--freeHdr) !important; color:#d1fae5 !important; }
     .freeCell{ background: var(--freeCell) !important; }
-
     .confHdr{ background: var(--confHdr) !important; color:#fee2e2 !important; }
 
     .cellChips{display:flex; align-items:center; justify-content:center; gap:2px;}
     .chip{
       display:inline-flex; align-items:center; justify-content:center;
-      min-width:22px; height:14px; padding:0 5px;
-      border-radius:5px;
+      min-width:22px; height:14px; padding:0 5px; border-radius:5px;
       border:1px solid rgba(255,255,255,.10);
-      background:#14264a;
-      font-weight:950;
-      font-size:10px;
-      line-height:14px;
-      color:var(--text);
+      background:#14264a; font-weight:950; font-size:10px; line-height:14px; color:var(--text);
     }
     .chip.empty{opacity:.25}
-    .chip.conflict{
-      background: var(--danger) !important;
-      color:#0b1220 !important;
-      border-color: rgba(0,0,0,.18);
-    }
+    .chip.conflict{ background: var(--danger) !important; color:#0b1220 !important; border-color: rgba(0,0,0,.18); }
 
     @media (max-width: 1200px){
       .filters{ grid-template-columns: 1fr 1fr; }
@@ -591,7 +394,6 @@
     <div class="panels" id="panels">
       <div class="panelsHeader">
         <div>Exceções operacionais (auto-insights)</div>
-
         <div style="display:flex; align-items:center; gap:10px;">
           <button class="iconBtn" id="btnMinExceptions" title="Minimizar/Maximizar Exceções">▾</button>
           <div class="status" id="insightsStatus">—</div>
@@ -656,7 +458,7 @@ let mode = ""; // "" | "cap" | "idle"
 let windowFrom = null;
 let windowTo = null;
 
-let conflictsMap = new Map();
+let conflictsMap = new Map(); // `${code}|${col}|${turnoKey}` => Set(client)
 let conflictCols = new Set();
 
 let presentM = [];
@@ -667,10 +469,10 @@ let idleTurno = new Set();    // `${col}|${turnoKey}`
 let idleCols = new Set();     // col
 let idleCount = 0;
 
-/* export/list controls */
-let lastIdleListAll = []; // lista completa (sem truncar)
-let lastIdleSearch = "";  // filtro do card 2
-let lastIdleExpandAll = true;
+/* Card 2 runtime */
+let idleListAll = [];         // FONTE ÚNICA DA VERDADE (completa)
+let idleSearch = "";
+let idleExpandAll = true;
 
 /* ===================== UTILS ===================== */
 function setStatus(msg){ document.getElementById("status").textContent = msg; }
@@ -709,7 +511,7 @@ function isWeekend(dow){
   return norm.startsWith("SAB") || norm.startsWith("DOM");
 }
 
-/* STRICT token parsing: DO|GE|JC|AL como token isolado */
+/* STRICT: só DO|GE|JC|AL como token isolado */
 function parseCellCodes(cellRaw){
   const raw = String(cellRaw || "").toUpperCase();
   const normalized = raw
@@ -775,7 +577,7 @@ function chipEl(code, opts={}){
     sp.style.background = colors[v];
     sp.style.color = "#0b1220";
   }
-  if(opts.conflict){ sp.style.color="#0b1220"; }
+  if(opts.conflict) sp.style.color="#0b1220";
   return sp;
 }
 
@@ -832,11 +634,8 @@ function buildDataByClient(rows){
   });
 }
 
-/* ===================== PRESENÇA CONSOLIDADA (VARREDURA COMPLETA NA BASE) =====================
-   Regra: sempre consolidar por dia/turno a partir de TODOS os clientes carregados,
-   respeitando apenas a janela (from..to) definida no filtro de datas.
-*/
-function computePresence(){
+/* ===================== VARREDURA COMPLETA (INDEPENDENTE DE FILTROS DE CLIENTE/CHIP/MODO) ===================== */
+function computePresenceFull(){
   presentM = Array.from({length: dates.length}, ()=>new Set());
   presentT = Array.from({length: dates.length}, ()=>new Set());
 
@@ -850,6 +649,64 @@ function computePresence(){
       for(const code of tCodes) presentT[col].add(code);
     }
   }
+}
+
+/* ===================== OCIOSIDADE FULL (INDEPENDENTE DE FILTROS DE CLIENTE/CHIP/MODO) ===================== */
+function computeIdleFull(){
+  idleByPerson.clear();
+  idleTurno.clear();
+  idleCols.clear();
+  idleCount = 0;
+
+  const {from,to} = getWindowRange();
+
+  for(let col=from; col<=to; col++){
+    if(isWeekend(dows[col])) continue;
+
+    for(const code of VALID){
+      const hasM = presentM[col].has(code);
+      const hasT = presentT[col].has(code);
+
+      if(hasM && !hasT){
+        idleByPerson.add(`${code}|${col}|T`);
+        idleTurno.add(`${col}|T`);
+        idleCols.add(col);
+      }else if(!hasM && hasT){
+        idleByPerson.add(`${code}|${col}|M`);
+        idleTurno.add(`${col}|M`);
+        idleCols.add(col);
+      }else if(!hasM && !hasT){
+        idleByPerson.add(`${code}|${col}|M`);
+        idleByPerson.add(`${code}|${col}|T`);
+        idleTurno.add(`${col}|M`);
+        idleTurno.add(`${col}|T`);
+        idleCols.add(col);
+      }
+    }
+  }
+
+  idleCount = idleByPerson.size;
+
+  // monta a lista COMPLETA (fonte da verdade) para o Card 2 e export
+  idleListAll = [];
+  for(const k of idleByPerson){
+    const [code, colStr, turnoMissing] = k.split("|");
+    const col = Number(colStr);
+    if(isWeekend(dows[col])) continue;
+    idleListAll.push({
+      code,
+      name: RESOURCE_NAMES[code] || code,
+      date: dates[col] || "",
+      dow: (dows[col]||"").toUpperCase(),
+      turno: (turnoMissing==="M" ? "MANHÃ" : "TARDE"),
+    });
+  }
+  idleListAll.sort((a,b)=>{
+    const da = dates.indexOf(a.date), db = dates.indexOf(b.date);
+    if(da!==db) return da-db;
+    if(a.turno!==b.turno) return a.turno.localeCompare(b.turno);
+    return a.code.localeCompare(b.code);
+  });
 }
 
 /* ===================== CONFLICTS ===================== */
@@ -881,45 +738,7 @@ function computeConflicts(){
   }
 }
 
-/* ===================== OCIOSIDADE (GAPS POR CONSULTOR) ===================== */
-function computeIdleByPerson(){
-  idleByPerson.clear();
-  idleTurno.clear();
-  idleCols.clear();
-  idleCount = 0;
-
-  const {from,to} = getWindowRange();
-
-  for(let col=from; col<=to; col++){
-    if(isWeekend(dows[col])) continue;
-
-    for(const code of VALID){
-      const hasM = presentM[col].has(code);
-      const hasT = presentT[col].has(code);
-
-      if(hasM && !hasT){
-        idleByPerson.add(`${code}|${col}|T`);
-        idleTurno.add(`${col}|T`);
-        idleCols.add(col);
-      }else if(!hasM && hasT){
-        idleByPerson.add(`${code}|${col}|M`);
-        idleTurno.add(`${col}|M`);
-        idleCols.add(col);
-      }else if(!hasM && !hasT){
-        // dia inteiro sem alocação => duas ocorrências (MANHÃ e TARDE)
-        idleByPerson.add(`${code}|${col}|M`);
-        idleByPerson.add(`${code}|${col}|T`);
-        idleTurno.add(`${col}|M`);
-        idleTurno.add(`${col}|T`);
-        idleCols.add(col);
-      }
-    }
-  }
-
-  idleCount = idleByPerson.size;
-}
-
-/* ===================== FILTERS ===================== */
+/* ===================== FILTERS (somente VISUAL da grade) ===================== */
 function getActiveSet(){
   const dd = document.getElementById("selRes").value.trim().toUpperCase();
   const ddSet = dd ? new Set([dd]) : null;
@@ -932,13 +751,11 @@ function getActiveSet(){
   }
   return active;
 }
-
 function clientMatches(client){
   const q = document.getElementById("qClient").value.trim().toUpperCase();
   if(!q) return true;
   return String(client||"").toUpperCase().includes(q);
 }
-
 function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
   if(mode==="cap"){
     for(let col=from; col<=to; col++){
@@ -952,7 +769,6 @@ function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
     }
     return false;
   }
-
   if(mode==="idle"){
     for(let col=from; col<=to; col++){
       if(!colVisible[col]) continue;
@@ -960,7 +776,6 @@ function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
     }
     return false;
   }
-
   if(activeSet){
     for(let col=from; col<=to; col++){
       if(!colVisible[col]) continue;
@@ -971,54 +786,10 @@ function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
     }
     return false;
   }
-
   return true;
 }
 
-/* ===================== INSIGHTS ===================== */
-function computeHoursByMonth(from,to){
-  const m = new Map();
-  function monthOf(label){
-    const mm = String(label||"").split("/")[1];
-    return mm || "??";
-  }
-
-  for(let col=from; col<=to; col++){
-    const month = monthOf(dates[col]);
-    if(!m.has(month)){
-      m.set(month, { month, businessDays:new Set(), allocCount: {DO:0,GE:0,JC:0,AL:0} });
-    }
-    const entry = m.get(month);
-    if(!isWeekend(dows[col])) entry.businessDays.add(dates[col]);
-
-    for(const c of dataByClient){
-      for(const turnoKey of ["M","T"]){
-        const codes = (c[turnoKey].codesByCol[col] || []);
-        for(const code of codes){
-          if(entry.allocCount[code] !== undefined){
-            entry.allocCount[code] += 1;
-          }
-        }
-      }
-    }
-  }
-
-  const out = [];
-  for(const entry of m.values()){
-    const businessDays = entry.businessDays.size;
-    const plannedPerPerson = businessDays * 8;
-    const row = { month: entry.month, businessDays, plannedPerPerson, items: [] };
-    for(const code of ["DO","GE","JC","AL"]){
-      const allocatedHours = entry.allocCount[code] * 4;
-      const saldo = plannedPerPerson - allocatedHours;
-      row.items.push({ code, name: RESOURCE_NAMES[code], planned: plannedPerPerson, allocated: allocatedHours, saldo });
-    }
-    out.push(row);
-  }
-  out.sort((a,b)=> Number(a.month)-Number(b.month));
-  return out;
-}
-
+/* ===================== INSIGHTS RENDER ===================== */
 function renderConflictsList(items){
   const el = document.getElementById("listConflicts");
   if(!items.length){
@@ -1039,7 +810,7 @@ function renderConflictsList(items){
   }).join("");
 }
 
-/* ===== Export CSV (Excel) ===== */
+/* Export CSV (Excel) */
 function downloadCSV(filename, rows){
   const esc = (v)=> {
     const s = String(v ?? "");
@@ -1058,80 +829,66 @@ function downloadCSV(filename, rows){
   URL.revokeObjectURL(url);
 }
 
-/* ===== Card 2: agora SEM truncar por "slice 140".
-   Para evitar que DO "domine" o topo e esconda GE/AL/JC, agrupamos por consultor. */
-function renderIdleByPersonListGrouped(items){
+function renderIdleCard(){
   const el = document.getElementById("listFree");
 
-  // persist para export
-  lastIdleListAll = items;
+  const counts = { DO:0, GE:0, JC:0, AL:0 };
+  for(const it of idleListAll) counts[it.code] = (counts[it.code]||0)+1;
 
-  if(!items.length){
+  if(!idleListAll.length){
     el.innerHTML = `<div class="badge bMuted">Sem gaps de jornada (dias úteis) na janela</div>`;
     return;
   }
 
-  // filtro textual (no card)
-  const q = (lastIdleSearch || "").trim().toUpperCase();
+  const q = (idleSearch||"").trim().toUpperCase();
+  const filterFn = (x)=> {
+    if(!q) return true;
+    const line = `${x.code} ${x.name} ${x.dow} ${x.date} ${x.turno}`.toUpperCase();
+    return line.includes(q);
+  };
 
-  // contagem por consultor
-  const counts = { DO:0, GE:0, JC:0, AL:0 };
-  for(const it of items) counts[it.code] = (counts[it.code]||0) + 1;
+  const by = { DO:[], GE:[], JC:[], AL:[] };
+  for(const it of idleListAll){
+    if(filterFn(it)) by[it.code].push(it);
+  }
 
-  // header + ferramentas
   let html = `
-    <div class="badge bOk">Gaps de jornada por consultor (dias úteis)</div>
+    <div class="badge bOk">Gaps de jornada por consultor (dias úteis) — dataset completo</div>
 
     <div class="toolsRow">
-      <input class="miniInput" id="idleSearch" placeholder="Filtrar (ex.: 09/02, TARDE, GE, Quinta...)" value="${(lastIdleSearch||"").replace(/"/g,"&quot;")}" />
-      <button class="miniBtn" id="btnIdleExpandAll">${lastIdleExpandAll ? "Recolher tudo" : "Expandir tudo"}</button>
+      <input class="miniInput" id="idleSearch" placeholder="Filtrar (ex.: 09/02, TARDE, GE, QUI...)" value="${(idleSearch||"").replace(/"/g,"&quot;")}" />
+      <button class="miniBtn" id="btnIdleExpandAll">${idleExpandAll ? "Recolher tudo" : "Expandir tudo"}</button>
       <button class="miniBtn" id="btnIdleExport">Exportar Excel (CSV)</button>
     </div>
 
     <div class="toolsRow">
-      <span class="badge bMuted">Total: ${items.length}</span>
+      <span class="badge bMuted">Total: ${idleListAll.length}</span>
       <span class="badge bMuted">DO: ${counts.DO||0}</span>
       <span class="badge bMuted">GE: ${counts.GE||0}</span>
       <span class="badge bMuted">JC: ${counts.JC||0}</span>
       <span class="badge bMuted">AL: ${counts.AL||0}</span>
+      ${q ? `<span class="badge bMuted">Filtro: "${idleSearch}"</span>` : ``}
     </div>
   `;
 
-  // agrupa por consultor
-  const by = { DO:[], GE:[], JC:[], AL:[] };
-  for(const it of items) by[it.code].push(it);
-
   const order = ["DO","GE","JC","AL"];
-
   for(const code of order){
     const list = by[code] || [];
-    if(!list.length) continue;
-
-    // aplica filtro no grupo (sem perder varredura completa)
-    const filtered = q
-      ? list.filter(x => {
-          const line = `${x.code} ${x.name} ${x.dow} ${x.date} ${x.turno}`.toUpperCase();
-          return line.includes(q);
-        })
-      : list;
-
-    // se filtro eliminar tudo, ainda renderiza o grupo com meta
-    const openAttr = lastIdleExpandAll ? "open" : "";
-    const name = RESOURCE_NAMES[code] || code;
-
+    const totalCode = counts[code] || 0;
+    const openAttr = idleExpandAll ? "open" : "";
     html += `
-      <details class="idleGroup" data-code="${code}" ${openAttr}>
+      <details class="idleGroup" ${openAttr}>
         <summary>
           <span class="groupMeta">
             <span class="badge bMuted">${code}</span>
-            <b>${name}</b>
-            <span class="badge bMuted">Itens: ${list.length}</span>
-            ${q ? `<span class="badge bMuted">Match: ${filtered.length}</span>` : ``}
+            <b>${RESOURCE_NAMES[code] || code}</b>
+            <span class="badge bMuted">Itens: ${totalCode}</span>
+            ${q ? `<span class="badge bMuted">Match: ${list.length}</span>` : ``}
           </span>
           <span class="badge bOk">Ocioso</span>
         </summary>
         <div class="groupList">
-          ${filtered.length ? filtered.map(x=>`
+          ${list.length ? list.map(x=>`
             <div class="listItem">
               <div>
                 <div>
@@ -1143,7 +900,7 @@ function renderIdleByPersonListGrouped(items){
               </div>
               <div class="badge bOk">Ocioso</div>
             </div>
-          `).join("") : `<div class="badge bMuted">Sem itens para o filtro atual</div>`}
+          `).join("") : `<div class="badge bMuted">Sem itens ${q ? "para o filtro" : "na janela"}</div>`}
         </div>
       </details>
     `;
@@ -1151,35 +908,32 @@ function renderIdleByPersonListGrouped(items){
 
   el.innerHTML = html;
 
-  // bind tools
   const inp = document.getElementById("idleSearch");
   if(inp){
     inp.addEventListener("input", ()=>{
-      lastIdleSearch = inp.value || "";
-      // re-render usando a mesma lista completa
-      renderIdleByPersonListGrouped(lastIdleListAll);
+      idleSearch = inp.value || "";
+      renderIdleCard();
     });
   }
 
-  const btnExp = document.getElementById("btnIdleExpandAll");
-  if(btnExp){
-    btnExp.addEventListener("click", ()=>{
-      lastIdleExpandAll = !lastIdleExpandAll;
-      renderIdleByPersonListGrouped(lastIdleListAll);
+  const btnExpAll = document.getElementById("btnIdleExpandAll");
+  if(btnExpAll){
+    btnExpAll.addEventListener("click", ()=>{
+      idleExpandAll = !idleExpandAll;
+      renderIdleCard();
     });
   }
 
-  const btnCsv = document.getElementById("btnIdleExport");
-  if(btnCsv){
-    btnCsv.addEventListener("click", ()=>{
+  const btnExport = document.getElementById("btnIdleExport");
+  if(btnExport){
+    btnExport.addEventListener("click", ()=>{
+      const q2 = (idleSearch||"").trim().toUpperCase();
       const rows = [["Consultor","Nome","DiaSemana","Data","Periodo","Status"]];
-      // exporta respeitando o filtro do card
-      const q2 = (lastIdleSearch || "").trim().toUpperCase();
-      const exp = q2
-        ? lastIdleListAll.filter(x => (`${x.code} ${x.name} ${x.dow} ${x.date} ${x.turno}`.toUpperCase().includes(q2)))
-        : lastIdleListAll;
-
-      for(const x of exp){
+      for(const x of idleListAll){
+        if(q2){
+          const line = `${x.code} ${x.name} ${x.dow} ${x.date} ${x.turno}`.toUpperCase();
+          if(!line.includes(q2)) continue;
+        }
         rows.push([x.code, x.name, x.dow, x.date, x.turno, "Ocioso"]);
       }
       const now = new Date();
@@ -1189,6 +943,44 @@ function renderIdleByPersonListGrouped(items){
       downloadCSV(`ociosidade_${dd}-${mm}-${yyyy}.csv`, rows);
     });
   }
+}
+
+function computeHoursByMonth(from,to){
+  const m = new Map();
+  const monthOf = (label)=> (String(label||"").split("/")[1] || "??");
+
+  for(let col=from; col<=to; col++){
+    const month = monthOf(dates[col]);
+    if(!m.has(month)){
+      m.set(month, { month, businessDays:new Set(), allocCount: {DO:0,GE:0,JC:0,AL:0} });
+    }
+    const entry = m.get(month);
+    if(!isWeekend(dows[col])) entry.businessDays.add(dates[col]);
+
+    for(const c of dataByClient){
+      for(const turnoKey of ["M","T"]){
+        const codes = (c[turnoKey].codesByCol[col] || []);
+        for(const code of codes){
+          if(entry.allocCount[code] !== undefined) entry.allocCount[code] += 1;
+        }
+      }
+    }
+  }
+
+  const out = [];
+  for(const entry of m.values()){
+    const businessDays = entry.businessDays.size;
+    const plannedPerPerson = businessDays * 8;
+    const row = { month: entry.month, businessDays, plannedPerPerson, items: [] };
+    for(const code of ["DO","GE","JC","AL"]){
+      const allocatedHours = entry.allocCount[code] * 4;
+      const saldo = plannedPerPerson - allocatedHours;
+      row.items.push({ code, name: RESOURCE_NAMES[code], planned: plannedPerPerson, allocated: allocatedHours, saldo });
+    }
+    out.push(row);
+  }
+  out.sort((a,b)=> Number(a.month)-Number(b.month));
+  return out;
 }
 
 function renderHoursList(monthStats){
@@ -1221,6 +1013,7 @@ function renderHoursList(monthStats){
 function buildInsights(){
   const {from,to} = getWindowRange();
 
+  // Conflitos
   const conflictsList = [];
   for(const [k,setClients] of conflictsMap.entries()){
     if(setClients.size <= 1) continue;
@@ -1242,34 +1035,19 @@ function buildInsights(){
   });
   renderConflictsList(conflictsList);
 
-  // Idle list completo (todos os consultores)
-  const idleList = [];
-  for(const k of idleByPerson){
-    const [code, colStr, turnoMissing] = k.split("|");
-    const col = Number(colStr);
-    if(isWeekend(dows[col])) continue;
-    idleList.push({
-      code,
-      name: RESOURCE_NAMES[code] || code,
-      date: dates[col] || "",
-      dow: (dows[col]||"").toUpperCase(),
-      turno: (turnoMissing==="M" ? "MANHÃ" : "TARDE")
-    });
-  }
-  idleList.sort((a,b)=>{
-    const da = dates.indexOf(a.date), db = dates.indexOf(b.date);
-    if(da!==db) return da-db;
-    if(a.turno!==b.turno) return a.turno.localeCompare(b.turno);
-    return a.code.localeCompare(b.code);
-  });
+  // Card 2 (dataset completo)
+  renderIdleCard();
 
-  renderIdleByPersonListGrouped(idleList);
-
+  // Horas
   const monthStats = computeHoursByMonth(from,to);
   renderHoursList(monthStats);
 
+  // Sanity check visível (para validar GE/AL/JC/DO)
+  const counts = { DO:0, GE:0, JC:0, AL:0 };
+  for(const it of idleListAll) counts[it.code] = (counts[it.code]||0)+1;
+
   document.getElementById("insightsStatus").textContent =
-    `Conflitos: ${conflictsList.length} • Gaps (dias úteis): ${idleList.length}`;
+    `Conflitos: ${conflictsList.length} • Gaps: ${idleListAll.length} (DO:${counts.DO||0} GE:${counts.GE||0} JC:${counts.JC||0} AL:${counts.AL||0})`;
 }
 
 /* ===================== SCROLL X ALWAYS VISIBLE ===================== */
@@ -1304,9 +1082,12 @@ function render(){
   const {from,to} = getWindowRange();
 
   computeConflicts();
-  computePresence();     // varredura completa na base para consolidar presença
-  computeIdleByPerson(); // gaps por consultor
 
+  // IMPORTANT: sempre recalcula FULL antes de renderizar (não depende de filtros de tela)
+  computePresenceFull();
+  computeIdleFull();
+
+  // visibilidade de colunas (grade)
   let colVisible = new Array(dates.length).fill(true);
   for(let col=0; col<dates.length; col++){
     if(col<from || col>to) colVisible[col]=false;
@@ -1325,6 +1106,7 @@ function render(){
     }
   }
 
+  // headers
   const headDow = document.getElementById("headDow");
   const headDate = document.getElementById("headDate");
   headDow.innerHTML=""; headDate.innerHTML="";
@@ -1492,7 +1274,7 @@ function render(){
     }
     setStatus(`Status: carregado • Modo: Capacidade vs. Demandas • Conflitos: ${conflictsCount}`);
   }else if(mode==="idle"){
-    setStatus(`Status: carregado • Modo: Taxa de Ociosidade (gaps por consultor, dias úteis) • Dias com gaps: ${idleCols.size} • Ocorrências: ${idleCount}`);
+    setStatus(`Status: carregado • Modo: Taxa de Ociosidade (FULL) • Dias com gaps: ${idleCols.size} • Ocorrências: ${idleCount}`);
   }else{
     setStatus(`Status: carregado`);
   }
@@ -1534,6 +1316,29 @@ async function load(){
     console.error(e);
     setStatus("Status: erro ao carregar");
   }
+}
+
+/* ===================== SCROLL X SYNC ===================== */
+function syncXBar(){
+  const xPane = document.getElementById("xPane");
+  const xBar = document.getElementById("xBar");
+  const xBarInner = document.getElementById("xBarInner");
+  xBarInner.style.width = xPane.scrollWidth + "px";
+  if(Math.abs(xBar.scrollLeft - xPane.scrollLeft) > 1) xBar.scrollLeft = xPane.scrollLeft;
+}
+function wireScrollSync(){
+  const xPane = document.getElementById("xPane");
+  const xBar = document.getElementById("xBar");
+  let lock=false;
+  xPane.addEventListener("scroll", ()=>{
+    if(lock) return;
+    lock=true; xBar.scrollLeft = xPane.scrollLeft; lock=false;
+  }, {passive:true});
+  xBar.addEventListener("scroll", ()=>{
+    if(lock) return;
+    lock=true; xPane.scrollLeft = xBar.scrollLeft; lock=false;
+  }, {passive:true});
+  window.addEventListener("resize", ()=>syncXBar());
 }
 
 /* ===================== UI WIRING ===================== */
@@ -1584,6 +1389,8 @@ function wireUI(){
     mode="";
     document.getElementById("btnCap").setAttribute("aria-pressed","false");
     document.getElementById("btnIdle").setAttribute("aria-pressed","false");
+    idleSearch="";
+    idleExpandAll=true;
     render();
   });
 
