@@ -21,10 +21,9 @@
       --danger:#ef4444;
       --ok:#22c55e;
 
-      /* ultra-denso */
       --rowH:18px;
-      --headH1:14px; /* DOW */
-      --headH2:14px; /* DATE */
+      --headH1:14px;
+      --headH2:14px;
 
       --wClient:170px;
       --wTurno:86px;
@@ -38,8 +37,10 @@
       --tStrip:#0f3348;
 
       --weekend:#2a2618;
-      --free:#12321f;
-      --freeHdr:#154027;
+
+      --freeCell:#133322;
+      --freeHdr:#17462c;
+
       --confHdr:#3a1212;
     }
 
@@ -52,45 +53,28 @@
       overflow:hidden;
     }
 
-    /* ===== TOP BAR ===== */
+    /* ================= TOP (FILTROS) ================= */
     .top{
-      padding:10px 12px 8px;
-      border-bottom:1px solid var(--line);
       background:linear-gradient(180deg, rgba(10,22,46,.98), rgba(10,22,46,.86));
+      border-bottom:1px solid var(--line);
+      padding:10px 12px 10px;
     }
-    .titleRow{
-      display:flex; align-items:flex-end; justify-content:space-between; gap:10px;
-      margin-bottom:8px;
+    .topRow1{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      margin-bottom:10px;
+    }
+    .titleBlock{
+      min-width:0;
     }
     .title{
-      font-weight:950; font-size:16px;
+      font-weight:950; font-size:16px; line-height:1.1;
     }
     .subtitle{
-      color:var(--muted); font-size:12px; font-weight:700;
+      color:var(--muted); font-size:12px; font-weight:750; margin-top:4px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
-
-    .filters{
-      display:grid;
-      grid-template-columns: 1.3fr 0.9fr 0.7fr 0.7fr auto;
-      gap:10px;
-      align-items:end;
-    }
-    .field label{
-      display:block;
-      font-size:11px;
-      color:var(--muted);
-      margin:0 0 6px;
-      font-weight:800;
-    }
-    .field input,.field select{
-      width:100%;
-      background:#0f1a30;
-      border:1px solid var(--line);
-      color:var(--text);
-      border-radius:12px;
-      padding:10px 12px;
-      font-weight:800;
-      outline:none;
+    .topActions{
+      display:flex; gap:10px; align-items:center;
     }
     .btn{
       border:1px solid rgba(255,255,255,.45);
@@ -103,13 +87,39 @@
       user-select:none;
       white-space:nowrap;
     }
+    .btnSoft{
+      border:1px solid var(--line);
+      background:#0f1a30;
+      color:#fff;
+    }
+
+    .filters{
+      display:grid;
+      grid-template-columns: 1.4fr 1fr 0.7fr 0.7fr auto;
+      gap:10px;
+      align-items:end;
+    }
+    .field label{
+      display:block; font-size:11px; color:var(--muted); font-weight:850;
+      margin:0 0 6px;
+    }
+    .field input,.field select{
+      width:100%;
+      background:#0f1a30;
+      border:1px solid var(--line);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:850;
+      outline:none;
+    }
 
     .chipRow{
       display:flex;
-      align-items:center;
       gap:10px;
-      margin-top:10px;
+      align-items:center;
       flex-wrap:wrap;
+      margin-top:10px;
     }
 
     .chipBtn{
@@ -120,24 +130,24 @@
       background:#0f1a30;
       cursor:pointer;
       user-select:none;
-      font-weight:900;
+      font-weight:950;
       font-size:12px;
       color:#fff;
-      transition:transform .05s ease;
     }
-    .chipBtn:active{ transform:scale(.98); }
+    .chipBtn:active{ transform:scale(.99); }
     .chipBtn .dot{ width:10px;height:10px;border-radius:50%; }
     .chipBtn[aria-pressed="true"]{
-      border-color: rgba(255,255,255,.55);
       background:#14264a;
+      border-color: rgba(255,255,255,.55);
     }
 
     .modeBtns{
       display:flex; gap:10px; flex-wrap:wrap;
-      margin-left:6px;
+      margin-left:8px;
     }
     .modeBtn{
-      display:inline-flex; align-items:center;
+      display:inline-flex;
+      align-items:center;
       padding:8px 14px;
       border-radius:999px;
       border:1px solid var(--line);
@@ -146,7 +156,7 @@
       user-select:none;
       font-size:12px;
       font-weight:950;
-      color:#fbbf24; /* amarelo (como você queria) */
+      color:#fbbf24; /* amarelo */
     }
     .modeBtn[aria-pressed="true"]{
       background:#14264a;
@@ -165,20 +175,34 @@
       border-radius:14px;
       padding:10px 12px;
     }
-    .kpi .k{ color:var(--muted); font-size:11px; font-weight:800; }
+    .kpi .k{ color:var(--muted); font-size:11px; font-weight:850; }
     .kpi .v{ font-size:18px; font-weight:950; margin-top:6px; }
 
-    /* ===== GRID ===== */
+    /* colapsar filtros */
+    .collapsed .filters,
+    .collapsed .chipRow,
+    .collapsed .kpis{
+      display:none !important;
+    }
+    .collapsed{
+      padding-bottom:8px;
+    }
+
+    /* ================= GRID ================= */
     .gridWrap{
-      height: calc(100vh - 210px);
+      height: calc(100vh - 250px);
       padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
     .gridCard{
-      height: 100%;
+      flex:1 1 auto;
+      min-height:0;
       border:1px solid var(--line);
       border-radius:14px;
       overflow:hidden;
-      background:#0f1a30;
+      background:var(--panel);
       display:flex;
       flex-direction:column;
     }
@@ -190,20 +214,42 @@
       display:flex;
       justify-content:space-between;
       gap:10px;
+      align-items:center;
     }
     .status{
       color:var(--muted);
       font-size:12px;
-      font-weight:800;
+      font-weight:850;
       white-space:nowrap;
     }
 
-    .tableScroll{
+    /* viewport vertical do grid (sem barra horizontal) */
+    .tableY{
       flex:1 1 auto;
       min-height:0;
-      overflow:auto;
-      background: var(--solidBG);
+      overflow-y:auto;
+      overflow-x:hidden;
+      background:var(--solidBG);
       overscroll-behavior: contain;
+    }
+
+    /* barra horizontal sempre visível (espelho) */
+    .xBar{
+      height:16px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      background: var(--solidBG);
+      border-top:1px solid rgba(255,255,255,.06);
+    }
+    .xBarInner{
+      height:1px; /* só para criar largura */
+    }
+
+    /* wrapper do grid de datas (scroll horizontal real) */
+    .xPane{
+      overflow-x:auto;
+      overflow-y:hidden;
+      background:var(--solidBG);
     }
 
     table{
@@ -211,7 +257,7 @@
       border-spacing:0;
       table-layout:fixed;
       width:max-content;
-      min-width: 100%;
+      min-width:100%;
     }
 
     thead tr{ height: var(--headH1); }
@@ -244,74 +290,78 @@
       z-index: 19;
     }
 
-    /* HEADER Cliente/Turno — sticky TOP + LEFT (não some nunca) */
+    /* header Cliente/Turno 4-way sticky */
     thead th.thClient{
-      left: 0;
-      width: var(--wClient);
-      min-width: var(--wClient);
-      max-width: var(--wClient);
+      left:0;
+      width:var(--wClient);
+      min-width:var(--wClient);
+      max-width:var(--wClient);
       text-align:left;
       padding-left:10px;
-      z-index: 1000;
+      z-index:1000;
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
     thead th.thTurno{
-      left: var(--wClient);
-      width: var(--wTurno);
-      min-width: var(--wTurno);
-      max-width: var(--wTurno);
-      z-index: 999;
+      left:var(--wClient);
+      width:var(--wTurno);
+      min-width:var(--wTurno);
+      max-width:var(--wTurno);
+      z-index:999;
       background: var(--solidHdr);
       border-right:1px solid rgba(255,255,255,.14);
     }
 
     tbody td{
-      height: var(--rowH);
-      line-height: var(--rowH);
+      height:var(--rowH);
+      line-height:var(--rowH);
       font-size:11px;
       border-bottom:1px solid rgba(255,255,255,.06);
       border-right:1px solid rgba(255,255,255,.04);
       padding:0 4px;
       white-space:nowrap;
-      background: var(--solidBG);
+      background:var(--solidBG);
       vertical-align:middle;
     }
 
-    /* COLUNAS FIXAS (Cliente/Turno) — sempre opacas */
+    /* sticky body cols */
     tbody td.tdClient{
-      position: sticky;
-      left: 0;
-      width: var(--wClient);
-      min-width: var(--wClient);
-      max-width: var(--wClient);
-      z-index: 50;
+      position:sticky;
+      left:0;
+      width:var(--wClient);
+      min-width:var(--wClient);
+      max-width:var(--wClient);
+      z-index:50;
       background: var(--solidSticky) !important;
       border-right:1px solid rgba(255,255,255,.14);
     }
     tbody td.tdTurno{
-      position: sticky;
-      left: var(--wClient);
-      width: var(--wTurno);
-      min-width: var(--wTurno);
-      max-width: var(--wTurno);
-      z-index: 49;
+      position:sticky;
+      left:var(--wClient);
+      width:var(--wTurno);
+      min-width:var(--wTurno);
+      max-width:var(--wTurno);
+      z-index:49;
       background: var(--solidSticky) !important;
       border-right:1px solid rgba(255,255,255,.14);
       text-align:center;
       font-weight:950;
     }
 
-    .clientText{
-      display:block;
+    .clientCell{
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
       padding:0 6px;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      height:100%;
       font-weight:950;
       text-transform:uppercase;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
-    /* Faixas manhã/tarde */
+    /* faixas manhã/tarde */
     tr.rowM td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
     tr.rowT td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
     tr.rowM td.tdClient, tr.rowM td.tdTurno,
@@ -319,17 +369,20 @@
       background: var(--solidSticky) !important;
     }
 
-    /* Weekend */
+    /* weekend */
     .weekend{ background: var(--weekend) !important; }
 
-    /* Período livre (Taxa Ociosidade) */
-    .freeCell{ background: var(--free) !important; }
-    .freeHdr{ background: var(--freeHdr) !important; color:#d1fae5 !important; }
+    /* hidden column */
+    .colHidden{ display:none; }
 
-    /* Conflito (Cap vs Dem) */
+    /* idle highlight */
+    .freeHdr{ background: var(--freeHdr) !important; color:#d1fae5 !important; }
+    .freeCell{ background: var(--freeCell) !important; }
+
+    /* conflict highlight */
     .confHdr{ background: var(--confHdr) !important; color:#fee2e2 !important; }
 
-    /* Chips */
+    /* chips */
     .cellChips{display:flex; align-items:center; justify-content:center; gap:2px;}
     .chip{
       display:inline-flex; align-items:center; justify-content:center;
@@ -346,28 +399,98 @@
     .chip.conflict{
       background: var(--danger) !important;
       color:#0b1220 !important;
-      border-color: rgba(0,0,0,.15);
+      border-color: rgba(0,0,0,.18);
     }
 
-    /* Linha escondida por filtro */
-    tr.hidden{ display:none; }
+    /* ================= PANELS (exceções) ================= */
+    .panels{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--panel);
+      overflow:hidden;
+    }
+    .panelsHeader{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      background: var(--solidBG);
+      font-weight:950;
+    }
+    .panelsBody{
+      padding:10px 12px 12px;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:10px;
+    }
+    .card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#0f1a30;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:160px;
+    }
+    .card h3{
+      margin:0;
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      font-size:12px;
+      font-weight:950;
+      color:#fff;
+      background:#0a162e;
+    }
+    .card .content{
+      padding:10px 12px;
+      overflow:auto;
+      font-size:11px;
+      color:var(--text);
+    }
+    .listItem{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      padding:6px 0;
+      border-bottom:1px dashed rgba(255,255,255,.10);
+    }
+    .listItem:last-child{ border-bottom:0; }
+    .badge{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      font-weight:950;
+      font-size:10px;
+      white-space:nowrap;
+    }
+    .bDanger{ background: rgba(239,68,68,.18); color:#fecaca; border-color: rgba(239,68,68,.35); }
+    .bOk{ background: rgba(34,197,94,.16); color:#bbf7d0; border-color: rgba(34,197,94,.35); }
+    .bMuted{ background: rgba(255,255,255,.06); color:#cbd5e1; }
+    .mono{ font-variant-numeric: tabular-nums; }
 
-    /* Colunas escondidas (janela) */
-    .colHidden{ display:none; }
+    @media (max-width: 1200px){
+      .filters{ grid-template-columns: 1fr 1fr; }
+      .kpis{ grid-template-columns: repeat(2,1fr); }
+      .panelsBody{ grid-template-columns: 1fr; }
+      .gridWrap{ height: calc(100vh - 320px); }
+    }
   </style>
 </head>
 
 <body>
-  <div class="top">
-    <div class="titleRow">
-      <div>
+  <div class="top" id="top">
+    <div class="topRow1">
+      <div class="titleBlock">
         <div class="title">Painel PMO — Gestão de Capacidade (Folha)</div>
-        <div class="subtitle" id="subTitle">Fonte: Google Sheets publicado (CSV). Filtro estrito por colaborador + modos especiais.</div>
+        <div class="subtitle" id="subTitle">Fonte: Google Sheets publicado (CSV). SSOT operacional. Filtros estritos + modos especiais.</div>
       </div>
-      <button class="btn" id="btnReload">Recarregar dados</button>
+      <div class="topActions">
+        <button class="btn btnSoft" id="btnToggleTop" title="Recolher/Expandir filtros">⇵ Filtros</button>
+        <button class="btn btnSoft" id="btnReload">Recarregar dados</button>
+      </div>
     </div>
 
-    <div class="filters">
+    <div class="filters" id="filters">
       <div class="field">
         <label>Busca (cliente)</label>
         <input id="qClient" placeholder="Ex.: HS MATEUS, ABBR, MEDILAR..." />
@@ -393,19 +516,11 @@
       <button class="btn" id="btnClear">Limpar</button>
     </div>
 
-    <div class="chipRow">
-      <button class="chipBtn" data-code="DO" aria-pressed="false" title="DO = Dôra">
-        <span class="dot" style="background:var(--do)"></span> DO
-      </button>
-      <button class="chipBtn" data-code="GE" aria-pressed="false" title="GE = Geovana">
-        <span class="dot" style="background:var(--ge)"></span> GE
-      </button>
-      <button class="chipBtn" data-code="JC" aria-pressed="false" title="JC = João Custódio">
-        <span class="dot" style="background:var(--jc)"></span> JC
-      </button>
-      <button class="chipBtn" data-code="AL" aria-pressed="false" title="AL = Aline">
-        <span class="dot" style="background:var(--al)"></span> AL
-      </button>
+    <div class="chipRow" id="chipRow">
+      <button class="chipBtn" data-code="DO" aria-pressed="false" title="DO = Dôra"><span class="dot" style="background:var(--do)"></span>DO</button>
+      <button class="chipBtn" data-code="GE" aria-pressed="false" title="GE = Geovana"><span class="dot" style="background:var(--ge)"></span>GE</button>
+      <button class="chipBtn" data-code="JC" aria-pressed="false" title="JC = João Custódio"><span class="dot" style="background:var(--jc)"></span>JC</button>
+      <button class="chipBtn" data-code="AL" aria-pressed="false" title="AL = Aline"><span class="dot" style="background:var(--al)"></span>AL</button>
 
       <div class="modeBtns">
         <button class="modeBtn" id="btnCap" aria-pressed="false">Capacidade vs. Demandas</button>
@@ -413,36 +528,65 @@
       </div>
     </div>
 
-    <div class="kpis">
+    <div class="kpis" id="kpis">
       <div class="kpi"><div class="k">Linhas exibidas</div><div class="v" id="kRows">—</div></div>
       <div class="kpi"><div class="k">Colunas (janela)</div><div class="v" id="kCols">—</div></div>
-      <div class="kpi"><div class="k">Células preenchidas</div><div class="v" id="kFilled">—</div></div>
+      <div class="kpi"><div class="k">Células preenchidas (chips)</div><div class="v" id="kFilled">—</div></div>
       <div class="kpi"><div class="k">Hoje</div><div class="v" id="kToday">—</div></div>
     </div>
   </div>
 
   <div class="gridWrap">
+    <div class="panels" id="panels">
+      <div class="panelsHeader">
+        <div>Exceções operacionais (auto-insights)</div>
+        <div class="status" id="insightsStatus">—</div>
+      </div>
+      <div class="panelsBody">
+        <div class="card">
+          <h3>1) Colaborador Super Alocado (Conflitos)</h3>
+          <div class="content" id="listConflicts"></div>
+        </div>
+        <div class="card">
+          <h3>2) Períodos livres (Colaborador e Time)</h3>
+          <div class="content" id="listFree"></div>
+        </div>
+        <div class="card">
+          <h3>3) Saldo de horas por colaborador (mês)</h3>
+          <div class="content" id="listHours"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="gridCard">
       <div class="gridTitle">
         <div>Grade de Alocação</div>
         <div class="status" id="status">Status: carregando…</div>
       </div>
 
-      <div class="tableScroll" id="tableScroll">
-        <table id="gridTable">
-          <thead>
-            <tr id="headDow"></tr>
-            <tr id="headDate"></tr>
-          </thead>
-          <tbody id="body"></tbody>
-        </table>
+      <!-- scroll vertical -->
+      <div class="tableY" id="tableY">
+        <!-- scroll horizontal real -->
+        <div class="xPane" id="xPane">
+          <table id="gridTable">
+            <thead>
+              <tr id="headDow"></tr>
+              <tr id="headDate"></tr>
+            </thead>
+            <tbody id="body"></tbody>
+          </table>
+        </div>
       </div>
+
+      <!-- barra horizontal sempre visível (espelho) -->
+      <div class="xBar" id="xBar"><div class="xBarInner" id="xBarInner"></div></div>
     </div>
   </div>
 
 <script>
 /* ===================== CONFIG ===================== */
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgqs7bjsPeaojEQG7buOiixxv7tg1F6jt2wogHKI7O2AvjS-_aq6o7knAO5HgrUd5jZ1iWge4ZgMHM/pub?gid=0&single=true&output=csv";
+
 const RESOURCE_NAMES = { DO:"Dôra", GE:"Geovana", JC:"João Custódio", AL:"Aline" };
 const VALID = new Set(["DO","GE","JC","AL"]);
 const TURNOS = { M:"MANHÃ", T:"TARDE" };
@@ -450,17 +594,28 @@ const TURNOS = { M:"MANHÃ", T:"TARDE" };
 /* ===================== STATE ===================== */
 let rawRows = [];
 let dows = [];
-let dates = [];          // ["12/01", ...]
-let dateIdxStart = -1;   // coluna inicial de datas
-let bodyData = [];       // [{client, turnoNorm, turnoKey(M/T), cellsRaw:[], codesByCol:[["DO"],["AL","GE"]...]}]
-let selectedCodes = new Set();
-let mode = "";           // "", "cap", "idle"
-let windowFrom = null;   // index inclusive
-let windowTo = null;     // index inclusive
-let conflicts = new Set();  // keys: `${code}|${col}|${turnoKey}`
-let idleCols = new Set();   // keys: `${col}|${turnoKey}`
+let dates = [];
+let dateIdxStart = -1;
 
-/* ===================== CSV PARSER ===================== */
+let dataByClient = []; // [{client, M:{codesByCol}, T:{codesByCol}}] mantendo 2 linhas
+let selectedCodes = new Set();
+let mode = ""; // "" | "cap" | "idle"
+
+let windowFrom = null;
+let windowTo = null;
+
+// conflicts: key -> Set(clients)
+let conflictsMap = new Map(); // key: `${code}|${col}|${turnoKey}` => Set(client)
+let conflictCols = new Set(); // cols que têm conflito
+
+// idle team: key `${col}|${turnoKey}` true se ninguém alocado naquele período (time)
+let idleTeam = new Set();
+let idleCols = new Set(); // cols com algum idle (M ou T)
+
+/* ===================== UTILS ===================== */
+function setStatus(msg){ document.getElementById("status").textContent = msg; }
+function setInsightsStatus(msg){ document.getElementById("insightsStatus").textContent = msg; }
+
 function parseCSV(text){
   const rows=[];
   let row=[], cur="", inQ=false;
@@ -509,13 +664,6 @@ function parseCellCodes(cellRaw){
   return out;
 }
 
-function toTurnoKey(turnoNorm){
-  const t = String(turnoNorm||"").toUpperCase().trim();
-  if (t==="M" || t==="MANHÃ" || t==="MANHA") return "M";
-  if (t==="T" || t==="TARDE") return "T";
-  return "";
-}
-
 function ddmmToIndex(ddmm){
   const x = String(ddmm||"").trim();
   const m = x.match(/^(\d{1,2})\/(\d{1,2})$/);
@@ -525,25 +673,46 @@ function ddmmToIndex(ddmm){
   return idx>=0 ? idx : null;
 }
 
-/* ===================== RENDER HELPERS ===================== */
+function applyWindowFromInputs(){
+  const s = document.getElementById("dStart").value.trim();
+  const e = document.getElementById("dEnd").value.trim();
+  const sIdx = s ? ddmmToIndex(s) : null;
+  const eIdx = e ? ddmmToIndex(e) : null;
+
+  windowFrom = (sIdx!==null) ? sIdx : null;
+  windowTo = (eIdx!==null) ? eIdx : null;
+
+  if(windowFrom!==null && windowTo!==null && windowFrom>windowTo){
+    const tmp = windowFrom; windowFrom = windowTo; windowTo = tmp;
+  }
+}
+
+function getWindowRange(){
+  const from = windowFrom ?? 0;
+  const to = windowTo ?? (dates.length-1);
+  return {from,to};
+}
+
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 function chipEl(code, opts={}){
   const v=String(code||"").toUpperCase().trim();
   const sp=document.createElement("span");
   sp.className="chip"+(!v?" empty":"");
   sp.textContent=v || "—";
-  if (v && RESOURCE_NAMES[v]) sp.title = `${v} = ${RESOURCE_NAMES[v]}`;
-  if (opts.conflict) sp.classList.add("conflict");
+  if(v && RESOURCE_NAMES[v]) sp.title = `${v} = ${RESOURCE_NAMES[v]}`;
 
-  const css=getComputedStyle(document.documentElement);
+  if(opts.conflict) sp.classList.add("conflict");
+
   const colors={
-    DO:css.getPropertyValue("--do").trim(),
-    GE:css.getPropertyValue("--ge").trim(),
-    JC:css.getPropertyValue("--jc").trim(),
-    AL:css.getPropertyValue("--al").trim()
+    DO:cssVar("--do"), GE:cssVar("--ge"), JC:cssVar("--jc"), AL:cssVar("--al")
   };
-  if(colors[v] && !opts.conflict){
-    sp.style.background=colors[v];
-    sp.style.color="#0b1220";
+
+  if(v && colors[v] && !opts.conflict){
+    sp.style.background = colors[v];
+    sp.style.color = "#0b1220";
   }
   if(opts.conflict){
     sp.style.color="#0b1220";
@@ -551,19 +720,23 @@ function chipEl(code, opts={}){
   return sp;
 }
 
-function setStatus(msg){ document.getElementById("status").textContent = msg; }
-
-function updateKPIs(rowsShown, colsShown, filled, todayLabel){
+function updateKPIs(rowsShown, colsShown, filled){
   document.getElementById("kRows").textContent = String(rowsShown);
   document.getElementById("kCols").textContent = String(colsShown);
   document.getElementById("kFilled").textContent = String(filled);
-  document.getElementById("kToday").textContent = todayLabel || "—";
+
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2,"0");
+  const mm = String(now.getMonth()+1).padStart(2,"0");
+  document.getElementById("kToday").textContent = `${dd}/${mm}`;
 }
 
-/* ===================== BUILD DATA MODEL ===================== */
-function buildBodyData(rows){
-  const out = [];
+/* ===================== BUILD MODEL ===================== */
+function buildDataByClient(rows){
+  // mantém 2 linhas (M/T) por cliente; não duplica cliente na tabela (rowspan)
+  const map = new Map(); // client -> {M:{codesByCol}, T:{codesByCol}}
   let lastClient="";
+
   for(let r=2;r<rows.length;r++){
     const row=rows[r];
     const first=row.findIndex(c=>c && c!=="");
@@ -576,165 +749,363 @@ function buildBodyData(rows){
     const isM = (x)=> (t(x)==="M" || t(x)==="MANHÃ" || t(x)==="MANHA");
     const isT = (x)=> (t(x)==="T" || t(x)==="TARDE");
 
+    // se vier só "M"/"T" na coluna do cliente
     if(isM(client) || isT(client)){
       turno = client;
       client = lastClient || "—";
     }
     if(client && client!=="—") lastClient=client;
 
-    const turnoKey = isM(turno) ? "M" : (isT(turno) ? "T" : toTurnoKey(turno));
-    const turnoNorm = TURNOS[turnoKey] || String(turno||"").toUpperCase().trim() || "—";
+    const turnoKey = isM(turno) ? "M" : (isT(turno) ? "T" : "");
+    if(!turnoKey) continue;
 
     const cellsRaw = row.slice(dateIdxStart);
     const codesByCol = cellsRaw.map(c=>parseCellCodes(c));
 
-    out.push({ client, turnoNorm, turnoKey, cellsRaw, codesByCol });
+    if(!map.has(client)){
+      map.set(client, { client, M:null, T:null });
+    }
+    map.get(client)[turnoKey] = { turnoKey, turnoNorm: TURNOS[turnoKey], codesByCol };
   }
-  return out;
+
+  // converter para lista, mantendo ordem de inserção
+  return Array.from(map.values()).map(x=>{
+    // garantir que existam as duas linhas (mesmo vazias) para manter layout consistente
+    if(!x.M) x.M = { turnoKey:"M", turnoNorm:"MANHÃ", codesByCol: Array(dates.length).fill([]) };
+    if(!x.T) x.T = { turnoKey:"T", turnoNorm:"TARDE", codesByCol: Array(dates.length).fill([]) };
+    return x;
+  });
 }
 
-/* ===================== MODES: CONFLICTS & IDLE ===================== */
+/* ===================== COMPUTE CONFLICTS ===================== */
 function computeConflicts(){
-  conflicts.clear();
-  // conflito = mesmo colaborador alocado em >1 cliente no mesmo dia + turno
-  // usa janela ativa (windowFrom/windowTo)
-  const from = windowFrom ?? 0;
-  const to = windowTo ?? (dates.length-1);
+  conflictsMap.clear();
+  conflictCols.clear();
 
-  // map: key(code|col|turno) -> Set(client)
-  const map = new Map();
-  for(const row of bodyData){
-    if(!row.turnoKey) continue;
-    for(let col=from; col<=to; col++){
-      const codes = row.codesByCol[col] || [];
-      for(const code of codes){
-        const k = `${code}|${col}|${row.turnoKey}`;
-        if(!map.has(k)) map.set(k, new Set());
-        map.get(k).add(row.client);
+  const {from,to} = getWindowRange();
+
+  // map: code|col|turno -> Set(client)
+  for(const c of dataByClient){
+    for(const turnoKey of ["M","T"]){
+      const row = c[turnoKey];
+      for(let col=from; col<=to; col++){
+        const codes = row.codesByCol[col] || [];
+        for(const code of codes){
+          const k = `${code}|${col}|${turnoKey}`;
+          if(!conflictsMap.has(k)) conflictsMap.set(k, new Set());
+          conflictsMap.get(k).add(c.client);
+        }
       }
     }
   }
-  for(const [k, setClients] of map.entries()){
+
+  // reduzir para somente conflitos (size>1) e registrar colunas
+  for(const [k,setClients] of conflictsMap.entries()){
     if(setClients.size > 1){
-      conflicts.add(k);
+      const parts = k.split("|");
+      const col = Number(parts[1]);
+      conflictCols.add(col);
     }
   }
 }
 
-function computeIdleCols(){
+/* ===================== COMPUTE IDLE (TEAM) ===================== */
+function computeIdle(){
+  idleTeam.clear();
   idleCols.clear();
-  // período livre = nenhum analista alocado no dia+turno (time 100% ocioso)
-  const from = windowFrom ?? 0;
-  const to = windowTo ?? (dates.length-1);
 
-  // map: key(col|turno) -> count allocations (qualquer code)
-  const map = new Map();
-  for(const row of bodyData){
-    if(!row.turnoKey) continue;
-    for(let col=from; col<=to; col++){
-      const codes = row.codesByCol[col] || [];
-      if(codes.length>0){
-        const k = `${col}|${row.turnoKey}`;
-        map.set(k, (map.get(k)||0) + codes.length);
+  const {from,to} = getWindowRange();
+
+  // conta alocações do time por col+turno
+  const hasAny = new Set(); // `${col}|${turno}`
+  for(const c of dataByClient){
+    for(const turnoKey of ["M","T"]){
+      const row = c[turnoKey];
+      for(let col=from; col<=to; col++){
+        const codes = row.codesByCol[col] || [];
+        if(codes.length>0){
+          hasAny.add(`${col}|${turnoKey}`);
+        }
       }
     }
   }
 
-  // se não existe registro no map => zero => livre
+  // se não existe no set => idle
   for(let col=from; col<=to; col++){
     for(const turnoKey of ["M","T"]){
-      const k = `${col}|${turnoKey}`;
-      if(!map.has(k)) idleCols.add(k);
+      const key = `${col}|${turnoKey}`;
+      if(!hasAny.has(key)){
+        idleTeam.add(key);
+        idleCols.add(col);
+      }
     }
   }
 }
 
-/* ===================== APPLY FILTERS ===================== */
-function applyWindowFromInputs(){
-  const s = document.getElementById("dStart").value.trim();
-  const e = document.getElementById("dEnd").value.trim();
-  const sIdx = s ? ddmmToIndex(s) : null;
-  const eIdx = e ? ddmmToIndex(e) : null;
-
-  windowFrom = (sIdx!==null) ? sIdx : null;
-  windowTo = (eIdx!==null) ? eIdx : null;
-
-  if(windowFrom!==null && windowTo!==null && windowFrom>windowTo){
-    // swap
-    const tmp = windowFrom; windowFrom = windowTo; windowTo = tmp;
-  }
-}
-
-function passesRowFilters(row, from, to){
-  const q = document.getElementById("qClient").value.trim().toUpperCase();
-  if(q && !String(row.client||"").toUpperCase().includes(q)) return false;
-
+/* ===================== FILTER LOGIC ===================== */
+function getActiveSet(){
   const dd = document.getElementById("selRes").value.trim().toUpperCase();
   const ddSet = dd ? new Set([dd]) : null;
 
-  // seleção final de códigos = (chips selecionados) OU (dropdown) OU ambos (interseção)
-  let activeSet = null;
-  if(selectedCodes.size>0) activeSet = new Set(selectedCodes);
+  let active = null;
+  if(selectedCodes.size>0) active = new Set(selectedCodes);
   if(ddSet){
-    if(activeSet){
-      activeSet = new Set([...activeSet].filter(x=>ddSet.has(x)));
+    if(active){
+      active = new Set([...active].filter(x=>ddSet.has(x)));
     }else{
-      activeSet = ddSet;
+      active = ddSet;
     }
   }
+  return active; // null => sem filtro por colaborador
+}
 
-  // modos especiais podem filtrar
-  const capOn = (mode==="cap");
-  const idleOn = (mode==="idle");
+function clientMatches(client){
+  const q = document.getElementById("qClient").value.trim().toUpperCase();
+  if(!q) return true;
+  return String(client||"").toUpperCase().includes(q);
+}
 
-  // se não há set ativo e nenhum modo, não filtra por conteúdo
-  if(!activeSet && !capOn && !idleOn) return true;
-
-  // checar se a linha tem algo relevante na janela
+function rowHasAnyInWindow(rowCodesByCol, from, to, predicate){
   for(let col=from; col<=to; col++){
-    const codes = row.codesByCol[col] || [];
-
-    // modo idle: exibir linhas do turno que está livre (col|turno)
-    if(idleOn){
-      const k = `${col}|${row.turnoKey}`;
-      if(idleCols.has(k)) return true;
-      continue;
-    }
-
-    // modo cap: exibir apenas onde há conflito
-    if(capOn){
-      for(const c of codes){
-        const k = `${c}|${col}|${row.turnoKey}`;
-        if(conflicts.has(k)) return true;
-      }
-      continue;
-    }
-
-    // filtro estrito por colaborador
-    if(activeSet){
-      for(const c of codes){
-        if(activeSet.has(c)) return true;
-      }
-    }
+    const codes = rowCodesByCol[col] || [];
+    if(predicate(codes, col)) return true;
   }
-
   return false;
 }
 
-/* ===================== RENDER GRID ===================== */
+/* ===================== INSIGHTS ===================== */
+function buildInsights(){
+  const {from,to} = getWindowRange();
+
+  // 1) Super alocado (conflitos)
+  // conflito = code em >1 cliente no mesmo dia e mesmo turno
+  // já temos conflictsMap
+  const conflictsList = [];
+  for(const [k,setClients] of conflictsMap.entries()){
+    if(setClients.size <= 1) continue;
+    const [code,col,turnoKey] = k.split("|");
+    conflictsList.push({
+      code,
+      name: RESOURCE_NAMES[code] || code,
+      date: dates[Number(col)] || "",
+      dow: (dows[Number(col)]||"").toUpperCase(),
+      turno: TURNOS[turnoKey] || turnoKey,
+      clients: Array.from(setClients).sort()
+    });
+  }
+  conflictsList.sort((a,b)=>{
+    const da = dates.indexOf(a.date), db = dates.indexOf(b.date);
+    if(da!==db) return da-db;
+    if(a.turno!==b.turno) return a.turno.localeCompare(b.turno);
+    return a.code.localeCompare(b.code);
+  });
+
+  // 2) Períodos livres:
+  // 2a) time livre (idleTeam) => dia/turno sem ninguém
+  const idleTeamList = [];
+  for(const key of idleTeam){
+    const [col,turnoKey] = key.split("|");
+    idleTeamList.push({
+      date: dates[Number(col)] || "",
+      dow: (dows[Number(col)]||"").toUpperCase(),
+      turno: TURNOS[turnoKey] || turnoKey
+    });
+  }
+  idleTeamList.sort((a,b)=> dates.indexOf(a.date)-dates.indexOf(b.date) || a.turno.localeCompare(b.turno));
+
+  // 2b) colaborador livre por período (por dia)
+  // regra: se colaborador tem 1 turno alocado e no outro não tem nada -> listar período livre
+  const freeByPerson = [];
+  for(const code of VALID){
+    for(let col=from; col<=to; col++){
+      const hasM = hasCodeInAnyClient(code, col, "M");
+      const hasT = hasCodeInAnyClient(code, col, "T");
+      if(hasM && !hasT){
+        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"TARDE" });
+      }else if(!hasM && hasT){
+        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"MANHÃ" });
+      }else if(!hasM && !hasT){
+        // totalmente livre no dia (ambos turnos)
+        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"DIA INTEIRO" });
+      }
+    }
+  }
+  freeByPerson.sort((a,b)=>{
+    const da = dates.indexOf(a.date), db = dates.indexOf(b.date);
+    if(da!==db) return da-db;
+    if(a.code!==b.code) return a.code.localeCompare(b.code);
+    return a.turno.localeCompare(b.turno);
+  });
+
+  // 3) Saldo de horas por colaborador (mês)
+  // planned = dias úteis do mês * 8h
+  // allocated = ocorrências do code (chips) no mês * 4h (cada turno)
+  const monthStats = computeHoursByMonth(from,to);
+
+  // render
+  renderConflictsList(conflictsList);
+  renderFreeList(idleTeamList, freeByPerson);
+  renderHoursList(monthStats);
+
+  setInsightsStatus(`Conflitos: ${conflictsList.length} • Ociosidade time: ${idleTeamList.length} • Livres colaborador: ${freeByPerson.length}`);
+}
+
+function hasCodeInAnyClient(code, col, turnoKey){
+  for(const c of dataByClient){
+    const row = c[turnoKey];
+    const codes = row.codesByCol[col] || [];
+    if(codes.includes(code)) return true;
+  }
+  return false;
+}
+
+function computeHoursByMonth(from,to){
+  // map month "MM" -> {businessDays:Set(dateLabel), allocCountByCode:{DO:n,...}}
+  const m = new Map();
+
+  function monthOf(label){
+    const mm = String(label||"").split("/")[1];
+    return mm || "??";
+  }
+  function isBusiness(col){
+    return !isWeekend(dows[col]);
+  }
+
+  for(let col=from; col<=to; col++){
+    const month = monthOf(dates[col]);
+    if(!m.has(month)){
+      m.set(month, { month, businessDays:new Set(), allocCount: {DO:0,GE:0,JC:0,AL:0} });
+    }
+    const entry = m.get(month);
+    if(isBusiness(col)) entry.businessDays.add(dates[col]);
+
+    // contar alocações (chips) do code (cada ocorrência=1 período=4h)
+    for(const c of dataByClient){
+      for(const turnoKey of ["M","T"]){
+        const codes = (c[turnoKey].codesByCol[col] || []);
+        for(const code of codes){
+          if(entry.allocCount[code] !== undefined){
+            entry.allocCount[code] += 1;
+          }
+        }
+      }
+    }
+  }
+
+  const out = [];
+  for(const entry of m.values()){
+    const businessDays = entry.businessDays.size;
+    const plannedPerPerson = businessDays * 8; // horas
+    const row = { month: entry.month, businessDays, plannedPerPerson, items: [] };
+    for(const code of ["DO","GE","JC","AL"]){
+      const allocatedHours = entry.allocCount[code] * 4;
+      const saldo = plannedPerPerson - allocatedHours;
+      row.items.push({ code, name: RESOURCE_NAMES[code], planned: plannedPerPerson, allocated: allocatedHours, saldo });
+    }
+    out.push(row);
+  }
+  out.sort((a,b)=> Number(a.month)-Number(b.month));
+  return out;
+}
+
+function renderConflictsList(items){
+  const el = document.getElementById("listConflicts");
+  if(!items.length){
+    el.innerHTML = `<div class="badge bOk">Sem conflitos na janela</div>`;
+    return;
+  }
+  el.innerHTML = items.map(x=>{
+    const clients = x.clients.join(", ");
+    return `
+      <div class="listItem">
+        <div>
+          <div><span class="badge bDanger">${x.code}</span> <b>${x.name}</b> • <span class="mono">${x.dow} ${x.date}</span> • <b>${x.turno}</b></div>
+          <div style="color:var(--muted); margin-top:2px">Clientes: ${clients}</div>
+        </div>
+        <div class="badge bDanger">Super</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderFreeList(idleTeamList, freeByPerson){
+  const el = document.getElementById("listFree");
+  const block1 = idleTeamList.length
+    ? `<div class="badge bOk">Time 100% ocioso (período)</div>` +
+      idleTeamList.slice(0,80).map(x=>`
+        <div class="listItem">
+          <div><b>${x.turno}</b> • <span class="mono">${x.dow} ${x.date}</span></div>
+          <div class="badge bOk">Livre</div>
+        </div>
+      `).join("") +
+      (idleTeamList.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${idleTeamList.length-80} itens…</div>`:"")
+    : `<div class="badge bMuted">Sem períodos 100% livres do time na janela</div>`;
+
+  const block2 = freeByPerson.length
+    ? `<div style="margin-top:12px" class="badge bMuted">Livre por colaborador (turno)</div>` +
+      freeByPerson.slice(0,80).map(x=>`
+        <div class="listItem">
+          <div><span class="badge bMuted">${x.code}</span> <b>${x.name}</b> • <span class="mono">${x.dow} ${x.date}</span> • ${x.turno}</div>
+          <div class="badge bOk">Gap</div>
+        </div>
+      `).join("") +
+      (freeByPerson.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${freeByPerson.length-80} itens…</div>`:"")
+    : `<div style="margin-top:12px" class="badge bMuted">Nenhum gap por colaborador</div>`;
+
+  el.innerHTML = block1 + block2;
+}
+
+function renderHoursList(monthStats){
+  const el = document.getElementById("listHours");
+  if(!monthStats.length){
+    el.innerHTML = `<div class="badge bMuted">Sem dados</div>`;
+    return;
+  }
+
+  let html = "";
+  for(const m of monthStats){
+    html += `<div class="badge bMuted">Mês ${m.month} • Dias úteis: ${m.businessDays} • Previsto/pessoa: ${m.plannedPerPerson}h</div>`;
+    html += `<div style="margin-top:8px"></div>`;
+    for(const it of m.items){
+      const cls = it.saldo < 0 ? "bDanger" : "bOk";
+      html += `
+        <div class="listItem">
+          <div><span class="badge bMuted">${it.code}</span> <b>${it.name}</b></div>
+          <div class="mono">
+            <span class="badge bMuted">Alocado ${it.allocated}h</span>
+            <span class="badge ${cls}">Saldo ${it.saldo}h</span>
+          </div>
+        </div>
+      `;
+    }
+    html += `<div style="height:10px"></div>`;
+  }
+  el.innerHTML = html;
+}
+
+/* ===================== RENDER ===================== */
 function render(){
   applyWindowFromInputs();
+  const {from,to} = getWindowRange();
 
-  const from = windowFrom ?? 0;
-  const to = windowTo ?? (dates.length-1);
+  // recalcular modos
+  if(mode==="cap"){
+    computeConflicts();
+  }else{
+    conflictsMap.clear();
+    conflictCols.clear();
+  }
 
-  // recomputa modos
-  if(mode==="cap") computeConflicts(); else conflicts.clear();
-  if(mode==="idle") computeIdleCols(); else idleCols.clear();
+  if(mode==="idle"){
+    computeIdle();
+  }else{
+    idleTeam.clear();
+    idleCols.clear();
+  }
 
-  // ===== Header =====
-  const headDow=document.getElementById("headDow");
-  const headDate=document.getElementById("headDate");
+  // header
+  const headDow = document.getElementById("headDow");
+  const headDate = document.getElementById("headDate");
   headDow.innerHTML=""; headDate.innerHTML="";
 
   const thClient=document.createElement("th");
@@ -750,198 +1121,345 @@ function render(){
   headDow.appendChild(thClient);
   headDow.appendChild(thTurno);
 
+  // decidir colunas visíveis
+  const colVisible = new Array(dates.length).fill(true);
+  for(let col=0; col<dates.length; col++){
+    if(col<from || col>to) colVisible[col]=false;
+  }
+  if(mode==="cap"){
+    // filtrar para colunas com conflitos na janela
+    for(let col=from; col<=to; col++){
+      if(!conflictCols.has(col)) colVisible[col]=false;
+    }
+  }
+  if(mode==="idle"){
+    // filtrar para colunas que têm algum período do time 100% livre
+    for(let col=from; col<=to; col++){
+      if(!idleCols.has(col)) colVisible[col]=false;
+    }
+  }
+
+  // DOW
   for(let col=0; col<dates.length; col++){
     const th=document.createElement("th");
     th.textContent=(dows[col]||"").toUpperCase();
-    th.style.width=th.style.minWidth=th.style.maxWidth=getComputedStyle(document.documentElement).getPropertyValue("--wDate").trim() || "64px";
+    th.style.width=th.style.minWidth=th.style.maxWidth = cssVar("--wDate") || "64px";
 
-    const inWindow = (col>=from && col<=to);
-    if(!inWindow) th.classList.add("colHidden");
+    if(!colVisible[col]) th.classList.add("colHidden");
+    if(isWeekend(dows[col])) th.classList.add("weekend");
 
-    const wk = isWeekend(dows[col]);
-    if(wk) th.classList.add("weekend");
-
-    // headers especiais
-    if(mode==="idle"){
-      const kM = `${col}|M`, kT = `${col}|T`;
-      if(idleCols.has(kM) || idleCols.has(kT)) th.classList.add("freeHdr");
+    if(mode==="idle" && (idleTeam.has(`${col}|M`) || idleTeam.has(`${col}|T`))){
+      th.classList.add("freeHdr");
     }
-    if(mode==="cap"){
-      // se houver qualquer conflito nesse col, marca header
-      let any=false;
-      for(const code of VALID){
-        if(conflicts.has(`${code}|${col}|M`) || conflicts.has(`${code}|${col}|T`)){ any=true; break; }
-      }
-      if(any) th.classList.add("confHdr");
+    if(mode==="cap" && conflictCols.has(col)){
+      th.classList.add("confHdr");
     }
 
     headDow.appendChild(th);
   }
 
+  // DATE
   for(let col=0; col<dates.length; col++){
     const th=document.createElement("th");
     th.textContent=dates[col];
-    th.style.width=th.style.minWidth=th.style.maxWidth=getComputedStyle(document.documentElement).getPropertyValue("--wDate").trim() || "64px";
+    th.style.width=th.style.minWidth=th.style.maxWidth = cssVar("--wDate") || "64px";
 
-    const inWindow = (col>=from && col<=to);
-    if(!inWindow) th.classList.add("colHidden");
+    if(!colVisible[col]) th.classList.add("colHidden");
+    if(isWeekend(dows[col])) th.classList.add("weekend");
 
-    const wk = isWeekend(dows[col]);
-    if(wk) th.classList.add("weekend");
-
-    if(mode==="idle"){
-      const kM = `${col}|M`, kT = `${col}|T`;
-      if(idleCols.has(kM) || idleCols.has(kT)) th.classList.add("freeHdr");
+    if(mode==="idle" && (idleTeam.has(`${col}|M`) || idleTeam.has(`${col}|T`))){
+      th.classList.add("freeHdr");
     }
-    if(mode==="cap"){
-      let any=false;
-      for(const code of VALID){
-        if(conflicts.has(`${code}|${col}|M`) || conflicts.has(`${code}|${col}|T`)){ any=true; break; }
-      }
-      if(any) th.classList.add("confHdr");
+    if(mode==="cap" && conflictCols.has(col)){
+      th.classList.add("confHdr");
     }
 
     headDate.appendChild(th);
   }
 
-  // ===== body =====
-  const tbody=document.getElementById("body");
+  // body
+  const activeSet = getActiveSet();
+  const tbody = document.getElementById("body");
   tbody.innerHTML="";
 
-  // construir set ativo (chips + dropdown)
-  const dd = document.getElementById("selRes").value.trim().toUpperCase();
-  const ddSet = dd ? new Set([dd]) : null;
-  let activeSet = null;
-  if(selectedCodes.size>0) activeSet = new Set(selectedCodes);
-  if(ddSet){
-    if(activeSet){
-      activeSet = new Set([...activeSet].filter(x=>ddSet.has(x)));
-    }else{
-      activeSet = ddSet;
-    }
-  }
+  let rowsShown = 0;
+  let filled = 0;
 
-  let shownRows=0;
-  let filled=0;
+  // decidir se cliente passa filtros
+  for(const c of dataByClient){
+    if(!clientMatches(c.client)) continue;
 
-  for(const row of bodyData){
-    if(!row.turnoKey) continue;
+    // linhas por turno (M/T)
+    // row visible se tem algo relevante (pela seleção/mode) dentro da janela e colunas visíveis
+    const rowM = c.M;
+    const rowT = c.T;
 
-    if(!passesRowFilters(row, from, to)){
-      continue;
-    }
+    const mVisible = rowPasses(rowM, c.client, "M", activeSet, from, to, colVisible);
+    const tVisible = rowPasses(rowT, c.client, "T", activeSet, from, to, colVisible);
 
-    const tr=document.createElement("tr");
-    tr.className = (row.turnoKey==="M") ? "rowM" : "rowT";
+    // se nenhuma aparece, pula cliente inteiro
+    if(!mVisible && !tVisible) continue;
 
-    const tdClient=document.createElement("td");
-    tdClient.className="tdClient";
-    const span=document.createElement("span");
-    span.className="clientText";
-    span.textContent=row.client;
-    tdClient.appendChild(span);
+    // criar duas linhas; cliente com rowspan=2 (mesmo se uma linha for "invisível", a gente ainda renderiza com células vazias para manter alinhamento)
+    // mas, para evitar "linha desalinhada", manter sempre as duas linhas quando cliente entra
+    const trM = document.createElement("tr");
+    trM.className = "rowM";
 
-    const tdTurno=document.createElement("td");
-    tdTurno.className="tdTurno";
-    tdTurno.textContent=row.turnoNorm;
+    const tdClient = document.createElement("td");
+    tdClient.className = "tdClient";
+    tdClient.rowSpan = 2;
+    const cc = document.createElement("div");
+    cc.className = "clientCell";
+    cc.textContent = c.client;
+    tdClient.appendChild(cc);
 
-    tr.appendChild(tdClient);
-    tr.appendChild(tdTurno);
+    const tdTurnoM = document.createElement("td");
+    tdTurnoM.className = "tdTurno";
+    tdTurnoM.textContent = "MANHÃ";
 
+    trM.appendChild(tdClient);
+    trM.appendChild(tdTurnoM);
+
+    // células M
     for(let col=0; col<dates.length; col++){
-      const td=document.createElement("td");
-      td.style.width=td.style.minWidth=td.style.maxWidth=getComputedStyle(document.documentElement).getPropertyValue("--wDate").trim() || "64px";
-
-      const inWindow = (col>=from && col<=to);
-      if(!inWindow) td.classList.add("colHidden");
-
+      const td = document.createElement("td");
+      td.style.width=td.style.minWidth=td.style.maxWidth = cssVar("--wDate") || "64px";
+      if(!colVisible[col]) td.classList.add("colHidden");
       if(isWeekend(dows[col])) td.classList.add("weekend");
 
-      // idle highlight (sem alocações no time)
-      if(mode==="idle"){
-        const k = `${col}|${row.turnoKey}`;
-        if(idleCols.has(k)){
-          td.classList.add("freeCell");
-        }
+      if(mode==="idle" && idleTeam.has(`${col}|M`)){
+        td.classList.add("freeCell");
       }
 
-      const codesAll = row.codesByCol[col] || [];
-      if(codesAll.length>0) filled += codesAll.length;
+      const codesAll = (rowM.codesByCol[col] || []);
+      filled += codesAll.length;
 
-      // aplicar filtro estrito de colaborador (se tiver activeSet)
-      let codes = codesAll;
-      if(activeSet){
-        codes = codesAll.filter(c=>activeSet.has(c));
-      }
+      const box = document.createElement("div");
+      box.className = "cellChips";
 
-      // modo cap: mostrar apenas conflitos e pintar vermelho
-      let outCodes = codes;
-      if(mode==="cap"){
-        outCodes = [];
-        for(const c of codesAll){
-          const k = `${c}|${col}|${row.turnoKey}`;
-          if(conflicts.has(k)) outCodes.push(c);
-        }
-      }
-
-      const box=document.createElement("div");
-      box.className="cellChips";
-
-      if(outCodes.length===0){
-        box.appendChild(chipEl("", {}));
+      if(!mVisible){
+        // cliente entra mas linha não passa (para manter alinhamento); mostra vazio
+        box.appendChild(chipEl(""));
       }else{
-        for(const c of outCodes){
-          const isConf = (mode==="cap") ? conflicts.has(`${c}|${col}|${row.turnoKey}`) : false;
-          box.appendChild(chipEl(c, { conflict:isConf }));
+        if(mode==="cap"){
+          // mostrar somente conflitos
+          const out = [];
+          for(const code of codesAll){
+            const key = `${code}|${col}|M`;
+            const setClients = conflictsMap.get(key);
+            if(setClients && setClients.size>1) out.push(code);
+          }
+          if(out.length===0){
+            box.appendChild(chipEl(""));
+          }else{
+            for(const code of out){
+              box.appendChild(chipEl(code, { conflict:true }));
+            }
+          }
+        }else{
+          // filtro estrito
+          let codes = codesAll;
+          if(activeSet) codes = codesAll.filter(x=>activeSet.has(x));
+          if(codes.length===0){
+            box.appendChild(chipEl(""));
+          }else{
+            for(const code of codes) box.appendChild(chipEl(code));
+          }
         }
       }
 
       td.appendChild(box);
-      tr.appendChild(td);
+      trM.appendChild(td);
     }
 
-    tbody.appendChild(tr);
-    shownRows++;
+    const trT = document.createElement("tr");
+    trT.className = "rowT";
+
+    const tdTurnoT = document.createElement("td");
+    tdTurnoT.className = "tdTurno";
+    tdTurnoT.textContent = "TARDE";
+    trT.appendChild(tdTurnoT);
+
+    // células T
+    for(let col=0; col<dates.length; col++){
+      const td = document.createElement("td");
+      td.style.width=td.style.minWidth=td.style.maxWidth = cssVar("--wDate") || "64px";
+      if(!colVisible[col]) td.classList.add("colHidden");
+      if(isWeekend(dows[col])) td.classList.add("weekend");
+
+      if(mode==="idle" && idleTeam.has(`${col}|T`)){
+        td.classList.add("freeCell");
+      }
+
+      const codesAll = (rowT.codesByCol[col] || []);
+      filled += codesAll.length;
+
+      const box = document.createElement("div");
+      box.className = "cellChips";
+
+      if(!tVisible){
+        box.appendChild(chipEl(""));
+      }else{
+        if(mode==="cap"){
+          const out = [];
+          for(const code of codesAll){
+            const key = `${code}|${col}|T`;
+            const setClients = conflictsMap.get(key);
+            if(setClients && setClients.size>1) out.push(code);
+          }
+          if(out.length===0){
+            box.appendChild(chipEl(""));
+          }else{
+            for(const code of out){
+              box.appendChild(chipEl(code, { conflict:true }));
+            }
+          }
+        }else{
+          let codes = codesAll;
+          if(activeSet) codes = codesAll.filter(x=>activeSet.has(x));
+          if(codes.length===0){
+            box.appendChild(chipEl(""));
+          }else{
+            for(const code of codes) box.appendChild(chipEl(code));
+          }
+        }
+      }
+
+      td.appendChild(box);
+      trT.appendChild(td);
+    }
+
+    // anexar
+    tbody.appendChild(trM);
+    tbody.appendChild(trT);
+
+    // contagem de linhas exibidas = 2 por cliente visível
+    rowsShown += 2;
   }
 
   // KPIs
-  const colsShown = (to - from + 1);
-  const todayLabel = (() => {
-    const now = new Date();
-    const dd = String(now.getDate()).padStart(2,"0");
-    const mm = String(now.getMonth()+1).padStart(2,"0");
-    const label = `${dd}/${mm}`;
-    return dates.includes(label) ? label : label;
-  })();
-
-  updateKPIs(shownRows, colsShown, filled, todayLabel);
+  const colsShown = colVisible.filter(Boolean).length;
+  updateKPIs(rowsShown, colsShown, filled);
 
   // status
   if(mode==="cap"){
-    setStatus(`Status: carregado • Modo: Conflitos (Capacidade vs. Demandas) • Conflitos: ${conflicts.size}`);
+    let conflictsCount = 0;
+    for(const [k,setClients] of conflictsMap.entries()){
+      if(setClients.size>1) conflictsCount++;
+    }
+    setStatus(`Status: carregado • Modo: Capacidade vs. Demandas • Conflitos: ${conflictsCount}`);
   }else if(mode==="idle"){
-    setStatus(`Status: carregado • Modo: Ociosidade • Períodos livres (time): ${idleCols.size}`);
+    setStatus(`Status: carregado • Modo: Taxa de Ociosidade • Períodos 100% livres (time): ${idleTeam.size}`);
   }else{
-    setStatus("Status: carregado");
+    setStatus(`Status: carregado`);
+  }
+
+  // insights (reusa conflitos/idle conforme modo)
+  // sempre computar ambos para painel completo
+  computeConflicts();
+  computeIdle();
+  buildInsights();
+
+  // sincronizar barra horizontal sempre visível
+  syncXBar();
+}
+
+/* decide se linha passa filtros/mode */
+function rowPasses(row, client, turnoKey, activeSet, from, to, colVisible){
+  // se modo cap: precisa ter algum conflito nessa linha (col visível)
+  if(mode==="cap"){
+    for(let col=from; col<=to; col++){
+      if(!colVisible[col]) continue;
+      const codes = row.codesByCol[col] || [];
+      for(const code of codes){
+        const key = `${code}|${col}|${turnoKey}`;
+        const setClients = conflictsMap.get(key);
+        if(setClients && setClients.size>1) return true;
+      }
+    }
+    return false;
+  }
+
+  // se modo idle: precisa ter pelo menos uma coluna visível com idle do time nesse turno
+  if(mode==="idle"){
+    for(let col=from; col<=to; col++){
+      if(!colVisible[col]) continue;
+      if(idleTeam.has(`${col}|${turnoKey}`)) return true;
+    }
+    return false;
+  }
+
+  // modo normal: se há filtro por colaborador, linha precisa ter algum chip desse set na janela
+  if(activeSet){
+    for(let col=from; col<=to; col++){
+      if(!colVisible[col]) continue;
+      const codes = row.codesByCol[col] || [];
+      for(const code of codes){
+        if(activeSet.has(code)) return true;
+      }
+    }
+    return false;
+  }
+
+  // sem filtros: sempre passa
+  return true;
+}
+
+/* ===================== SCROLLBAR ALWAYS VISIBLE ===================== */
+function syncXBar(){
+  const xPane = document.getElementById("xPane");
+  const xBar = document.getElementById("xBar");
+  const xBarInner = document.getElementById("xBarInner");
+
+  // largura real do conteúdo (scrollWidth)
+  const w = xPane.scrollWidth;
+  xBarInner.style.width = w + "px";
+
+  // se o conteúdo for menor que viewport, ainda mantém coerência
+  // sync scrollLeft
+  if(Math.abs(xBar.scrollLeft - xPane.scrollLeft) > 1){
+    xBar.scrollLeft = xPane.scrollLeft;
   }
 }
 
-/* ===================== LOAD CSV ===================== */
+function wireScrollSync(){
+  const xPane = document.getElementById("xPane");
+  const xBar = document.getElementById("xBar");
+
+  let lock=false;
+  xPane.addEventListener("scroll", ()=>{
+    if(lock) return;
+    lock=true;
+    xBar.scrollLeft = xPane.scrollLeft;
+    lock=false;
+  }, {passive:true});
+
+  xBar.addEventListener("scroll", ()=>{
+    if(lock) return;
+    lock=true;
+    xPane.scrollLeft = xBar.scrollLeft;
+    lock=false;
+  }, {passive:true});
+
+  window.addEventListener("resize", ()=>syncXBar());
+}
+
+/* ===================== LOAD ===================== */
 async function load(){
   setStatus("Status: carregando…");
   try{
-    const res=await fetch(CSV_URL, {cache:"no-store"});
+    const res = await fetch(CSV_URL, {cache:"no-store"});
     if(!res.ok) throw new Error("Falha ao buscar CSV");
-    const csv=await res.text();
+    const csv = await res.text();
 
-    rawRows=parseCSV(csv).filter(r=>r.some(c=>c && c!==""));
+    rawRows = parseCSV(csv).filter(r=>r.some(c=>c && c!==""));
     if(rawRows.length<3){
       setStatus("Status: CSV vazio/curto");
       return;
     }
 
-    const dowRow=rawRows[0];
-    const dateRow=rawRows[1];
+    const dowRow = rawRows[0];
+    const dateRow = rawRows[1];
 
     dateIdxStart = dateRow.findIndex(c=>/^\d{1,2}\/\d{1,2}/.test(c));
     if(dateIdxStart<0){
@@ -952,7 +1470,7 @@ async function load(){
     dows = dowRow.slice(dateIdxStart);
     dates = dateRow.slice(dateIdxStart).map(normalizeDateLabel);
 
-    bodyData = buildBodyData(rawRows);
+    dataByClient = buildDataByClient(rawRows);
 
     render();
   }catch(e){
@@ -961,46 +1479,47 @@ async function load(){
   }
 }
 
-/* ===================== UI EVENTS ===================== */
-function wire(){
-  // chips seleção
+/* ===================== UI ===================== */
+function wireUI(){
+  // chips seleção estrita (multi)
   document.querySelectorAll(".chipBtn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const code = btn.getAttribute("data-code");
       const on = btn.getAttribute("aria-pressed")==="true";
-      btn.setAttribute("aria-pressed", on ? "false" : "true");
+      btn.setAttribute("aria-pressed", on ? "false":"true");
       if(on) selectedCodes.delete(code);
       else selectedCodes.add(code);
 
-      // se estava em modo especial, mantém; apenas re-render
+      // se estiver em modo cap/idle, mantém
       render();
     });
   });
 
-  // modos especiais
+  // modos
   const btnCap = document.getElementById("btnCap");
   const btnIdle = document.getElementById("btnIdle");
 
   btnCap.addEventListener("click", ()=>{
     const on = btnCap.getAttribute("aria-pressed")==="true";
-    btnCap.setAttribute("aria-pressed", on ? "false" : "true");
-    btnIdle.setAttribute("aria-pressed", "false");
+    btnCap.setAttribute("aria-pressed", on?"false":"true");
+    btnIdle.setAttribute("aria-pressed","false");
     mode = on ? "" : "cap";
     render();
   });
 
   btnIdle.addEventListener("click", ()=>{
     const on = btnIdle.getAttribute("aria-pressed")==="true";
-    btnIdle.setAttribute("aria-pressed", on ? "false" : "true");
-    btnCap.setAttribute("aria-pressed", "false");
+    btnIdle.setAttribute("aria-pressed", on?"false":"true");
+    btnCap.setAttribute("aria-pressed","false");
     mode = on ? "" : "idle";
     render();
   });
 
-  // inputs básicos
+  // inputs
   ["qClient","selRes","dStart","dEnd"].forEach(id=>{
-    document.getElementById(id).addEventListener("input", ()=>render());
-    document.getElementById(id).addEventListener("change", ()=>render());
+    const el = document.getElementById(id);
+    el.addEventListener("input", ()=>render());
+    el.addEventListener("change", ()=>render());
   });
 
   // limpar
@@ -1019,10 +1538,20 @@ function wire(){
 
   // reload
   document.getElementById("btnReload").addEventListener("click", ()=>load());
+
+  // collapse
+  document.getElementById("btnToggleTop").addEventListener("click", ()=>{
+    const top = document.getElementById("top");
+    top.classList.toggle("collapsed");
+    // ajusta altura da grid
+    // (o CSS usa calc fixo; funciona bem. mas forçar repaint ajuda)
+    setTimeout(()=>syncXBar(), 50);
+  });
 }
 
 /* ===================== BOOT ===================== */
-wire();
+wireScrollSync();
+wireUI();
 load();
 </script>
 </body>
