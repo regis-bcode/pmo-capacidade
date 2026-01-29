@@ -53,7 +53,6 @@
       overflow:hidden;
     }
 
-    /* =============== TOP (FILTROS) =============== */
     .top{
       background:linear-gradient(180deg, rgba(10,22,46,.98), rgba(10,22,46,.86));
       border-bottom:1px solid var(--line);
@@ -149,7 +148,7 @@
       user-select:none;
       font-size:12px;
       font-weight:950;
-      color:#fbbf24; /* amarelo */
+      color:#fbbf24;
     }
     .modeBtn[aria-pressed="true"]{
       background:#14264a;
@@ -171,7 +170,6 @@
     .kpi .k{ color:var(--muted); font-size:11px; font-weight:850; }
     .kpi .v{ font-size:18px; font-weight:950; margin-top:6px; }
 
-    /* ===== Compact mode (somente Grade visível) ===== */
     body.compact-mode .filters,
     body.compact-mode .chipRow,
     body.compact-mode .kpis,
@@ -182,7 +180,6 @@
       height: calc(100vh - 84px) !important;
     }
 
-    /* =============== GRID WRAP =============== */
     .gridWrap{
       height: calc(100vh - 250px);
       padding:12px;
@@ -191,7 +188,6 @@
       gap:10px;
     }
 
-    /* =============== PANELS (EXCEÇÕES) =============== */
     .panels{
       border:1px solid var(--line);
       border-radius:14px;
@@ -272,10 +268,8 @@
     .bMuted{ background: rgba(255,255,255,.06); color:#cbd5e1; }
     .mono{ font-variant-numeric: tabular-nums; }
 
-    /* ===== Minimize apenas Exceções (mantém header) ===== */
     .exceptions-min .panelsBody{ display:none !important; }
 
-    /* =============== GRID CARD =============== */
     .gridCard{
       flex:1 1 auto;
       min-height:0;
@@ -303,7 +297,6 @@
       white-space:nowrap;
     }
 
-    /* viewport vertical do grid (sem barra horizontal) */
     .tableY{
       flex:1 1 auto;
       min-height:0;
@@ -313,7 +306,6 @@
       overscroll-behavior: contain;
     }
 
-    /* barra horizontal sempre visível (espelho) */
     .xBar{
       height:16px;
       overflow-x:auto;
@@ -323,7 +315,6 @@
     }
     .xBarInner{ height:1px; }
 
-    /* scroll horizontal real */
     .xPane{
       overflow-x:auto;
       overflow-y:hidden;
@@ -368,7 +359,6 @@
       z-index: 19;
     }
 
-    /* header Cliente/Turno 4-way sticky */
     thead th.thClient{
       left:0;
       width:var(--wClient);
@@ -402,7 +392,6 @@
       vertical-align:middle;
     }
 
-    /* sticky body cols */
     tbody td.tdClient{
       position:sticky;
       left:0;
@@ -439,7 +428,6 @@
       white-space:nowrap;
     }
 
-    /* faixas manhã/tarde */
     tr.rowM td{ background: linear-gradient(90deg, var(--mStrip), var(--solidBG)); }
     tr.rowT td{ background: linear-gradient(90deg, var(--tStrip), var(--solidBG)); }
     tr.rowM td.tdClient, tr.rowM td.tdTurno,
@@ -447,20 +435,15 @@
       background: var(--solidSticky) !important;
     }
 
-    /* weekend */
     .weekend{ background: var(--weekend) !important; }
 
-    /* hidden column */
     .colHidden{ display:none; }
 
-    /* idle highlight */
     .freeHdr{ background: var(--freeHdr) !important; color:#d1fae5 !important; }
     .freeCell{ background: var(--freeCell) !important; }
 
-    /* conflict highlight */
     .confHdr{ background: var(--confHdr) !important; color:#fee2e2 !important; }
 
-    /* chips */
     .cellChips{display:flex; align-items:center; justify-content:center; gap:2px;}
     .chip{
       display:inline-flex; align-items:center; justify-content:center;
@@ -565,7 +548,7 @@
           <div class="content" id="listConflicts"></div>
         </div>
         <div class="card">
-          <h3>2) Ociosidade (Colaborador e Time)</h3>
+          <h3>2) Períodos livres (Colaborador e Time)</h3>
           <div class="content" id="listFree"></div>
         </div>
         <div class="card">
@@ -609,19 +592,23 @@ let rawRows = [];
 let dows = [];
 let dates = [];
 let dateIdxStart = -1;
-let dataByClient = []; // [{client, M:{codesByCol}, T:{codesByCol}}]
+let dataByClient = [];
 let selectedCodes = new Set();
 let mode = ""; // "" | "cap" | "idle"
 let windowFrom = null;
 let windowTo = null;
 
-let conflictsMap = new Map(); // key `${code}|${col}|${turnoKey}` => Set(client)
+let conflictsMap = new Map();
 let conflictCols = new Set();
-let idleTeam = new Set(); // `${col}|${turnoKey}`
-let idleCols = new Set();
+
+// idlePeriod: período com NENHUMA alocação (M ou T) => usado no modo "Taxa de Ociosidade"
+// ATENÇÃO: SEMPRE DIAS ÚTEIS (fim de semana nunca entra aqui)
+let idlePeriod = new Set(); // `${col}|${turnoKey}`
+let idleCols = new Set();   // colunas (dias) que possuem ao menos 1 período ocioso
 
 /* ===================== UTILS ===================== */
 function setStatus(msg){ document.getElementById("status").textContent = msg; }
+
 function parseCSV(text){
   const rows=[];
   let row=[], cur="", inQ=false;
@@ -639,15 +626,24 @@ function parseCSV(text){
   if (cur.length || row.length){ row.push(cur); rows.push(row); }
   return rows.map(r=>r.map(c=>(c??"").trim()));
 }
+
 function normalizeDateLabel(s){
   const m=String(s||"").trim().match(/^(\d{1,2})\/(\d{1,2})/);
   if(!m) return String(s||"").trim();
   return `${String(m[1]).padStart(2,"0")}/${String(m[2]).padStart(2,"0")}`;
 }
+
+/* ===== DETECÇÃO ROBUSTA DE FIM DE SEMANA (SÁB/SAB. / DOM etc.) ===== */
 function isWeekend(dow){
-  const x=String(dow||"").toUpperCase();
-  return x.startsWith("SAB") || x.startsWith("SÁB") || x.startsWith("DOM");
+  const raw = String(dow || "").trim().toUpperCase();
+  const norm = raw
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[.\u00A0]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return norm.startsWith("SAB") || norm.startsWith("DOM");
 }
+
 function parseCellCodes(cellRaw){
   const raw=String(cellRaw||"").trim();
   if(!raw) return [];
@@ -666,6 +662,7 @@ function parseCellCodes(cellRaw){
   }
   return out;
 }
+
 function ddmmToIndex(ddmm){
   const x = String(ddmm||"").trim();
   const m = x.match(/^(\d{1,2})\/(\d{1,2})$/);
@@ -674,6 +671,7 @@ function ddmmToIndex(ddmm){
   const idx = dates.indexOf(label);
   return idx>=0 ? idx : null;
 }
+
 function applyWindowFromInputs(){
   const s = document.getElementById("dStart").value.trim();
   const e = document.getElementById("dEnd").value.trim();
@@ -687,14 +685,17 @@ function applyWindowFromInputs(){
     const tmp = windowFrom; windowFrom = windowTo; windowTo = tmp;
   }
 }
+
 function getWindowRange(){
   const from = windowFrom ?? 0;
   const to = windowTo ?? (dates.length-1);
   return {from,to};
 }
+
 function cssVar(name){
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
+
 function chipEl(code, opts={}){
   const v=String(code||"").toUpperCase().trim();
   const sp=document.createElement("span");
@@ -714,6 +715,7 @@ function chipEl(code, opts={}){
   }
   return sp;
 }
+
 function updateKPIs(rowsShown, colsShown, filled){
   document.getElementById("kRows").textContent = String(rowsShown);
   document.getElementById("kCols").textContent = String(colsShown);
@@ -796,32 +798,35 @@ function computeConflicts(){
   }
 }
 
-/* ===================== IDLE TEAM ===================== */
-function computeIdle(){
-  idleTeam.clear();
+/* ===================== IDLE PERIOD (SOMENTE DIAS ÚTEIS)
+   REGRA: "Taxa de Ociosidade" exibe APENAS dias (colunas) em que
+   pelo menos UM período (MANHÃ OU TARDE) está 100% sem alocação.
+   Fim de semana NUNCA entra. ===================== */
+function computeIdlePeriods(){
+  idlePeriod.clear();
   idleCols.clear();
+
   const {from,to} = getWindowRange();
 
-  const hasAny = new Set(); // `${col}|${turno}`
-  for(const c of dataByClient){
+  // Para cada dia útil e turno, verifica se existe qualquer alocação em qualquer cliente
+  for(let col=from; col<=to; col++){
+    if(isWeekend(dows[col])) continue; // << nunca considerar fim de semana
+
     for(const turnoKey of ["M","T"]){
-      const row = c[turnoKey];
-      for(let col=from; col<=to; col++){
+      let any = false;
+
+      for(const c of dataByClient){
+        const row = c[turnoKey];
         const codes = row.codesByCol[col] || [];
-        if(codes.length>0){
-          hasAny.add(`${col}|${turnoKey}`);
+        if(codes.length > 0){
+          any = true;
+          break;
         }
       }
-    }
-  }
 
-  for(let col=from; col<=to; col++){
-    if(isWeekend(dows[col])) continue; // fins de semana não entram como ociosidade
-    for(const turnoKey of ["M","T"]){
-      const key = `${col}|${turnoKey}`;
-      if(!hasAny.has(key)){
-        idleTeam.add(key);
-        idleCols.add(col);
+      if(!any){
+        idlePeriod.add(`${col}|${turnoKey}`);
+        idleCols.add(col); // dia entra se pelo menos UM período estiver vazio
       }
     }
   }
@@ -841,13 +846,15 @@ function getActiveSet(){
       active = ddSet;
     }
   }
-  return active; // null => sem filtro
+  return active;
 }
+
 function clientMatches(client){
   const q = document.getElementById("qClient").value.trim().toUpperCase();
   if(!q) return true;
   return String(client||"").toUpperCase().includes(q);
 }
+
 function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
   if(mode==="cap"){
     for(let col=from; col<=to; col++){
@@ -863,9 +870,10 @@ function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
   }
 
   if(mode==="idle"){
+    // No modo ociosidade: uma linha é relevante se tiver pelo menos 1 coluna visível naquele turno
     for(let col=from; col<=to; col++){
       if(!colVisible[col]) continue;
-      if(idleTeam.has(`${col}|${turnoKey}`)) return true;
+      if(idlePeriod.has(`${col}|${turnoKey}`)) return true;
     }
     return false;
   }
@@ -880,6 +888,7 @@ function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
     }
     return false;
   }
+
   return true;
 }
 
@@ -892,6 +901,7 @@ function hasCodeInAnyClient(code, col, turnoKey){
   }
   return false;
 }
+
 function computeHoursByMonth(from,to){
   const m = new Map();
   function monthOf(label){
@@ -955,29 +965,31 @@ function renderConflictsList(items){
   }).join("");
 }
 
-function renderFreeList(idleTeamList, idleByPerson){
+/* Card 2: sempre somente dias úteis (já filtrado na origem, mas reforçado aqui) */
+function renderFreeList(idlePeriodList, freeByPerson){
   const el = document.getElementById("listFree");
-  const block1 = idleTeamList.length
-    ? `<div class="badge bOk">Time 100% ocioso (período)</div>` +
-      idleTeamList.slice(0,80).map(x=>`
+
+  const block1 = idlePeriodList.length
+    ? `<div class="badge bOk">Período 100% ocioso (somente dias úteis)</div>` +
+      idlePeriodList.slice(0,80).map(x=>`
         <div class="listItem">
           <div><b>${x.turno}</b> • <span class="mono">${x.dow} ${x.date}</span></div>
           <div class="badge bOk">Livre</div>
         </div>
       `).join("") +
-      (idleTeamList.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${idleTeamList.length-80} itens…</div>`:"")
-    : `<div class="badge bMuted">Sem períodos 100% livres do time na janela</div>`;
+      (idlePeriodList.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${idlePeriodList.length-80} itens…</div>`:"")
+    : `<div class="badge bMuted">Sem períodos 100% ociosos (dias úteis) na janela</div>`;
 
-  const block2 = idleByPerson.length
-    ? `<div style="margin-top:12px" class="badge bMuted">Ociosidade por colaborador (sem alocação no dia)</div>` +
-      idleByPerson.slice(0,80).map(x=>`
+  const block2 = freeByPerson.length
+    ? `<div style="margin-top:12px" class="badge bMuted">Gap por colaborador (turno) — somente dias úteis</div>` +
+      freeByPerson.slice(0,80).map(x=>`
         <div class="listItem">
-          <div><span class="badge bMuted">${x.code}</span> <b>${x.name}</b> • <span class="mono">${x.dow} ${x.date}</span> • <b>${x.turno}</b>${x.detail?` <span style="color:var(--muted)">(${x.detail})</span>`:""}</div>
-          <div class="badge bDanger">Ocioso</div>
+          <div><span class="badge bMuted">${x.code}</span> <b>${x.name}</b> • <span class="mono">${x.dow} ${x.date}</span> • ${x.turno}</div>
+          <div class="badge bOk">Gap</div>
         </div>
       `).join("") +
-      (idleByPerson.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${idleByPerson.length-80} itens…</div>`:"")
-    : `<div style="margin-top:12px" class="badge bMuted">Sem ociosidade por colaborador (sem alocação no dia) na janela</div>`;
+      (freeByPerson.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${freeByPerson.length-80} itens…</div>`:"")
+    : `<div style="margin-top:12px" class="badge bMuted">Nenhum gap por colaborador (dias úteis)</div>`;
 
   el.innerHTML = block1 + block2;
 }
@@ -1012,7 +1024,7 @@ function renderHoursList(monthStats){
 function buildInsights(){
   const {from,to} = getWindowRange();
 
-  // conflitos
+  // 1) conflitos
   const conflictsList = [];
   for(const [k,setClients] of conflictsMap.entries()){
     if(setClients.size <= 1) continue;
@@ -1033,64 +1045,54 @@ function buildInsights(){
     return a.code.localeCompare(b.code);
   });
 
-  // time livre
-  const idleTeamList = [];
-  for(const key of idleTeam){
+  // 2) períodos 100% ociosos (somente dias úteis) — lista a granularidade de período (M/T)
+  const idlePeriodList = [];
+  for(const key of idlePeriod){
     const [col,turnoKey] = key.split("|");
-    idleTeamList.push({
-      date: dates[Number(col)] || "",
-      dow: (dows[Number(col)]||"").toUpperCase(),
+    const c = Number(col);
+    if(isWeekend(dows[c])) continue; // hard guard
+    idlePeriodList.push({
+      date: dates[c] || "",
+      dow: (dows[c]||"").toUpperCase(),
       turno: TURNOS[turnoKey] || turnoKey
     });
   }
-  idleTeamList.sort((a,b)=> dates.indexOf(a.date)-dates.indexOf(b.date) || a.turno.localeCompare(b.turno));
+  idlePeriodList.sort((a,b)=> dates.indexOf(a.date)-dates.indexOf(b.date) || a.turno.localeCompare(b.turno));
 
-  // ociosidade por pessoa (regra hard: analista não pode ficar sem alocação no dia)
-  // Regra: em cada data, cada analista deve estar alocado em pelo menos um turno (MANHÃ ou TARDE).
-  // Se NÃO estiver alocado em nenhum dos turnos, o dia é OCIOSO e ambos os períodos (MANHÃ e TARDE) são reportados.
-  const idleByPerson = [];
-  for (const code of VALID){
-    for (let col=from; col<=to; col++){
-      if(isWeekend(dows[col])) continue; // fins de semana não contam como ociosidade
+  // gap por pessoa (somente dias úteis)
+  const freeByPerson = [];
+  for(const code of VALID){
+    for(let col=from; col<=to; col++){
+      if (isWeekend(dows[col])) continue;
+
       const hasM = hasCodeInAnyClient(code, col, "M");
       const hasT = hasCodeInAnyClient(code, col, "T");
 
-      if(!hasM && !hasT){
-        idleByPerson.push({
-          code,
-          name: RESOURCE_NAMES[code],
-          date: dates[col],
-          dow: (dows[col]||"").toUpperCase(),
-          turno: "MANHÃ",
-          detail: "sem alocação no dia"
-        });
-        idleByPerson.push({
-          code,
-          name: RESOURCE_NAMES[code],
-          date: dates[col],
-          dow: (dows[col]||"").toUpperCase(),
-          turno: "TARDE",
-          detail: "sem alocação no dia"
-        });
+      if(hasM && !hasT){
+        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"TARDE" });
+      }else if(!hasM && hasT){
+        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"MANHÃ" });
+      }else if(!hasM && !hasT){
+        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"DIA INTEIRO" });
       }
     }
   }
-  idleByPerson.sort((a,b)=>{
+  freeByPerson.sort((a,b)=>{
     const da = dates.indexOf(a.date), db = dates.indexOf(b.date);
     if(da!==db) return da-db;
     if(a.code!==b.code) return a.code.localeCompare(b.code);
     return a.turno.localeCompare(b.turno);
   });
 
-  // horas
+  // 3) horas
   const monthStats = computeHoursByMonth(from,to);
 
   renderConflictsList(conflictsList);
-  renderFreeList(idleTeamList, idleByPerson);
+  renderFreeList(idlePeriodList, freeByPerson);
   renderHoursList(monthStats);
 
   document.getElementById("insightsStatus").textContent =
-    `Conflitos: ${conflictsList.length} • Ociosidade time: ${idleTeamList.length} • Ociosidade colaborador: ${idleByPerson.length}`;
+    `Conflitos: ${conflictsList.length} • Ociosidade (períodos, dias úteis): ${idlePeriodList.length} • Gaps colaborador (dias úteis): ${freeByPerson.length}`;
 }
 
 /* ===================== SCROLL X ALWAYS VISIBLE ===================== */
@@ -1124,22 +1126,25 @@ function render(){
   applyWindowFromInputs();
   const {from,to} = getWindowRange();
 
-  // compute baseline
   computeConflicts();
-  computeIdle();
+  computeIdlePeriods(); // <<< base do botão "Taxa de Ociosidade" + card 2
 
-  // mode maps for filtering columns
+  // visibilidade de colunas
   let colVisible = new Array(dates.length).fill(true);
   for(let col=0; col<dates.length; col++){
     if(col<from || col>to) colVisible[col]=false;
   }
+
   if(mode==="cap"){
     for(let col=from; col<=to; col++){
       if(!conflictCols.has(col)) colVisible[col]=false;
     }
   }
+
   if(mode==="idle"){
+    // REGRA: no modo ociosidade, nunca mostrar fim de semana e só mostrar dias com pelo menos 1 período ocioso
     for(let col=from; col<=to; col++){
+      if(isWeekend(dows[col])) { colVisible[col]=false; continue; }
       if(!idleCols.has(col)) colVisible[col]=false;
     }
   }
@@ -1168,7 +1173,10 @@ function render(){
     th.style.width=th.style.minWidth=th.style.maxWidth = cssVar("--wDate") || "64px";
     if(!colVisible[col]) th.classList.add("colHidden");
     if(isWeekend(dows[col])) th.classList.add("weekend");
-    if(mode==="idle" && (idleTeam.has(`${col}|M`) || idleTeam.has(`${col}|T`))) th.classList.add("freeHdr");
+
+    // idle header: somente dias úteis e somente onde há período ocioso
+    if(mode==="idle" && !isWeekend(dows[col]) && idleCols.has(col)) th.classList.add("freeHdr");
+
     if(mode==="cap" && conflictCols.has(col)) th.classList.add("confHdr");
     headDow.appendChild(th);
   }
@@ -1178,7 +1186,9 @@ function render(){
     th.style.width=th.style.minWidth=th.style.maxWidth = cssVar("--wDate") || "64px";
     if(!colVisible[col]) th.classList.add("colHidden");
     if(isWeekend(dows[col])) th.classList.add("weekend");
-    if(mode==="idle" && (idleTeam.has(`${col}|M`) || idleTeam.has(`${col}|T`))) th.classList.add("freeHdr");
+
+    if(mode==="idle" && !isWeekend(dows[col]) && idleCols.has(col)) th.classList.add("freeHdr");
+
     if(mode==="cap" && conflictCols.has(col)) th.classList.add("confHdr");
     headDate.appendChild(th);
   }
@@ -1200,7 +1210,6 @@ function render(){
     const tVisible = rowPasses(rowT, "T", activeSet, from, to, colVisible);
     if(!mVisible && !tVisible) continue;
 
-    // render always 2 lines to keep alignment, with client rowspan
     const trM = document.createElement("tr");
     trM.className = "rowM";
 
@@ -1224,7 +1233,9 @@ function render(){
       td.style.width=td.style.minWidth=td.style.maxWidth = cssVar("--wDate") || "64px";
       if(!colVisible[col]) td.classList.add("colHidden");
       if(isWeekend(dows[col])) td.classList.add("weekend");
-      if(mode==="idle" && idleTeam.has(`${col}|M`)) td.classList.add("freeCell");
+
+      // destaque de ociosidade: SOMENTE DIAS ÚTEIS
+      if(mode==="idle" && !isWeekend(dows[col]) && idlePeriod.has(`${col}|M`)) td.classList.add("freeCell");
 
       const codesAll = (rowM.codesByCol[col] || []);
       filled += codesAll.length;
@@ -1243,6 +1254,9 @@ function render(){
         }
         if(out.length===0) box.appendChild(chipEl(""));
         else for(const code of out) box.appendChild(chipEl(code,{conflict:true}));
+      }else if(mode==="idle"){
+        // no modo ociosidade: não importa alocação do cliente individual; foco é período vazio no time
+        box.appendChild(chipEl(idlePeriod.has(`${col}|M`) && !isWeekend(dows[col]) ? "—" : ""));
       }else{
         let codes = codesAll;
         if(activeSet) codes = codesAll.filter(x=>activeSet.has(x));
@@ -1267,7 +1281,8 @@ function render(){
       td.style.width=td.style.minWidth=td.style.maxWidth = cssVar("--wDate") || "64px";
       if(!colVisible[col]) td.classList.add("colHidden");
       if(isWeekend(dows[col])) td.classList.add("weekend");
-      if(mode==="idle" && idleTeam.has(`${col}|T`)) td.classList.add("freeCell");
+
+      if(mode==="idle" && !isWeekend(dows[col]) && idlePeriod.has(`${col}|T`)) td.classList.add("freeCell");
 
       const codesAll = (rowT.codesByCol[col] || []);
       filled += codesAll.length;
@@ -1286,6 +1301,8 @@ function render(){
         }
         if(out.length===0) box.appendChild(chipEl(""));
         else for(const code of out) box.appendChild(chipEl(code,{conflict:true}));
+      }else if(mode==="idle"){
+        box.appendChild(chipEl(idlePeriod.has(`${col}|T`) && !isWeekend(dows[col]) ? "—" : ""));
       }else{
         let codes = codesAll;
         if(activeSet) codes = codesAll.filter(x=>activeSet.has(x));
@@ -1313,7 +1330,7 @@ function render(){
     }
     setStatus(`Status: carregado • Modo: Capacidade vs. Demandas • Conflitos: ${conflictsCount}`);
   }else if(mode==="idle"){
-    setStatus(`Status: carregado • Modo: Taxa de Ociosidade • Períodos time livres: ${idleTeam.size}`);
+    setStatus(`Status: carregado • Modo: Taxa de Ociosidade (dias úteis) • Dias com ociosidade (M/T): ${idleCols.size}`);
   }else{
     setStatus(`Status: carregado`);
   }
@@ -1359,7 +1376,6 @@ async function load(){
 
 /* ===================== UI WIRING ===================== */
 function wireUI(){
-  // chips seleção
   document.querySelectorAll(".chipBtn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const code = btn.getAttribute("data-code");
@@ -1371,7 +1387,6 @@ function wireUI(){
     });
   });
 
-  // modos
   const btnCap = document.getElementById("btnCap");
   const btnIdle = document.getElementById("btnIdle");
 
@@ -1391,14 +1406,12 @@ function wireUI(){
     render();
   });
 
-  // inputs
   ["qClient","selRes","dStart","dEnd"].forEach(id=>{
     const el = document.getElementById(id);
     el.addEventListener("input", ()=>render());
     el.addEventListener("change", ()=>render());
   });
 
-  // limpar
   document.getElementById("btnClear").addEventListener("click", ()=>{
     selectedCodes.clear();
     document.querySelectorAll(".chipBtn").forEach(b=>b.setAttribute("aria-pressed","false"));
@@ -1412,16 +1425,13 @@ function wireUI(){
     render();
   });
 
-  // reload
   document.getElementById("btnReload").addEventListener("click", ()=>load());
 
-  // topo: compact mode (somente grade)
   document.getElementById("btnToggleTop").addEventListener("click", ()=>{
     document.body.classList.toggle("compact-mode");
     setTimeout(()=>syncXBar(), 50);
   });
 
-  // minimizar apenas exceções
   const panels = document.getElementById("panels");
   const btnMin = document.getElementById("btnMinExceptions");
   btnMin.addEventListener("click", ()=>{
