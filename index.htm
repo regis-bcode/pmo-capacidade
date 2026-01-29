@@ -968,7 +968,7 @@ function renderFreeList(idleTeamList, idleByPerson){
     : `<div class="badge bMuted">Sem períodos 100% livres do time na janela</div>`;
 
   const block2 = idleByPerson.length
-    ? `<div style="margin-top:12px" class="badge bMuted">Ociosidade por colaborador (dia inteiro)</div>` +
+    ? `<div style="margin-top:12px" class="badge bMuted">Ociosidade por colaborador (sem alocação no dia)</div>` +
       idleByPerson.slice(0,80).map(x=>`
         <div class="listItem">
           <div><span class="badge bMuted">${x.code}</span> <b>${x.name}</b> • <span class="mono">${x.dow} ${x.date}</span> • <b>${x.turno}</b>${x.detail?` <span style="color:var(--muted)">(${x.detail})</span>`:""}</div>
@@ -976,7 +976,7 @@ function renderFreeList(idleTeamList, idleByPerson){
         </div>
       `).join("") +
       (idleByPerson.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${idleByPerson.length-80} itens…</div>`:"")
-    : `<div style="margin-top:12px" class="badge bMuted">Sem ociosidade por colaborador (dia inteiro) na janela</div>`;
+    : `<div style="margin-top:12px" class="badge bMuted">Sem ociosidade por colaborador (sem alocação no dia) na janela</div>`;
 
   el.innerHTML = block1 + block2;
 }
@@ -1044,11 +1044,12 @@ function buildInsights(){
   }
   idleTeamList.sort((a,b)=> dates.indexOf(a.date)-dates.indexOf(b.date) || a.turno.localeCompare(b.turno));
 
-  // ociosidade por pessoa (regra: analista não pode ficar sem alocação no dia)
-  // Se o colaborador NÃO estiver alocado nem de manhã nem à tarde em um dia, o dia é considerado OCIOSO.
+  // ociosidade por pessoa (regra hard: analista não pode ficar sem alocação no dia)
+  // Regra: em cada data, cada analista deve estar alocado em pelo menos um turno (MANHÃ ou TARDE).
+  // Se NÃO estiver alocado em nenhum dos turnos, o dia é OCIOSO e ambos os períodos (MANHÃ e TARDE) são reportados.
   const idleByPerson = [];
-  for(const code of VALID){
-    for(let col=from; col<=to; col++){
+  for (const code of VALID){
+    for (let col=from; col<=to; col++){
       const hasM = hasCodeInAnyClient(code, col, "M");
       const hasT = hasCodeInAnyClient(code, col, "T");
 
@@ -1057,9 +1058,17 @@ function buildInsights(){
           code,
           name: RESOURCE_NAMES[code],
           date: dates[col],
-          dow:(dows[col]||"").toUpperCase(),
-          turno:"DIA INTEIRO",
-          detail:"MANHÃ + TARDE"
+          dow: (dows[col]||"").toUpperCase(),
+          turno: "MANHÃ",
+          detail: "sem alocação no dia"
+        });
+        idleByPerson.push({
+          code,
+          name: RESOURCE_NAMES[code],
+          date: dates[col],
+          dow: (dows[col]||"").toUpperCase(),
+          turno: "TARDE",
+          detail: "sem alocação no dia"
         });
       }
     }
@@ -1427,3 +1436,4 @@ load();
 </script>
 </body>
 </html>
+
