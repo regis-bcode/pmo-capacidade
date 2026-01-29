@@ -436,12 +436,9 @@
     }
 
     .weekend{ background: var(--weekend) !important; }
-
     .colHidden{ display:none; }
-
     .freeHdr{ background: var(--freeHdr) !important; color:#d1fae5 !important; }
     .freeCell{ background: var(--freeCell) !important; }
-
     .confHdr{ background: var(--confHdr) !important; color:#fee2e2 !important; }
 
     .cellChips{display:flex; align-items:center; justify-content:center; gap:2px;}
@@ -548,7 +545,7 @@
           <div class="content" id="listConflicts"></div>
         </div>
         <div class="card">
-          <h3>2) Períodos livres (Colaborador e Time)</h3>
+          <h3>2) Períodos ociosos por consultor (dias úteis)</h3>
           <div class="content" id="listFree"></div>
         </div>
         <div class="card">
@@ -601,10 +598,15 @@ let windowTo = null;
 let conflictsMap = new Map();
 let conflictCols = new Set();
 
-// idlePeriod: período com NENHUMA alocação (M ou T) => usado no modo "Taxa de Ociosidade"
-// ATENÇÃO: SEMPRE DIAS ÚTEIS (fim de semana nunca entra aqui)
-let idlePeriod = new Set(); // `${col}|${turnoKey}`
-let idleCols = new Set();   // colunas (dias) que possuem ao menos 1 período ocioso
+/*
+  NOVA REGRA (OCIOSIDADE INDIVIDUAL):
+  - Dias úteis apenas
+  - Se consultor tem alocação em apenas um turno (M ou T) => turno faltante é OCIOSO
+  - Exibir Dia + Período ocioso + Consultor ocioso
+*/
+let idleByPerson = new Set(); // `${code}|${col}|${turnoMissing}`
+let idleTurno = new Set();    // `${col}|${turnoKey}` para destacar M/T no modo idle
+let idleCols = new Set();     // dias (col) com pelo menos uma ociosidade individual
 
 /* ===================== UTILS ===================== */
 function setStatus(msg){ document.getElementById("status").textContent = msg; }
@@ -633,7 +635,6 @@ function normalizeDateLabel(s){
   return `${String(m[1]).padStart(2,"0")}/${String(m[2]).padStart(2,"0")}`;
 }
 
-/* ===== DETECÇÃO ROBUSTA DE FIM DE SEMANA (SÁB/SAB. / DOM etc.) ===== */
 function isWeekend(dow){
   const raw = String(dow || "").trim().toUpperCase();
   const norm = raw
@@ -798,36 +799,50 @@ function computeConflicts(){
   }
 }
 
-/* ===================== IDLE PERIOD (SOMENTE DIAS ÚTEIS)
-   REGRA: "Taxa de Ociosidade" exibe APENAS dias (colunas) em que
-   pelo menos UM período (MANHÃ OU TARDE) está 100% sem alocação.
-   Fim de semana NUNCA entra. ===================== */
-function computeIdlePeriods(){
-  idlePeriod.clear();
+/* ===================== HELPERS (ALOCADO EM ALGUM CLIENTE?) ===================== */
+function hasCodeInAnyClient(code, col, turnoKey){
+  for(const c of dataByClient){
+    const row = c[turnoKey];
+    const codes = row.codesByCol[col] || [];
+    if(codes.includes(code)) return true;
+  }
+  return false;
+}
+
+/* ===================== NOVA OCIOSIDADE INDIVIDUAL ===================== */
+function computeIdleByPerson(){
+  idleByPerson.clear();
+  idleTurno.clear();
   idleCols.clear();
 
   const {from,to} = getWindowRange();
 
-  // Para cada dia útil e turno, verifica se existe qualquer alocação em qualquer cliente
   for(let col=from; col<=to; col++){
-    if(isWeekend(dows[col])) continue; // << nunca considerar fim de semana
+    if(isWeekend(dows[col])) continue; // nunca considerar fim de semana
 
-    for(const turnoKey of ["M","T"]){
-      let any = false;
+    for(const code of VALID){
+      const hasM = hasCodeInAnyClient(code, col, "M");
+      const hasT = hasCodeInAnyClient(code, col, "T");
 
-      for(const c of dataByClient){
-        const row = c[turnoKey];
-        const codes = row.codesByCol[col] || [];
-        if(codes.length > 0){
-          any = true;
-          break;
-        }
+      // Regra: se está em apenas um período, o outro é OCIOSO
+      if(hasM && !hasT){
+        idleByPerson.add(`${code}|${col}|T`);
+        idleTurno.add(`${col}|T`);
+        idleCols.add(col);
+      }else if(!hasM && hasT){
+        idleByPerson.add(`${code}|${col}|M`);
+        idleTurno.add(`${col}|M`);
+        idleCols.add(col);
       }
 
-      if(!any){
-        idlePeriod.add(`${col}|${turnoKey}`);
-        idleCols.add(col); // dia entra se pelo menos UM período estiver vazio
-      }
+      // Se quiser considerar "dia inteiro ocioso" quando não tem M e não tem T, descomente:
+      // else if(!hasM && !hasT){
+      //   idleByPerson.add(`${code}|${col}|M`);
+      //   idleByPerson.add(`${code}|${col}|T`);
+      //   idleTurno.add(`${col}|M`);
+      //   idleTurno.add(`${col}|T`);
+      //   idleCols.add(col);
+      // }
     }
   }
 }
@@ -870,10 +885,9 @@ function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
   }
 
   if(mode==="idle"){
-    // No modo ociosidade: uma linha é relevante se tiver pelo menos 1 coluna visível naquele turno
     for(let col=from; col<=to; col++){
       if(!colVisible[col]) continue;
-      if(idlePeriod.has(`${col}|${turnoKey}`)) return true;
+      if(idleTurno.has(`${col}|${turnoKey}`)) return true;
     }
     return false;
   }
@@ -893,15 +907,6 @@ function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
 }
 
 /* ===================== INSIGHTS ===================== */
-function hasCodeInAnyClient(code, col, turnoKey){
-  for(const c of dataByClient){
-    const row = c[turnoKey];
-    const codes = row.codesByCol[col] || [];
-    if(codes.includes(code)) return true;
-  }
-  return false;
-}
-
 function computeHoursByMonth(from,to){
   const m = new Map();
   function monthOf(label){
@@ -965,33 +970,24 @@ function renderConflictsList(items){
   }).join("");
 }
 
-/* Card 2: sempre somente dias úteis (já filtrado na origem, mas reforçado aqui) */
-function renderFreeList(idlePeriodList, freeByPerson){
+function renderIdleByPersonList(items){
   const el = document.getElementById("listFree");
-
-  const block1 = idlePeriodList.length
-    ? `<div class="badge bOk">Período 100% ocioso (somente dias úteis)</div>` +
-      idlePeriodList.slice(0,80).map(x=>`
-        <div class="listItem">
-          <div><b>${x.turno}</b> • <span class="mono">${x.dow} ${x.date}</span></div>
-          <div class="badge bOk">Livre</div>
+  if(!items.length){
+    el.innerHTML = `<div class="badge bMuted">Sem ociosidade por consultor (dias úteis) na janela</div>`;
+    return;
+  }
+  el.innerHTML =
+    `<div class="badge bOk">Ociosidade por consultor (período faltante) — dias úteis</div>` +
+    items.slice(0,120).map(x=>`
+      <div class="listItem">
+        <div>
+          <div><span class="badge bMuted">${x.code}</span> <b>${x.name}</b> • <span class="mono">${x.dow} ${x.date}</span> • <b>${x.turno}</b></div>
+          <div style="color:var(--muted); margin-top:2px">Período sem alocação do consultor</div>
         </div>
-      `).join("") +
-      (idlePeriodList.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${idlePeriodList.length-80} itens…</div>`:"")
-    : `<div class="badge bMuted">Sem períodos 100% ociosos (dias úteis) na janela</div>`;
-
-  const block2 = freeByPerson.length
-    ? `<div style="margin-top:12px" class="badge bMuted">Gap por colaborador (turno) — somente dias úteis</div>` +
-      freeByPerson.slice(0,80).map(x=>`
-        <div class="listItem">
-          <div><span class="badge bMuted">${x.code}</span> <b>${x.name}</b> • <span class="mono">${x.dow} ${x.date}</span> • ${x.turno}</div>
-          <div class="badge bOk">Gap</div>
-        </div>
-      `).join("") +
-      (freeByPerson.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${freeByPerson.length-80} itens…</div>`:"")
-    : `<div style="margin-top:12px" class="badge bMuted">Nenhum gap por colaborador (dias úteis)</div>`;
-
-  el.innerHTML = block1 + block2;
+        <div class="badge bOk">Ocioso</div>
+      </div>
+    `).join("") +
+    (items.length>120 ? `<div style="margin-top:8px;color:var(--muted)">+ ${items.length-120} itens…</div>` : "");
 }
 
 function renderHoursList(monthStats){
@@ -1045,39 +1041,21 @@ function buildInsights(){
     return a.code.localeCompare(b.code);
   });
 
-  // 2) períodos 100% ociosos (somente dias úteis) — lista a granularidade de período (M/T)
-  const idlePeriodList = [];
-  for(const key of idlePeriod){
-    const [col,turnoKey] = key.split("|");
+  // 2) ociosidade individual (dias úteis)
+  const idleList = [];
+  for(const k of idleByPerson){
+    const [code,col,turnoMissing] = k.split("|");
     const c = Number(col);
-    if(isWeekend(dows[c])) continue; // hard guard
-    idlePeriodList.push({
+    if(isWeekend(dows[c])) continue;
+    idleList.push({
+      code,
+      name: RESOURCE_NAMES[code] || code,
       date: dates[c] || "",
       dow: (dows[c]||"").toUpperCase(),
-      turno: TURNOS[turnoKey] || turnoKey
+      turno: (turnoMissing==="M" ? "MANHÃ" : "TARDE")
     });
   }
-  idlePeriodList.sort((a,b)=> dates.indexOf(a.date)-dates.indexOf(b.date) || a.turno.localeCompare(b.turno));
-
-  // gap por pessoa (somente dias úteis)
-  const freeByPerson = [];
-  for(const code of VALID){
-    for(let col=from; col<=to; col++){
-      if (isWeekend(dows[col])) continue;
-
-      const hasM = hasCodeInAnyClient(code, col, "M");
-      const hasT = hasCodeInAnyClient(code, col, "T");
-
-      if(hasM && !hasT){
-        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"TARDE" });
-      }else if(!hasM && hasT){
-        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"MANHÃ" });
-      }else if(!hasM && !hasT){
-        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"DIA INTEIRO" });
-      }
-    }
-  }
-  freeByPerson.sort((a,b)=>{
+  idleList.sort((a,b)=>{
     const da = dates.indexOf(a.date), db = dates.indexOf(b.date);
     if(da!==db) return da-db;
     if(a.code!==b.code) return a.code.localeCompare(b.code);
@@ -1088,11 +1066,11 @@ function buildInsights(){
   const monthStats = computeHoursByMonth(from,to);
 
   renderConflictsList(conflictsList);
-  renderFreeList(idlePeriodList, freeByPerson);
+  renderIdleByPersonList(idleList);
   renderHoursList(monthStats);
 
   document.getElementById("insightsStatus").textContent =
-    `Conflitos: ${conflictsList.length} • Ociosidade (períodos, dias úteis): ${idlePeriodList.length} • Gaps colaborador (dias úteis): ${freeByPerson.length}`;
+    `Conflitos: ${conflictsList.length} • Ociosidade consultor (dias úteis): ${idleList.length}`;
 }
 
 /* ===================== SCROLL X ALWAYS VISIBLE ===================== */
@@ -1127,7 +1105,7 @@ function render(){
   const {from,to} = getWindowRange();
 
   computeConflicts();
-  computeIdlePeriods(); // <<< base do botão "Taxa de Ociosidade" + card 2
+  computeIdleByPerson(); // <<< nova regra
 
   // visibilidade de colunas
   let colVisible = new Array(dates.length).fill(true);
@@ -1142,7 +1120,9 @@ function render(){
   }
 
   if(mode==="idle"){
-    // REGRA: no modo ociosidade, nunca mostrar fim de semana e só mostrar dias com pelo menos 1 período ocioso
+    // Modo Taxa de Ociosidade:
+    // - nunca mostrar fim de semana
+    // - mostrar somente dias (col) em que exista pelo menos 1 consultor com período faltante
     for(let col=from; col<=to; col++){
       if(isWeekend(dows[col])) { colVisible[col]=false; continue; }
       if(!idleCols.has(col)) colVisible[col]=false;
@@ -1174,7 +1154,7 @@ function render(){
     if(!colVisible[col]) th.classList.add("colHidden");
     if(isWeekend(dows[col])) th.classList.add("weekend");
 
-    // idle header: somente dias úteis e somente onde há período ocioso
+    // no modo idle, destaque apenas dias úteis com ociosidade individual
     if(mode==="idle" && !isWeekend(dows[col]) && idleCols.has(col)) th.classList.add("freeHdr");
 
     if(mode==="cap" && conflictCols.has(col)) th.classList.add("confHdr");
@@ -1234,8 +1214,8 @@ function render(){
       if(!colVisible[col]) td.classList.add("colHidden");
       if(isWeekend(dows[col])) td.classList.add("weekend");
 
-      // destaque de ociosidade: SOMENTE DIAS ÚTEIS
-      if(mode==="idle" && !isWeekend(dows[col]) && idlePeriod.has(`${col}|M`)) td.classList.add("freeCell");
+      // no modo idle, destaca turno (M) do dia útil que tem consultor faltando TARDE? não; aqui é MANHÃ faltante
+      if(mode==="idle" && !isWeekend(dows[col]) && idleTurno.has(`${col}|M`)) td.classList.add("freeCell");
 
       const codesAll = (rowM.codesByCol[col] || []);
       filled += codesAll.length;
@@ -1254,9 +1234,6 @@ function render(){
         }
         if(out.length===0) box.appendChild(chipEl(""));
         else for(const code of out) box.appendChild(chipEl(code,{conflict:true}));
-      }else if(mode==="idle"){
-        // no modo ociosidade: não importa alocação do cliente individual; foco é período vazio no time
-        box.appendChild(chipEl(idlePeriod.has(`${col}|M`) && !isWeekend(dows[col]) ? "—" : ""));
       }else{
         let codes = codesAll;
         if(activeSet) codes = codesAll.filter(x=>activeSet.has(x));
@@ -1282,7 +1259,7 @@ function render(){
       if(!colVisible[col]) td.classList.add("colHidden");
       if(isWeekend(dows[col])) td.classList.add("weekend");
 
-      if(mode==="idle" && !isWeekend(dows[col]) && idlePeriod.has(`${col}|T`)) td.classList.add("freeCell");
+      if(mode==="idle" && !isWeekend(dows[col]) && idleTurno.has(`${col}|T`)) td.classList.add("freeCell");
 
       const codesAll = (rowT.codesByCol[col] || []);
       filled += codesAll.length;
@@ -1301,8 +1278,6 @@ function render(){
         }
         if(out.length===0) box.appendChild(chipEl(""));
         else for(const code of out) box.appendChild(chipEl(code,{conflict:true}));
-      }else if(mode==="idle"){
-        box.appendChild(chipEl(idlePeriod.has(`${col}|T`) && !isWeekend(dows[col]) ? "—" : ""));
       }else{
         let codes = codesAll;
         if(activeSet) codes = codesAll.filter(x=>activeSet.has(x));
@@ -1330,7 +1305,7 @@ function render(){
     }
     setStatus(`Status: carregado • Modo: Capacidade vs. Demandas • Conflitos: ${conflictsCount}`);
   }else if(mode==="idle"){
-    setStatus(`Status: carregado • Modo: Taxa de Ociosidade (dias úteis) • Dias com ociosidade (M/T): ${idleCols.size}`);
+    setStatus(`Status: carregado • Modo: Taxa de Ociosidade (consultor, dias úteis) • Dias com gaps: ${idleCols.size}`);
   }else{
     setStatus(`Status: carregado`);
   }
