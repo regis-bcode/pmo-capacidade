@@ -149,7 +149,7 @@
       user-select:none;
       font-size:12px;
       font-weight:950;
-      color:#fbbf24;
+      color:#fbbf24; /* amarelo */
     }
     .modeBtn[aria-pressed="true"]{
       background:#14264a;
@@ -565,7 +565,7 @@
           <div class="content" id="listConflicts"></div>
         </div>
         <div class="card">
-          <h3>2) Períodos livres (Colaborador e Time)</h3>
+          <h3>2) Ociosidade (Colaborador e Time)</h3>
           <div class="content" id="listFree"></div>
         </div>
         <div class="card">
@@ -622,7 +622,6 @@ let idleCols = new Set();
 
 /* ===================== UTILS ===================== */
 function setStatus(msg){ document.getElementById("status").textContent = msg; }
-
 function parseCSV(text){
   const rows=[];
   let row=[], cur="", inQ=false;
@@ -640,22 +639,15 @@ function parseCSV(text){
   if (cur.length || row.length){ row.push(cur); rows.push(row); }
   return rows.map(r=>r.map(c=>(c??"").trim()));
 }
-
 function normalizeDateLabel(s){
   const m=String(s||"").trim().match(/^(\d{1,2})\/(\d{1,2})/);
   if(!m) return String(s||"").trim();
   return `${String(m[1]).padStart(2,"0")}/${String(m[2]).padStart(2,"0")}`;
 }
-
-/* ===== FIX CRÍTICO: DETECÇÃO ROBUSTA DE FIM DE SEMANA ===== */
 function isWeekend(dow){
-  const raw = String(dow || "").trim().toUpperCase();
-  const norm = raw
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos
-    .replace(/\./g, ""); // remove "SÁB."
-  return norm.startsWith("SAB") || norm.startsWith("DOM");
+  const x=String(dow||"").toUpperCase();
+  return x.startsWith("SAB") || x.startsWith("SÁB") || x.startsWith("DOM");
 }
-
 function parseCellCodes(cellRaw){
   const raw=String(cellRaw||"").trim();
   if(!raw) return [];
@@ -674,7 +666,6 @@ function parseCellCodes(cellRaw){
   }
   return out;
 }
-
 function ddmmToIndex(ddmm){
   const x = String(ddmm||"").trim();
   const m = x.match(/^(\d{1,2})\/(\d{1,2})$/);
@@ -683,7 +674,6 @@ function ddmmToIndex(ddmm){
   const idx = dates.indexOf(label);
   return idx>=0 ? idx : null;
 }
-
 function applyWindowFromInputs(){
   const s = document.getElementById("dStart").value.trim();
   const e = document.getElementById("dEnd").value.trim();
@@ -697,17 +687,14 @@ function applyWindowFromInputs(){
     const tmp = windowFrom; windowFrom = windowTo; windowTo = tmp;
   }
 }
-
 function getWindowRange(){
   const from = windowFrom ?? 0;
   const to = windowTo ?? (dates.length-1);
   return {from,to};
 }
-
 function cssVar(name){
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
-
 function chipEl(code, opts={}){
   const v=String(code||"").toUpperCase().trim();
   const sp=document.createElement("span");
@@ -727,7 +714,6 @@ function chipEl(code, opts={}){
   }
   return sp;
 }
-
 function updateKPIs(rowsShown, colsShown, filled){
   document.getElementById("kRows").textContent = String(rowsShown);
   document.getElementById("kCols").textContent = String(colsShown);
@@ -810,20 +796,17 @@ function computeConflicts(){
   }
 }
 
-/* ===================== IDLE TEAM (SOMENTE DIAS ÚTEIS) ===================== */
+/* ===================== IDLE TEAM ===================== */
 function computeIdle(){
   idleTeam.clear();
   idleCols.clear();
   const {from,to} = getWindowRange();
 
   const hasAny = new Set(); // `${col}|${turno}`
-
-  // Marca onde existe qualquer alocação (somente dias úteis)
   for(const c of dataByClient){
     for(const turnoKey of ["M","T"]){
       const row = c[turnoKey];
       for(let col=from; col<=to; col++){
-        if (isWeekend(dows[col])) continue; // << ignora sábado/domingo
         const codes = row.codesByCol[col] || [];
         if(codes.length>0){
           hasAny.add(`${col}|${turnoKey}`);
@@ -832,9 +815,7 @@ function computeIdle(){
     }
   }
 
-  // Time 100% ocioso (somente dias úteis)
   for(let col=from; col<=to; col++){
-    if (isWeekend(dows[col])) continue; // << ignora sábado/domingo
     for(const turnoKey of ["M","T"]){
       const key = `${col}|${turnoKey}`;
       if(!hasAny.has(key)){
@@ -861,13 +842,11 @@ function getActiveSet(){
   }
   return active; // null => sem filtro
 }
-
 function clientMatches(client){
   const q = document.getElementById("qClient").value.trim().toUpperCase();
   if(!q) return true;
   return String(client||"").toUpperCase().includes(q);
 }
-
 function rowPasses(row, turnoKey, activeSet, from, to, colVisible){
   if(mode==="cap"){
     for(let col=from; col<=to; col++){
@@ -912,7 +891,6 @@ function hasCodeInAnyClient(code, col, turnoKey){
   }
   return false;
 }
-
 function computeHoursByMonth(from,to){
   const m = new Map();
   function monthOf(label){
@@ -926,7 +904,7 @@ function computeHoursByMonth(from,to){
       m.set(month, { month, businessDays:new Set(), allocCount: {DO:0,GE:0,JC:0,AL:0} });
     }
     const entry = m.get(month);
-    if(!isWeekend(dows[col])) entry.businessDays.add(dates[col]); // <- usa isWeekend robusto
+    if(!isWeekend(dows[col])) entry.businessDays.add(dates[col]);
 
     for(const c of dataByClient){
       for(const turnoKey of ["M","T"]){
@@ -976,11 +954,10 @@ function renderConflictsList(items){
   }).join("");
 }
 
-function renderFreeList(idleTeamList, freeByPerson){
+function renderFreeList(idleTeamList, idleByPerson){
   const el = document.getElementById("listFree");
-
   const block1 = idleTeamList.length
-    ? `<div class="badge bOk">Time 100% ocioso (período) — apenas dias úteis</div>` +
+    ? `<div class="badge bOk">Time 100% ocioso (período)</div>` +
       idleTeamList.slice(0,80).map(x=>`
         <div class="listItem">
           <div><b>${x.turno}</b> • <span class="mono">${x.dow} ${x.date}</span></div>
@@ -988,18 +965,18 @@ function renderFreeList(idleTeamList, freeByPerson){
         </div>
       `).join("") +
       (idleTeamList.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${idleTeamList.length-80} itens…</div>`:"")
-    : `<div class="badge bMuted">Sem períodos 100% livres do time (dias úteis) na janela</div>`;
+    : `<div class="badge bMuted">Sem períodos 100% livres do time na janela</div>`;
 
-  const block2 = freeByPerson.length
-    ? `<div style="margin-top:12px" class="badge bMuted">Livre por colaborador (turno) — apenas dias úteis</div>` +
-      freeByPerson.slice(0,80).map(x=>`
+  const block2 = idleByPerson.length
+    ? `<div style="margin-top:12px" class="badge bMuted">Ociosidade por colaborador (dia inteiro)</div>` +
+      idleByPerson.slice(0,80).map(x=>`
         <div class="listItem">
-          <div><span class="badge bMuted">${x.code}</span> <b>${x.name}</b> • <span class="mono">${x.dow} ${x.date}</span> • ${x.turno}</div>
-          <div class="badge bOk">Gap</div>
+          <div><span class="badge bMuted">${x.code}</span> <b>${x.name}</b> • <span class="mono">${x.dow} ${x.date}</span> • <b>${x.turno}</b>${x.detail?` <span style="color:var(--muted)">(${x.detail})</span>`:""}</div>
+          <div class="badge bDanger">Ocioso</div>
         </div>
       `).join("") +
-      (freeByPerson.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${freeByPerson.length-80} itens…</div>`:"")
-    : `<div style="margin-top:12px" class="badge bMuted">Nenhum gap por colaborador (dias úteis)</div>`;
+      (idleByPerson.length>80? `<div style="margin-top:8px;color:var(--muted)">+ ${idleByPerson.length-80} itens…</div>`:"")
+    : `<div style="margin-top:12px" class="badge bMuted">Sem ociosidade por colaborador (dia inteiro) na janela</div>`;
 
   el.innerHTML = block1 + block2;
 }
@@ -1055,7 +1032,7 @@ function buildInsights(){
     return a.code.localeCompare(b.code);
   });
 
-  // time livre (idleTeam já vem somente dias úteis)
+  // time livre
   const idleTeamList = [];
   for(const key of idleTeam){
     const [col,turnoKey] = key.split("|");
@@ -1067,25 +1044,27 @@ function buildInsights(){
   }
   idleTeamList.sort((a,b)=> dates.indexOf(a.date)-dates.indexOf(b.date) || a.turno.localeCompare(b.turno));
 
-  // livre por pessoa (somente dias úteis)
-  const freeByPerson = [];
+  // ociosidade por pessoa (regra: analista não pode ficar sem alocação no dia)
+  // Se o colaborador NÃO estiver alocado nem de manhã nem à tarde em um dia, o dia é considerado OCIOSO.
+  const idleByPerson = [];
   for(const code of VALID){
     for(let col=from; col<=to; col++){
-      if (isWeekend(dows[col])) continue; // << ignora sábado/domingo
-
       const hasM = hasCodeInAnyClient(code, col, "M");
       const hasT = hasCodeInAnyClient(code, col, "T");
 
-      if(hasM && !hasT){
-        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"TARDE" });
-      }else if(!hasM && hasT){
-        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"MANHÃ" });
-      }else if(!hasM && !hasT){
-        freeByPerson.push({ code, name: RESOURCE_NAMES[code], date: dates[col], dow:(dows[col]||"").toUpperCase(), turno:"DIA INTEIRO" });
+      if(!hasM && !hasT){
+        idleByPerson.push({
+          code,
+          name: RESOURCE_NAMES[code],
+          date: dates[col],
+          dow:(dows[col]||"").toUpperCase(),
+          turno:"DIA INTEIRO",
+          detail:"MANHÃ + TARDE"
+        });
       }
     }
   }
-  freeByPerson.sort((a,b)=>{
+  idleByPerson.sort((a,b)=>{
     const da = dates.indexOf(a.date), db = dates.indexOf(b.date);
     if(da!==db) return da-db;
     if(a.code!==b.code) return a.code.localeCompare(b.code);
@@ -1096,11 +1075,11 @@ function buildInsights(){
   const monthStats = computeHoursByMonth(from,to);
 
   renderConflictsList(conflictsList);
-  renderFreeList(idleTeamList, freeByPerson);
+  renderFreeList(idleTeamList, idleByPerson);
   renderHoursList(monthStats);
 
   document.getElementById("insightsStatus").textContent =
-    `Conflitos: ${conflictsList.length} • Ociosidade time (dias úteis): ${idleTeamList.length} • Livres colaborador (dias úteis): ${freeByPerson.length}`;
+    `Conflitos: ${conflictsList.length} • Ociosidade time: ${idleTeamList.length} • Ociosidade colaborador: ${idleByPerson.length}`;
 }
 
 /* ===================== SCROLL X ALWAYS VISIBLE ===================== */
@@ -1114,7 +1093,6 @@ function syncXBar(){
     xBar.scrollLeft = xPane.scrollLeft;
   }
 }
-
 function wireScrollSync(){
   const xPane = document.getElementById("xPane");
   const xBar = document.getElementById("xBar");
@@ -1135,9 +1113,11 @@ function render(){
   applyWindowFromInputs();
   const {from,to} = getWindowRange();
 
+  // compute baseline
   computeConflicts();
   computeIdle();
 
+  // mode maps for filtering columns
   let colVisible = new Array(dates.length).fill(true);
   for(let col=0; col<dates.length; col++){
     if(col<from || col>to) colVisible[col]=false;
@@ -1153,6 +1133,7 @@ function render(){
     }
   }
 
+  // headers
   const headDow = document.getElementById("headDow");
   const headDate = document.getElementById("headDate");
   headDow.innerHTML=""; headDate.innerHTML="";
@@ -1208,6 +1189,7 @@ function render(){
     const tVisible = rowPasses(rowT, "T", activeSet, from, to, colVisible);
     if(!mVisible && !tVisible) continue;
 
+    // render always 2 lines to keep alignment, with client rowspan
     const trM = document.createElement("tr");
     trM.className = "rowM";
 
@@ -1320,7 +1302,7 @@ function render(){
     }
     setStatus(`Status: carregado • Modo: Capacidade vs. Demandas • Conflitos: ${conflictsCount}`);
   }else if(mode==="idle"){
-    setStatus(`Status: carregado • Modo: Taxa de Ociosidade • Períodos time livres (dias úteis): ${idleTeam.size}`);
+    setStatus(`Status: carregado • Modo: Taxa de Ociosidade • Períodos time livres: ${idleTeam.size}`);
   }else{
     setStatus(`Status: carregado`);
   }
@@ -1366,6 +1348,7 @@ async function load(){
 
 /* ===================== UI WIRING ===================== */
 function wireUI(){
+  // chips seleção
   document.querySelectorAll(".chipBtn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const code = btn.getAttribute("data-code");
@@ -1377,6 +1360,7 @@ function wireUI(){
     });
   });
 
+  // modos
   const btnCap = document.getElementById("btnCap");
   const btnIdle = document.getElementById("btnIdle");
 
@@ -1396,12 +1380,14 @@ function wireUI(){
     render();
   });
 
+  // inputs
   ["qClient","selRes","dStart","dEnd"].forEach(id=>{
     const el = document.getElementById(id);
     el.addEventListener("input", ()=>render());
     el.addEventListener("change", ()=>render());
   });
 
+  // limpar
   document.getElementById("btnClear").addEventListener("click", ()=>{
     selectedCodes.clear();
     document.querySelectorAll(".chipBtn").forEach(b=>b.setAttribute("aria-pressed","false"));
@@ -1415,13 +1401,16 @@ function wireUI(){
     render();
   });
 
+  // reload
   document.getElementById("btnReload").addEventListener("click", ()=>load());
 
+  // topo: compact mode (somente grade)
   document.getElementById("btnToggleTop").addEventListener("click", ()=>{
     document.body.classList.toggle("compact-mode");
     setTimeout(()=>syncXBar(), 50);
   });
 
+  // minimizar apenas exceções
   const panels = document.getElementById("panels");
   const btnMin = document.getElementById("btnMinExceptions");
   btnMin.addEventListener("click", ()=>{
