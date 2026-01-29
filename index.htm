@@ -816,6 +816,7 @@ function computeIdle(){
   }
 
   for(let col=from; col<=to; col++){
+    if(isWeekend(dows[col])) continue; // fins de semana não entram como ociosidade
     for(const turnoKey of ["M","T"]){
       const key = `${col}|${turnoKey}`;
       if(!hasAny.has(key)){
@@ -1050,6 +1051,7 @@ function buildInsights(){
   const idleByPerson = [];
   for (const code of VALID){
     for (let col=from; col<=to; col++){
+      if(isWeekend(dows[col])) continue; // fins de semana não contam como ociosidade
       const hasM = hasCodeInAnyClient(code, col, "M");
       const hasT = hasCodeInAnyClient(code, col, "T");
 
@@ -1436,4 +1438,3 @@ load();
 </script>
 </body>
 </html>
-
